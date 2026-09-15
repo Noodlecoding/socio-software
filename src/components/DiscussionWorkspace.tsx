@@ -1,12 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { UserProfile, ChatMessage, SpecFile, EngagementModelId } from '../types';
 import {
-  INITIAL_MESSAGES,
   STARTER_CHIPS,
-  INITIAL_SPEC_FILES,
-  ENGAGEMENT_MODELS,
-  generateArchitectResponse
+  ENGAGEMENT_MODELS
 } from '../data/initialData';
+import { supabase } from '../lib/supabaseClient';
+import { formatTimestamp, rowToChatMessage } from '../lib/chat';
 import { AudioBriefModal } from './AudioBriefModal';
 import { SchemaModal } from './SchemaModal';
 import {
@@ -18,7 +17,6 @@ import {
   Check,
   Clock,
   Shield,
-  Phone,
   Mail,
   UploadCloud,
   FileText,
@@ -36,14 +34,22 @@ interface DiscussionWorkspaceProps {
   onNavigate: (view: 'landing' | 'workspace') => void;
 }
 
+const rowToSpecFile = (row: any): SpecFile => ({
+  id: row.id,
+  name: row.name,
+  size: row.size,
+  type: row.type,
+  dateAdded: formatTimestamp(row.created_at)
+});
+
 export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
   user,
   onNavigate
 }) => {
-  const [messages, setMessages] = useState<ChatMessage[]>(INITIAL_MESSAGES);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState('');
-  const [specFiles, setSpecFiles] = useState<SpecFile[]>(INITIAL_SPEC_FILES);
-  const [isTyping, setIsTyping] = useState(false);
+  const [specFiles, setSpecFiles] = useState<SpecFile[]>([]);
+  const [isLoadingWorkspace, setIsLoadingWorkspace] = useState(true);
   const [isAudioModalOpen, setIsAudioModalOpen] = useState(false);
   const [isSchemaModalOpen, setIsSchemaModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'discussion' | 'specs'>('discussion');
@@ -56,6 +62,62 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
     (m) => m.id === user.selectedModel
   ) || ENGAGEMENT_MODELS[1];
 
+  // Load this user's messages and spec files from Supabase
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadWorkspace() {
+      setIsLoadingWorkspace(true);
+
+      const [messagesResult, filesResult] = await Promise.all([
+        supabase
+          .from('messages')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: true }),
+        supabase
+          .from('spec_files')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+      ]);
+
+      if (cancelled) return;
+
+      if (!messagesResult.error && messagesResult.data) {
+        setMessages(messagesResult.data.map(rowToChatMessage));
+      }
+      if (!filesResult.error && filesResult.data) {
+        setSpecFiles(filesResult.data.map(rowToSpecFile));
+      }
+      setIsLoadingWorkspace(false);
+    }
+
+    loadWorkspace();
+    return () => {
+      cancelled = true;
+    };
+  }, [user.id]);
+
+  // Live updates: messages the admin sends from the dashboard arrive here in real time
+  useEffect(() => {
+    const channel = supabase
+      .channel(`messages-${user.id}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'messages', filter: `user_id=eq.${user.id}` },
+        (payload) => {
+          const incoming = rowToChatMessage(payload.new);
+          setMessages((prev) => (prev.some((m) => m.id === incoming.id) ? prev : [...prev, incoming]));
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user.id]);
+
   // Auto-scroll chat stream to bottom when messages update
   useEffect(() => {
     if (chatStreamRef.current) {
@@ -64,55 +126,40 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
         behavior: 'smooth'
       });
     }
-  }, [messages, isTyping]);
+  }, [messages]);
+
+  const persistMessage = async (msg: ChatMessage) => {
+    const { error } = await supabase.from('messages').insert({
+      id: msg.id,
+      user_id: user.id,
+      sender: msg.sender,
+      sender_name: msg.senderName,
+      sender_title: msg.senderTitle ?? null,
+      sender_initials: msg.senderInitials ?? null,
+      text: msg.text,
+      attachments: msg.attachments ?? null,
+      is_preliminary_plan: msg.isPreliminaryPlan ?? false,
+      architect_review_notice: msg.architectReviewNotice ?? false
+    });
+    if (error) console.error('Failed to save message:', error.message);
+  };
 
   const handleSendMessage = (textToSend?: string) => {
     const content = (textToSend || inputText).trim();
     if (!content) return;
 
     const userMessage: ChatMessage = {
-      id: `msg-user-${Date.now()}`,
+      id: crypto.randomUUID(),
       sender: 'user',
-      senderName: user.name || 'Marcus Vance',
-      senderInitials: user.initials || 'MV',
+      senderName: user.name,
+      senderInitials: user.initials,
       text: content,
       timestamp: 'Sent just now'
     };
 
     setMessages((prev) => [...prev, userMessage]);
     setInputText('');
-
-    // Step 1: Immediate architect receipt notice after 400ms
-    setTimeout(() => {
-      const receiptNotice: ChatMessage = {
-        id: `msg-receipt-${Date.now()}`,
-        sender: 'system',
-        senderName: 'System Notice',
-        text: 'Alex Rivera has picked up your brief. Preparing initial architecture review notes.',
-        timestamp: 'Just now',
-        architectReviewNotice: true
-      };
-      setMessages((prev) => [...prev, receiptNotice]);
-
-      // Step 2: Architect starts typing
-      setIsTyping(true);
-
-      // Step 3: Deliver Alex's custom architectural reply
-      setTimeout(() => {
-        setIsTyping(false);
-        const replyText = generateArchitectResponse(content, user.organization || 'your team');
-        const architectReply: ChatMessage = {
-          id: `msg-arch-${Date.now()}`,
-          sender: 'architect',
-          senderName: 'Alex Rivera',
-          senderTitle: 'Lead Systems Architect',
-          senderInitials: 'AR',
-          text: replyText,
-          timestamp: 'Just now'
-        };
-        setMessages((prev) => [...prev, architectReply]);
-      }, 1500);
-    }, 450);
+    void persistMessage(userMessage);
   };
 
   const handleStarterPrompt = (prompt: string) => {
@@ -126,67 +173,77 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    const newFiles: SpecFile[] = (Array.from(files) as File[]).map((file: File, idx: number) => ({
-      id: `file-${Date.now()}-${idx}`,
+    const newFiles: SpecFile[] = (Array.from(files) as File[]).map((file: File) => ({
+      id: crypto.randomUUID(),
       name: file.name,
       size: `${(file.size / 1024).toFixed(0)} KB`,
       type: file.name.endsWith('.csv') || file.name.endsWith('.xlsx')
-        ? 'Data Sheet'
+        ? 'Spreadsheet'
         : file.name.endsWith('.json')
-        ? 'Schema / API Spec'
-        : 'Architecture Document',
+        ? 'Data File'
+        : 'Document',
       dateAdded: 'Just now'
     }));
 
     setSpecFiles((prev) => [...newFiles, ...prev]);
+    supabase
+      .from('spec_files')
+      .insert(newFiles.map((f) => ({ id: f.id, user_id: user.id, name: f.name, size: f.size, type: f.type })))
+      .then(({ error }) => {
+        if (error) console.error('Failed to save spec files:', error.message);
+      });
 
     // Add note in chat
     const fileNotice: ChatMessage = {
-      id: `msg-file-${Date.now()}`,
+      id: crypto.randomUUID(),
       sender: 'user',
-      senderName: user.name || 'Marcus Vance',
-      senderInitials: user.initials || 'MV',
-      text: `Uploaded new project specification: ${newFiles.map(f => f.name).join(', ')}`,
+      senderName: user.name,
+      senderInitials: user.initials,
+      text: `Shared file(s): ${newFiles.map(f => f.name).join(', ')}`,
       timestamp: 'Just now',
       attachments: newFiles.map(f => ({ name: f.name, type: f.type, size: f.size }))
     };
     setMessages((prev) => [...prev, fileNotice]);
+    void persistMessage(fileNotice);
 
     setTimeout(() => {
       const receipt: ChatMessage = {
-        id: `msg-receipt-file-${Date.now()}`,
+        id: crypto.randomUUID(),
         sender: 'system',
         senderName: 'System Notice',
-        text: `Alex Rivera received ${newFiles.length} file(s) for diagnostic parsing.`,
+        text: `Alexis received your ${newFiles.length === 1 ? 'file' : `${newFiles.length} files`} and will take a look.`,
         timestamp: 'Just now',
         architectReviewNotice: true
       };
       setMessages((prev) => [...prev, receipt]);
+      void persistMessage(receipt);
     }, 400);
   };
 
   const handleAudioAttach = (fileName: string, duration: string) => {
     const audioMsg: ChatMessage = {
-      id: `msg-audio-${Date.now()}`,
+      id: crypto.randomUUID(),
       sender: 'user',
-      senderName: user.name || 'Marcus Vance',
-      senderInitials: user.initials || 'MV',
-      text: `Attached verbal audio brief (${duration}) for Alex Rivera`,
+      senderName: user.name,
+      senderInitials: user.initials,
+      text: `Attached verbal audio brief (${duration}) for Alexis Cervantes`,
       timestamp: 'Just now',
       attachments: [{ name: fileName, type: 'Audio Brief', size: duration }]
     };
     setMessages((prev) => [...prev, audioMsg]);
+    void persistMessage(audioMsg);
 
     setTimeout(() => {
       const receipt: ChatMessage = {
-        id: `msg-ack-audio-${Date.now()}`,
+        id: crypto.randomUUID(),
         sender: 'system',
         senderName: 'System Notice',
-        text: 'Alex Rivera is listening to your audio briefing note.',
+        text: 'Alexis Cervantes is listening to your audio briefing note.',
         timestamp: 'Just now',
         architectReviewNotice: true
       };
       setMessages((prev) => [...prev, receipt]);
+      void persistMessage(receipt);
     }, 500);
   };
 
@@ -200,6 +257,13 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
 
   const handleRemoveFile = (fileId: string) => {
     setSpecFiles((prev) => prev.filter((f) => f.id !== fileId));
+    supabase
+      .from('spec_files')
+      .delete()
+      .eq('id', fileId)
+      .then(({ error }) => {
+        if (error) console.error('Failed to delete spec file:', error.message);
+      });
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -208,6 +272,14 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
       handleSendMessage();
     }
   };
+
+  if (isLoadingWorkspace) {
+    return (
+      <div className="flex-1 w-full max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-10 py-6 flex items-center justify-center text-slate-400 text-sm">
+        Loading your workspace...
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 w-full max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-10 py-6 flex flex-col lg:flex-row gap-6">
@@ -243,18 +315,14 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-[11px] font-bold text-blue-600 uppercase tracking-wider">
-                  Audit Workspace · {user.organization || 'Northline Logistics'}
-                </span>
-                <span className="text-slate-300">•</span>
-                <span className="text-[11px] font-medium text-slate-500">
-                  Fixed Scope Model: {selectedModelInfo.title}
+                  {user.organization ? `Your Workspace · ${user.organization}` : 'Your Workspace'}
                 </span>
               </div>
               <h1 className="font-display text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-                Start explaining your ideas to our team
+                Tell us what you need
               </h1>
               <p className="text-slate-600 text-xs sm:text-sm mt-1 max-w-2xl leading-relaxed">
-                You are chatting directly with Alex, our Lead Systems Architect — a real human engineer, not an AI bot. Share your workflow bottlenecks, system challenges, or software goals.
+                You're chatting directly with Alexis, a real person on our team — not a chatbot. Describe what's slowing your business down or what you'd like built, and Alexis will tell you what's possible and roughly what it would cost.
               </p>
             </div>
           </div>
@@ -266,7 +334,7 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
           <div className="flex items-center gap-3.5 min-w-0">
             <div className="relative shrink-0">
               <div className="w-10 h-10 rounded-xl bg-[#4361ee] flex items-center justify-center text-white font-bold text-sm shadow-xs font-display">
-                AR
+                AC
               </div>
               <span
                 className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-white"
@@ -275,7 +343,7 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
             </div>
             <div className="min-w-0 flex flex-col">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-bold text-slate-900 truncate">Alex Rivera</span>
+                <span className="text-sm font-bold text-slate-900 truncate">Alexis Cervantes</span>
                 <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-semibold flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                   Real Human Engineer • Active now
@@ -289,13 +357,13 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
 
           <div className="hidden sm:flex items-center gap-3">
             <div className="text-right">
-              <span className="text-[11px] text-slate-400 font-medium block">Diagnostic turnaround:</span>
+              <span className="text-[11px] text-slate-400 font-medium block">We usually reply within:</span>
               <span className="text-xs font-bold text-slate-800">1–3 Days</span>
             </div>
             <div className="w-px h-6 bg-slate-200"></div>
             <div className="text-right">
-              <span className="text-[11px] text-slate-400 font-medium block">Ownership:</span>
-              <span className="text-xs font-bold text-blue-600">100% Client Code &amp; IP</span>
+              <span className="text-[11px] text-slate-400 font-medium block">Who owns the code:</span>
+              <span className="text-xs font-bold text-blue-600">100% You</span>
             </div>
           </div>
         </div>
@@ -310,19 +378,19 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
           <div className="bg-slate-50/80 border border-[#e1e6f7] rounded-xl p-5 shadow-2xs">
             <div className="flex items-start gap-3 mb-3">
               <div className="w-9 h-9 rounded-lg bg-[#4361ee] flex items-center justify-center text-white shrink-0 font-bold text-xs shadow-xs font-display">
-                AR
+                AC
               </div>
               <div className="flex flex-col min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-bold text-slate-900">Alex Rivera</span>
+                  <span className="text-sm font-bold text-slate-900">Alexis Cervantes</span>
                   <span className="text-[11px] text-slate-500">Lead Systems Architect</span>
                 </div>
-                <span className="text-[11px] text-slate-400">Direct Workspace Message</span>
+                <span className="text-[11px] text-slate-400">Message from Alexis</span>
               </div>
             </div>
 
             <p className="text-sm text-slate-800 leading-relaxed mb-4">
-              Hi, I'm Alex Rivera, Lead Systems Architect at Socio. I review all audit requests personally. Tell me about the software you need or what tasks are slowing your team down — I'll personally review your workflow and outline architectural solutions.
+              Hi, I'm Alexis. I personally read every message that comes in here. Tell me what's slowing your team down, or what you'd like us to build, in plain terms — no need to know any technical jargon. I'll ask follow-up questions and let you know what we can do and roughly what it would cost.
             </p>
 
             <div className="flex flex-col gap-2 pt-2 border-t border-slate-200/60">
@@ -351,7 +419,7 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
           </div>
 
           {/* Dynamic Message History */}
-          {messages.slice(1).map((msg) => {
+          {messages.map((msg) => {
             if (msg.sender === 'system') {
               return (
                 <div
@@ -407,38 +475,24 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
                 className="flex items-start gap-3 max-w-[90%] self-start"
               >
                 <div className="w-8 h-8 rounded-lg bg-[#4361ee] text-white flex items-center justify-center text-xs font-bold shrink-0 mt-1 shadow-2xs font-display">
-                  AR
+                  AC
                 </div>
                 <div className="flex flex-col gap-1 min-w-0">
                   <div className="bg-white border border-[#e5e9f5] rounded-2xl rounded-tl-xs p-4 sm:p-5 shadow-xs text-sm text-slate-800 leading-relaxed">
                     <div className="flex items-center gap-2 pb-2 mb-2 border-b border-slate-100">
-                      <span className="font-bold text-xs text-slate-900">Alex Rivera</span>
-                      <span className="text-[10px] text-slate-400">Lead Architect Analysis</span>
+                      <span className="font-bold text-xs text-slate-900">Alexis Cervantes</span>
+                      <span className="text-[10px] text-slate-400">Reply</span>
                     </div>
                     <div className="whitespace-pre-line">{msg.text}</div>
                   </div>
                   <div className="flex items-center gap-1.5 text-slate-400 text-[11px] ml-1">
-                    <span>Alex Rivera</span> · <span>{msg.timestamp}</span>
+                    <span>Alexis Cervantes</span> · <span>{msg.timestamp}</span>
                   </div>
                 </div>
               </div>
             );
           })}
 
-          {/* Typing indicator */}
-          {isTyping && (
-            <div className="flex items-center gap-2 text-xs text-slate-500 bg-white border border-slate-200/80 px-4 py-2.5 rounded-xl self-start shadow-2xs">
-              <div className="w-5 h-5 rounded-md bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold">
-                AR
-              </div>
-              <span className="font-medium">Alex Rivera is analyzing your requirements...</span>
-              <div className="flex gap-1 items-center ml-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse"></span>
-                <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse delay-150"></span>
-                <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse delay-300"></span>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Large Interactive Message Input Dock */}
@@ -451,7 +505,7 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Explain your ideas, workflow bottlenecks, or questions for Alex..."
+              placeholder="Explain your ideas, workflow bottlenecks, or questions for Alexis..."
               rows={3}
             ></textarea>
 
@@ -510,12 +564,12 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
 
       {/* Right: Desktop Side Context & Project Overview Panel (~360px) */}
       <aside className="w-full lg:w-[360px] xl:w-[380px] shrink-0 flex flex-col gap-4">
-        {/* Engagement Scope Card */}
+        {/* Project Summary Card */}
         <div className="bg-white border border-[#e5e9f5] rounded-2xl p-5 shadow-sm">
           <div className="flex items-center justify-between pb-3 border-b border-slate-100">
             <div>
               <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600">
-                {selectedModelInfo.tag}
+                What you picked
               </span>
               <h3 className="font-display text-sm font-bold text-slate-900 mt-0.5">
                 {selectedModelInfo.title}
@@ -528,19 +582,19 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
 
           <div className="py-3 flex flex-col gap-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-500">Audit Status</span>
+              <span className="text-slate-500">Where things stand</span>
               <span className="font-semibold text-emerald-600 flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                Reviewing Intake (Day 1 of 3)
+                We're reviewing what you shared
               </span>
             </div>
             <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-500">Code Handover</span>
-              <span className="font-semibold text-slate-800">100% IP &amp; Git Repository</span>
+              <span className="text-slate-500">When it's done</span>
+              <span className="font-semibold text-slate-800">You get all the code — it's fully yours</span>
             </div>
             <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-500">Contract Guarantee</span>
-              <span className="font-semibold text-slate-800">Fixed Scope, No Surcharge</span>
+              <span className="text-slate-500">Our promise</span>
+              <span className="font-semibold text-slate-800">You approve the price before we start</span>
             </div>
           </div>
 
@@ -549,7 +603,7 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
               onClick={() => onNavigate('landing')}
               className="w-full text-center text-xs font-semibold text-blue-600 hover:text-blue-700 py-1 cursor-pointer"
             >
-              Compare Other Engagement Models →
+              See other project examples →
             </button>
           </div>
         </div>
@@ -558,7 +612,7 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
         <div className="bg-white border border-[#e5e9f5] rounded-2xl p-5 shadow-sm flex flex-col">
           <div className="flex items-center justify-between mb-2">
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-              Project Specs &amp; Files ({specFiles.length})
+              Files You've Shared ({specFiles.length})
             </span>
             <button
               onClick={() => fileInputRef.current?.click()}
@@ -576,10 +630,10 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
           >
             <UploadCloud className="w-6 h-6 mx-auto text-blue-600/70 group-hover:scale-110 transition-transform" />
             <p className="text-xs font-semibold text-slate-900 mt-1">
-              Drag &amp; drop architecture specs
+              Drag &amp; drop files here
             </p>
             <p className="text-[11px] text-slate-400 mt-0.5">
-              PDF, OpenAPI schemas, CSV or Figma exports
+              Spreadsheets, screenshots, documents — anything that helps explain what you need
             </p>
           </div>
 
@@ -611,34 +665,27 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
           </div>
         </div>
 
-        {/* Privacy & Security Card */}
+        {/* Privacy & Trust Card */}
         <div className="bg-white border border-[#e5e9f5] rounded-2xl p-5 shadow-sm space-y-3">
           <div>
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block mb-2">
-              Privacy &amp; Security
+              How We Handle Your Info
             </span>
             <div className="flex flex-wrap gap-1.5">
               <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded bg-slate-100 text-slate-700">
-                <Shield className="w-3 h-3 text-blue-600" /> Mutual NDA
+                <Shield className="w-3 h-3 text-blue-600" /> We'll sign an NDA if you'd like one
               </span>
               <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded bg-slate-100 text-slate-700">
-                <Shield className="w-3 h-3 text-blue-600" /> Zero Telemetry
-              </span>
-              <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded bg-slate-100 text-slate-700">
-                <Check className="w-3 h-3 text-emerald-600" /> SOC-2 Type II
+                <Shield className="w-3 h-3 text-blue-600" /> We don't sell or share your data
               </span>
             </div>
           </div>
 
           <div className="pt-3 border-t border-slate-100">
             <span className="text-[11px] text-slate-500 block mb-1">
-              Direct Engineering Escalation Hotline:
+              Questions? Reach us directly:
             </span>
-            <div className="flex items-center justify-between text-xs font-mono bg-slate-50 px-3 py-2 rounded-lg border border-slate-200/60">
-              <div className="flex items-center gap-1.5">
-                <Phone className="w-3.5 h-3.5 text-blue-600" />
-                <span className="text-slate-900 font-semibold">+1 (888) 420-SOCIO</span>
-              </div>
+            <div className="flex items-center justify-between text-xs bg-slate-50 px-3 py-2 rounded-lg border border-slate-200/60">
               <a
                 className="text-blue-600 font-sans hover:underline text-[11px] flex items-center gap-1"
                 href="mailto:direct@socio.com"
@@ -650,10 +697,10 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
           </div>
         </div>
 
-        {/* Audit Methodology Roadmap tracker */}
+        {/* How This Works tracker */}
         <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-5 shadow-2xs">
           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-3">
-            Diagnostic Delivery Stages
+            How This Works
           </span>
           <div className="flex flex-col gap-3">
             <div className="flex items-start gap-2.5">
@@ -661,8 +708,8 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
                 1
               </div>
               <div>
-                <span className="text-xs font-bold text-slate-900 block">Workflow &amp; Gap Audit</span>
-                <span className="text-[11px] text-slate-500">Alex isolates manual tasks and bottlenecks (In Progress)</span>
+                <span className="text-xs font-bold text-slate-900 block">We learn about your business</span>
+                <span className="text-[11px] text-slate-500">Alexis figures out what's slowing you down (in progress)</span>
               </div>
             </div>
 
@@ -671,8 +718,8 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
                 2
               </div>
               <div>
-                <span className="text-xs font-bold text-slate-800 block">Solution Roadmap &amp; Spec</span>
-                <span className="text-[11px] text-slate-500">Fixed-scope blueprint and delivery milestones</span>
+                <span className="text-xs font-bold text-slate-800 block">We show you the plan and price</span>
+                <span className="text-[11px] text-slate-500">You see exactly what we'll build and what it costs before anything starts</span>
               </div>
             </div>
 
@@ -681,8 +728,8 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
                 3
               </div>
               <div>
-                <span className="text-xs font-bold text-slate-800 block">Production Handover</span>
-                <span className="text-[11px] text-slate-500">100% Code repository &amp; keys deployed</span>
+                <span className="text-xs font-bold text-slate-800 block">We hand everything over</span>
+                <span className="text-[11px] text-slate-500">All the code and access, fully yours</span>
               </div>
             </div>
           </div>

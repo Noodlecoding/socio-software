@@ -1,20 +1,20 @@
 import React, { useState } from 'react';
-import { ENGAGEMENT_MODELS } from '../data/initialData';
 import { EngagementModelId, UserProfile } from '../types';
+import { SOCIO_LOGO_URL } from '../data/initialData';
+import { supabase } from '../lib/supabaseClient';
 import {
   Calendar,
   ArrowRight,
   Check,
   CheckCircle2,
   ShieldCheck,
-  Building2,
   Lock,
   Sparkles,
   ArrowUpRight
 } from 'lucide-react';
 
 interface LandingPageProps {
-  user: UserProfile;
+  user: UserProfile | null;
   onUpdateUser: (updated: Partial<UserProfile>) => void;
   onStartAudit: (modelId?: EngagementModelId) => void;
 }
@@ -24,13 +24,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   onUpdateUser,
   onStartAudit
 }) => {
-  const [fullName, setFullName] = useState(user.name);
-  const [organization, setOrganization] = useState(user.organization);
-  const [email, setEmail] = useState(user.email);
-  const [password, setPassword] = useState('••••••••••••');
-  const [selectedModel, setSelectedModel] = useState<EngagementModelId>(user.selectedModel || 'core-workflow');
+  const [mode, setMode] = useState<'signup' | 'signin'>('signup');
+  const [fullName, setFullName] = useState(user?.name ?? '');
+  const [organization, setOrganization] = useState(user?.organization ?? '');
+  const [email, setEmail] = useState(user?.email ?? '');
+  const [password, setPassword] = useState('');
+  const [selectedModel, setSelectedModel] = useState<EngagementModelId>(user?.selectedModel || 'core-workflow');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [needsEmailConfirmation, setNeedsEmailConfirmation] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   const handleSelectModel = (modelId: EngagementModelId) => {
     setSelectedModel(modelId);
@@ -42,51 +45,75 @@ export const LandingPage: React.FC<LandingPageProps> = ({
     }
   };
 
-  const handleFormSubmit = (e: React.FormEvent) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setAuthError(null);
     setIsSubmitting(true);
 
-    const nameParts = fullName.trim().split(' ');
-    const initials = nameParts.length >= 2 
-      ? (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase()
-      : (fullName.slice(0, 2) || 'MV').toUpperCase();
+    if (mode === 'signup') {
+      let referredBy: string | null = null;
+      try {
+        referredBy = localStorage.getItem('pendingReferralCode');
+      } catch {
+        // localStorage unavailable — no referral attribution
+      }
 
-    onUpdateUser({
-      name: fullName,
-      organization: organization,
-      email: email,
-      initials: initials,
-      selectedModel: selectedModel
-    });
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+            organization,
+            selected_model: selectedModel,
+            referred_by: referredBy
+          }
+        }
+      });
 
-    setTimeout(() => {
       setIsSubmitting(false);
+
+      if (error) {
+        setAuthError(error.message);
+        return;
+      }
+
+      if (!data.session) {
+        setNeedsEmailConfirmation(true);
+        setShowSuccess(true);
+        return;
+      }
+
       setShowSuccess(true);
-      setTimeout(() => {
-        onStartAudit(selectedModel);
-      }, 700);
-    }, 450);
+    } else {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+      setIsSubmitting(false);
+
+      if (error) {
+        setAuthError(error.message);
+        return;
+      }
+
+      setShowSuccess(true);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setAuthError(null);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin }
+    });
+    if (error) {
+      setAuthError(error.message);
+    }
   };
 
   return (
     <div className="w-full">
       {/* Main Container */}
       <main className="w-full pt-20">
-        {/* Trust Ticker strip */}
-        <div className="w-full bg-slate-50 border-b border-slate-100 py-2.5 px-6 lg:px-12 flex items-center justify-center text-xs font-medium text-slate-500">
-          <div className="flex items-center gap-6 overflow-x-auto whitespace-nowrap">
-            <span className="flex items-center gap-1.5 text-slate-700">
-              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-              Engineering sprint capacity open for Q3
-            </span>
-            <span className="text-slate-300">•</span>
-            <span>Zero vendor lock-in</span>
-            <span className="text-slate-300">•</span>
-            <span>Full code repository &amp; keys handed over</span>
-            <span className="text-slate-300">•</span>
-            <span>Fixed scope, no billing surprises</span>
-          </div>
-        </div>
 
         {/* Hero Section */}
         <section className="w-full py-20 lg:py-28 px-6 lg:px-12 bg-gradient-to-b from-white via-blue-50/20 to-white">
@@ -133,8 +160,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   <div className="text-xs text-slate-400 font-medium mt-1">Code &amp; IP retained</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-blue-600 tracking-tight">Fixed Scope</div>
-                  <div className="text-xs text-slate-400 font-medium mt-1">No surprise costs</div>
+                  <div className="text-2xl font-bold text-blue-600 tracking-tight">Your Budget</div>
+                  <div className="text-xs text-slate-400 font-medium mt-1">We scope around it</div>
                 </div>
               </div>
             </div>
@@ -288,44 +315,38 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </div>
         </section>
 
-        {/* Transparent Pricing / Engagement Models Section */}
+        {/* Past Projects Section */}
         <section className="w-full py-24 px-6 lg:px-12 bg-slate-50" id="models">
           <div className="max-w-7xl mx-auto flex flex-col gap-16">
             <div className="text-center max-w-3xl mx-auto">
-              <span className="text-xs font-bold uppercase tracking-wider text-blue-600 mb-2 block">How We Partner</span>
+              <span className="text-xs font-bold uppercase tracking-wider text-blue-600 mb-2 block">Past Projects</span>
               <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-                Structured models. Tailored to your scope.
+                A few examples of what we've built.
               </h2>
               <p className="text-base sm:text-lg text-slate-600 mt-3">
-                Every engagement starts with a clear scope, so you know exactly what we build and when it launches before development begins.
+                Client names stay private, but here's the kind of work we do — and there's no fixed price list. Tell us what you're solving for and your budget, and we'll shape a plan around it.
               </p>
             </div>
 
-            {/* Model Cards */}
+            {/* Anonymized past project examples */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
-              {/* Card 1: Quick Module */}
+              {/* Card 1 */}
               <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
                 <div>
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Fast Fixes</span>
-                  <h3 className="font-display text-xl font-bold text-slate-900 mt-1">Quick Module</h3>
-                  <div className="mt-4 flex items-baseline gap-1">
-                    <span className="text-2xl font-extrabold text-slate-900">5–10 days</span>
-                  </div>
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Regional Logistics Company</span>
+                  <h3 className="font-display text-xl font-bold text-slate-900 mt-1">Automated Dispatch Sync</h3>
+                  <p className="text-xs text-slate-500 mt-2 font-medium">5–10 day engagement</p>
                   <p className="text-sm text-slate-600 mt-3 leading-relaxed">
-                    Focused fixes for specific bottlenecks, repetitive manual tasks, or single API integrations.
+                    Their dispatch team was manually re-entering orders between their 3PL warehouse and their accounting software every morning. We built a webhook bridge that syncs both automatically.
                   </p>
                   <div className="mt-6 pt-6 border-t border-slate-100 flex flex-col gap-3 text-sm text-slate-600">
                     <div className="flex items-center gap-2.5">
                       <Check className="w-4 h-4 text-blue-600 shrink-0" />
-                      <span>API integrations &amp; webhooks</span>
+                      <span>API integration between two legacy systems</span>
                     </div>
                     <div className="flex items-center gap-2.5">
                       <Check className="w-4 h-4 text-blue-600 shrink-0" />
-                      <span>Automated workflows</span>
-                    </div>
-                    <div className="flex items-center gap-2.5">
-                      <Check className="w-4 h-4 text-blue-600 shrink-0" />
-                      <span>Turnaround in 5–10 days</span>
+                      <span>Removed a daily manual data-entry task</span>
                     </div>
                   </div>
                 </div>
@@ -334,37 +355,31 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     onClick={() => handleSelectModel('quick-module')}
                     className="w-full inline-flex items-center justify-center py-3 px-4 rounded-xl text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
                   >
-                    Scope this module
+                    Talk to us about something similar
                   </button>
                 </div>
               </div>
 
-              {/* Card 2: Core Workflow Tool (Most Popular) */}
+              {/* Card 2 */}
               <div className="bg-white p-8 rounded-2xl border-2 border-blue-600 shadow-xl relative flex flex-col justify-between">
                 <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide">
-                  Most Popular
+                  Most Common
                 </div>
                 <div>
-                  <span className="text-xs font-bold text-blue-600 uppercase tracking-wider">Operational Engine</span>
-                  <h3 className="font-display text-xl font-bold text-slate-900 mt-1">Core Workflow Tool</h3>
-                  <div className="mt-4 flex items-baseline gap-1">
-                    <span className="text-2xl font-extrabold text-blue-600">2–4 weeks</span>
-                  </div>
+                  <span className="text-xs font-bold text-blue-600 uppercase tracking-wider">Regional Retailer</span>
+                  <h3 className="font-display text-xl font-bold text-slate-900 mt-1">Custom Ops Dashboard</h3>
+                  <p className="text-xs text-slate-500 mt-2 font-medium">3-week engagement</p>
                   <p className="text-sm text-slate-600 mt-3 leading-relaxed">
-                    Replace clunky spreadsheets and expensive SaaS subscriptions with a dedicated internal tool.
+                    They were juggling five different spreadsheets and two SaaS tools to track inventory and fulfillment. We replaced all of it with one dashboard built around how their team actually works.
                   </p>
                   <div className="mt-6 pt-6 border-t border-slate-100 flex flex-col gap-3 text-sm text-slate-600">
                     <div className="flex items-center gap-2.5">
                       <Check className="w-4 h-4 text-blue-600 shrink-0" />
-                      <span>Custom inventory or client portals</span>
+                      <span>Custom inventory &amp; fulfillment portal</span>
                     </div>
                     <div className="flex items-center gap-2.5">
                       <Check className="w-4 h-4 text-blue-600 shrink-0" />
-                      <span>Automated invoicing &amp; reporting</span>
-                    </div>
-                    <div className="flex items-center gap-2.5">
-                      <Check className="w-4 h-4 text-blue-600 shrink-0" />
-                      <span>Turnaround in 2–4 weeks</span>
+                      <span>Dropped two recurring SaaS subscriptions</span>
                     </div>
                   </div>
                 </div>
@@ -373,34 +388,28 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     onClick={() => handleSelectModel('core-workflow')}
                     className="w-full inline-flex items-center justify-center py-3 px-4 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-all shadow-md cursor-pointer"
                   >
-                    Book a project call
+                    Talk to us about something similar
                   </button>
                 </div>
               </div>
 
-              {/* Card 3: Comprehensive System */}
+              {/* Card 3 */}
               <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
                 <div>
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Enterprise Scale</span>
-                  <h3 className="font-display text-xl font-bold text-slate-900 mt-1">Comprehensive System</h3>
-                  <div className="mt-4 flex items-baseline gap-1">
-                    <span className="text-2xl font-extrabold text-slate-900">4–8 weeks</span>
-                  </div>
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Multi-Location Service Business</span>
+                  <h3 className="font-display text-xl font-bold text-slate-900 mt-1">Unified Operations Platform</h3>
+                  <p className="text-xs text-slate-500 mt-2 font-medium">6-week engagement</p>
                   <p className="text-sm text-slate-600 mt-3 leading-relaxed">
-                    Full-scale backbones unifying multiple departments, warehouse workflows, and complex legacy data.
+                    Every location ran its own scheduling and reporting on an aging legacy database. We migrated everything into one system so leadership finally had a single source of truth.
                   </p>
                   <div className="mt-6 pt-6 border-t border-slate-100 flex flex-col gap-3 text-sm text-slate-600">
                     <div className="flex items-center gap-2.5">
                       <Check className="w-4 h-4 text-blue-600 shrink-0" />
-                      <span>Multi-location operational systems</span>
+                      <span>Multi-location scheduling &amp; reporting</span>
                     </div>
                     <div className="flex items-center gap-2.5">
                       <Check className="w-4 h-4 text-blue-600 shrink-0" />
-                      <span>Full legacy database migrations</span>
-                    </div>
-                    <div className="flex items-center gap-2.5">
-                      <Check className="w-4 h-4 text-blue-600 shrink-0" />
-                      <span>Turnaround in 4–8 weeks</span>
+                      <span>Full legacy database migration</span>
                     </div>
                   </div>
                 </div>
@@ -409,13 +418,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     onClick={() => handleSelectModel('comprehensive-system')}
                     className="w-full inline-flex items-center justify-center py-3 px-4 rounded-xl text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
                   >
-                    Request system blueprint
+                    Talk to us about something similar
                   </button>
                 </div>
               </div>
             </div>
 
-            {/* Guarantee Banner */}
+            <p className="text-center text-xs text-slate-400 -mt-8">
+              Details anonymized to protect client privacy. Your project won't look exactly like these — every plan and cost comes out of a conversation with us.
+            </p>
+
+            {/* Ownership Banner */}
             <div className="bg-blue-50/70 border border-blue-100 rounded-xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4 text-slate-700 text-sm">
               <div className="flex items-center gap-3">
                 <ShieldCheck className="w-6 h-6 text-blue-600 shrink-0" />
@@ -447,10 +460,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <div className="flex flex-col sm:flex-row gap-3 mb-6">
               <button
                 type="button"
-                onClick={() => {
-                  onStartAudit(selectedModel);
-                }}
-                className="flex-1 inline-flex items-center justify-center gap-2 py-2.5 px-4 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 shadow-sm transition-all cursor-pointer"
+                onClick={handleGoogleSignIn}
+                className="flex-1 inline-flex items-center justify-center gap-2 py-2.5 px-4 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 shadow-sm transition-all cursor-pointer disabled:opacity-60"
+                disabled={isSubmitting}
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"></path>
@@ -459,16 +471,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"></path>
                 </svg>
                 <span>Continue with Google</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  onStartAudit(selectedModel);
-                }}
-                className="flex-1 inline-flex items-center justify-center gap-2 py-2.5 px-4 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 shadow-sm transition-all cursor-pointer"
-              >
-                <Building2 className="w-4 h-4 text-slate-500" />
-                <span>Company SSO</span>
               </button>
             </div>
 
@@ -484,6 +486,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <form onSubmit={handleFormSubmit} className="flex flex-col gap-4">
               {!showSuccess ? (
                 <div className="flex flex-col gap-4">
+                  {authError && (
+                    <div className="bg-red-50 border border-red-200 text-red-700 text-xs font-medium rounded-xl px-4 py-3">
+                      {authError}
+                    </div>
+                  )}
+
+                  {mode === 'signup' && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider block mb-1.5" htmlFor="client-name">
@@ -501,7 +510,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     </div>
                     <div>
                       <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider block mb-1.5" htmlFor="company-name">
-                        Organization
+                        Organization <span className="normal-case text-slate-400 font-medium">(optional)</span>
                       </label>
                       <input
                         className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 shadow-sm"
@@ -509,11 +518,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                         value={organization}
                         onChange={(e) => setOrganization(e.target.value)}
                         placeholder="Northline Logistics"
-                        required
                         type="text"
                       />
                     </div>
                   </div>
+                  )}
 
                   <div>
                     <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider block mb-1.5" htmlFor="client-email">
@@ -533,9 +542,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
                       <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider block" htmlFor="client-password">
-                        Create Password
+                        {mode === 'signup' ? 'Create Password' : 'Password'}
                       </label>
-                      <span className="text-[11px] text-slate-400 font-medium">Min 8 characters</span>
+                      {mode === 'signup' && <span className="text-[11px] text-slate-400 font-medium">Min 8 characters</span>}
                     </div>
                     <input
                       className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 shadow-sm font-mono"
@@ -549,26 +558,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     />
                   </div>
 
-                  {/* Selected Model indicator */}
-                  <div className="bg-white border border-slate-200 rounded-xl p-3 flex items-center justify-between">
-                    <div className="flex flex-col">
-                      <span className="text-[11px] text-slate-400 uppercase font-semibold">Selected Engagement Model</span>
-                      <span className="text-xs font-bold text-slate-800">
-                        {ENGAGEMENT_MODELS.find(m => m.id === selectedModel)?.title || 'Core Workflow Tool'}
-                      </span>
-                    </div>
-                    <a href="#models" className="text-xs font-semibold text-blue-600 hover:text-blue-700">
-                      Change
-                    </a>
-                  </div>
-
                   <div className="pt-2">
                     <button
                       className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-all shadow-md text-sm cursor-pointer disabled:opacity-75"
                       type="submit"
                       disabled={isSubmitting}
                     >
-                      <span>{isSubmitting ? 'Setting up your workspace...' : 'Create Account &amp; Get Started'}</span>
+                      <span>
+                        {isSubmitting
+                          ? 'Setting up your workspace...'
+                          : mode === 'signup'
+                          ? 'Create Account & Get Started'
+                          : 'Sign In'}
+                      </span>
                       <ArrowRight className="w-4 h-4" />
                     </button>
                   </div>
@@ -579,15 +581,31 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   </p>
 
                   <div className="text-center pt-3 border-t border-slate-200/80 mt-1">
-                    <span className="text-xs text-slate-500">Already have an account? </span>
+                    <span className="text-xs text-slate-500">
+                      {mode === 'signup' ? 'Already have an account? ' : "Don't have an account? "}
+                    </span>
                     <button
                       type="button"
-                      onClick={() => onStartAudit(selectedModel)}
+                      onClick={() => {
+                        setAuthError(null);
+                        setMode(mode === 'signup' ? 'signin' : 'signup');
+                      }}
                       className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors cursor-pointer"
                     >
-                      Sign in to Discussion Desk
+                      {mode === 'signup' ? 'Sign in to Discussion Desk' : 'Create an account'}
                     </button>
                   </div>
+                </div>
+              ) : needsEmailConfirmation ? (
+                /* Email confirmation required */
+                <div className="flex flex-col items-center text-center py-8">
+                  <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mb-3">
+                    <CheckCircle2 className="w-7 h-7" />
+                  </div>
+                  <h4 className="font-display text-lg font-bold text-slate-900">Check your inbox</h4>
+                  <p className="text-sm text-slate-600 mt-1">
+                    We sent a confirmation link to {email}. Confirm your email, then sign in to reach the Discussion Desk.
+                  </p>
                 </div>
               ) : (
                 /* Success State */
@@ -595,9 +613,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mb-3 animate-bounce">
                     <CheckCircle2 className="w-7 h-7" />
                   </div>
-                  <h4 className="font-display text-lg font-bold text-slate-900">Account Created</h4>
+                  <h4 className="font-display text-lg font-bold text-slate-900">
+                    {mode === 'signup' ? 'Account Created' : 'Welcome Back'}
+                  </h4>
                   <p className="text-sm text-slate-600 mt-1">
-                    Setting up your workspace and connecting you with Alex Rivera...
+                    Setting up your workspace and connecting you with Alexis Cervantes...
                   </p>
                 </div>
               )}
@@ -612,11 +632,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8 pb-12 border-b border-slate-800">
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center shadow-sm">
-                  <div className="w-3 h-3 rounded-[3px] bg-white flex items-center justify-center">
-                    <div className="w-1.5 h-1.5 rounded-[2px] bg-blue-600"></div>
-                  </div>
-                </div>
+                <img src={SOCIO_LOGO_URL} alt="Socio" className="w-7 h-7 rounded-lg shadow-sm" />
                 <span className="font-display text-xl font-bold text-white tracking-tight">Socio</span>
               </div>
               <p className="text-sm text-slate-400 mt-1">Custom software. No fluff. Just results.</p>
@@ -642,7 +658,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
             <p>© 2025 Socio Software Inc. All rights reserved.</p>
             <div className="flex items-center gap-6">
-              <span>Fixed Scope Guarantee</span>
+              <span>Budget-First Scoping</span>
               <span>•</span>
               <span>100% Client Code Ownership</span>
             </div>

@@ -3,73 +3,153 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import type { Session } from '@supabase/supabase-js';
+import { supabase } from './lib/supabaseClient';
 import { Navbar } from './components/Navbar';
 import { LandingPage } from './components/LandingPage';
 import { DiscussionWorkspace } from './components/DiscussionWorkspace';
+import { AdminDashboard } from './components/AdminDashboard';
+import { AffiliatePage } from './components/AffiliatePage';
 import { UserProfile, EngagementModelId } from './types';
-import { LayoutTemplate, MessageSquare, ArrowRight } from 'lucide-react';
+import { ADMIN_EMAIL } from './lib/constants';
+
+export type AppView = 'landing' | 'workspace' | 'affiliate';
+
+const deriveInitials = (name: string) => {
+  const nameParts = name.trim().split(' ').filter(Boolean);
+  return nameParts.length >= 2
+    ? (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase()
+    : (name.slice(0, 2) || '??').toUpperCase();
+};
+
+async function loadUserProfile(session: Session): Promise<UserProfile> {
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('full_name, organization, selected_model')
+    .eq('id', session.user.id)
+    .single();
+
+  const name = profile?.full_name || session.user.user_metadata?.full_name || session.user.email || 'there';
+  const organization = profile?.organization || session.user.user_metadata?.organization || '';
+  const selectedModel = (profile?.selected_model || session.user.user_metadata?.selected_model || 'core-workflow') as EngagementModelId;
+
+  return {
+    id: session.user.id,
+    name,
+    organization,
+    email: session.user.email || '',
+    initials: deriveInitials(name),
+    selectedModel
+  };
+}
 
 export default function App() {
-  const [currentView, setCurrentView] = useState<'landing' | 'workspace'>('landing');
-  const [user, setUser] = useState<UserProfile>({
-    name: 'Marcus Vance',
-    organization: 'Northline Logistics',
-    email: 'marcus@northline.com',
-    initials: 'MV',
-    selectedModel: 'core-workflow'
-  });
+  const [currentView, setCurrentView] = useState<AppView>('landing');
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
+  const currentViewRef = useRef<AppView>('landing');
+
+  useEffect(() => {
+    currentViewRef.current = currentView;
+  }, [currentView]);
+
+  // Capture ?ref=CODE from an affiliate link so signup can attribute it later
+  useEffect(() => {
+    try {
+      const ref = new URLSearchParams(window.location.search).get('ref');
+      if (ref) {
+        localStorage.setItem('pendingReferralCode', ref);
+      }
+    } catch {
+      // localStorage unavailable — referral attribution just won't happen
+    }
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!isMounted) return;
+      if (session) {
+        setUser(await loadUserProfile(session));
+      }
+      setIsAuthLoading(false);
+    });
+
+    const { data: listener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!isMounted) return;
+      if (session) {
+        setUser(await loadUserProfile(session));
+        if (event === 'SIGNED_IN' && currentViewRef.current !== 'affiliate') {
+          setCurrentView('workspace');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      } else {
+        setUser(null);
+        setCurrentView('landing');
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      listener.subscription.unsubscribe();
+    };
+  }, []);
 
   const handleUpdateUser = (updated: Partial<UserProfile>) => {
-    setUser((prev) => ({ ...prev, ...updated }));
+    setUser((prev) => (prev ? { ...prev, ...updated } : prev));
   };
 
   const handleStartAudit = (modelId?: EngagementModelId) => {
     if (modelId) {
-      setUser((prev) => ({ ...prev, selectedModel: modelId }));
+      setUser((prev) => (prev ? { ...prev, selectedModel: modelId } : prev));
     }
-    setCurrentView('workspace');
+    if (user) {
+      setCurrentView('workspace');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      const el = document.getElementById('get-started');
+      el?.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+  };
+
+  const handleNavigate = (view: AppView) => {
+    if (view === 'workspace' && !user) {
+      handleStartAudit();
+      return;
+    }
+    setCurrentView(view);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  if (isAuthLoading) {
+    return (
+      <div className="min-h-screen bg-[#f8f9fd] flex items-center justify-center text-slate-400 text-sm">
+        Loading...
+      </div>
+    );
+  }
+
+  const isAdmin = user?.email === ADMIN_EMAIL;
+
   return (
     <div className="min-h-screen bg-[#f8f9fd] text-slate-800 flex flex-col selection:bg-blue-100 selection:text-blue-900 font-sans">
-      {/* Global Navbar */}
       <Navbar
-        currentView={currentView}
-        onNavigate={setCurrentView}
+        currentView={currentView === 'affiliate' ? 'affiliate' : user ? currentView : 'landing'}
+        onNavigate={handleNavigate}
         user={user}
+        onSignOut={handleSignOut}
+        isAdmin={isAdmin}
       />
 
-      {/* Screen Switcher Floating Pill for instantaneous review of both requested screens */}
-      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-slate-900/90 text-white backdrop-blur-md px-3 py-1.5 rounded-full shadow-lg border border-slate-700/60 flex items-center gap-2 text-xs">
-        <span className="text-[11px] text-slate-400 font-medium pl-1 hidden sm:inline">Screen Mode:</span>
-        <button
-          onClick={() => setCurrentView('landing')}
-          className={`px-3 py-1 rounded-full font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
-            currentView === 'landing'
-              ? 'bg-blue-600 text-white shadow-xs'
-              : 'text-slate-300 hover:text-white'
-          }`}
-        >
-          <LayoutTemplate className="w-3.5 h-3.5" />
-          <span>Landing Overview</span>
-        </button>
-        <button
-          onClick={() => setCurrentView('workspace')}
-          className={`px-3 py-1 rounded-full font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
-            currentView === 'workspace'
-              ? 'bg-blue-600 text-white shadow-xs'
-              : 'text-slate-300 hover:text-white'
-          }`}
-        >
-          <MessageSquare className="w-3.5 h-3.5" />
-          <span>Discussion Desk</span>
-        </button>
-      </div>
-
-      {/* Primary View */}
-      {currentView === 'landing' ? (
+      {currentView === 'affiliate' ? (
+        <AffiliatePage user={user} />
+      ) : currentView === 'landing' || !user ? (
         <LandingPage
           user={user}
           onUpdateUser={handleUpdateUser}
@@ -77,10 +157,14 @@ export default function App() {
         />
       ) : (
         <div className="pt-2 pb-16 flex-1 flex flex-col">
-          <DiscussionWorkspace
-            user={user}
-            onNavigate={setCurrentView}
-          />
+          {isAdmin ? (
+            <AdminDashboard user={user} />
+          ) : (
+            <DiscussionWorkspace
+              user={user}
+              onNavigate={handleNavigate}
+            />
+          )}
         </div>
       )}
     </div>

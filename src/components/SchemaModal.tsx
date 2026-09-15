@@ -47,7 +47,7 @@ export const SchemaModal: React.FC<SchemaModalProps> = ({
             </div>
             <div>
               <h3 className="font-display text-sm font-bold text-slate-900">Architecture Diagram Sketch</h3>
-              <p className="text-xs text-slate-500">Pick a reference blueprint to share with Alex Rivera</p>
+              <p className="text-xs text-slate-500">Pick a reference blueprint to share with Alexis Cervantes</p>
             </div>
           </div>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600 text-sm font-bold p-1">

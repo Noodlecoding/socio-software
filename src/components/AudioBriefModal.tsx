@@ -63,7 +63,7 @@ export const AudioBriefModal: React.FC<AudioBriefModalProps> = ({
             </div>
             <div>
               <h3 className="font-display text-sm font-bold text-slate-900">Record Audio Brief</h3>
-              <p className="text-xs text-slate-500">Alex will listen directly to your verbal notes</p>
+              <p className="text-xs text-slate-500">Alexis will listen directly to your verbal notes</p>
             </div>
           </div>
           <button
@@ -86,7 +86,7 @@ export const AudioBriefModal: React.FC<AudioBriefModalProps> = ({
               {formatTime(seconds)}
             </div>
             <p className="text-xs text-slate-500 mt-1">
-              {isRecording ? 'Listening... speak naturally about your current system' : hasRecorded ? 'Recording ready for Alex' : 'Click start to record'}
+              {isRecording ? 'Listening... speak naturally about your current system' : hasRecorded ? 'Recording ready for Alexis' : 'Click start to record'}
             </p>
           </div>
 
