@@ -140,25 +140,42 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
     if (!user || !referralCode) return;
 
     let cancelled = false;
-    supabase
-      .from('affiliate_stats')
-      .select('*')
-      .eq('affiliate_id', user.id)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (cancelled || !data) return;
-        setStats({
-          affiliateId: data.affiliate_id,
-          referralCode: data.referral_code,
-          leadsCount: data.leads_count,
-          dealsClosed: data.deals_closed,
-          totalDealValue: Number(data.total_deal_value),
-          commissionOwed: Number(data.commission_owed)
+
+    const loadStats = () => {
+      supabase
+        .from('affiliate_stats')
+        .select('*')
+        .eq('affiliate_id', user.id)
+        .maybeSingle()
+        .then(({ data }) => {
+          if (cancelled || !data) return;
+          setStats({
+            affiliateId: data.affiliate_id,
+            referralCode: data.referral_code,
+            leadsCount: data.leads_count,
+            dealsClosed: data.deals_closed,
+            totalDealValue: Number(data.total_deal_value),
+            commissionOwed: Number(data.commission_owed)
+          });
         });
-      });
+    };
+
+    loadStats();
+
+    // Live-refresh stats whenever the admin marks a referred client's status
+    // or deal value — both feed directly into deals closed / commission owed.
+    const channel = supabase
+      .channel(`affiliate-stats:${referralCode}`)
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `referred_by=eq.${referralCode}` },
+        () => loadStats()
+      )
+      .subscribe();
 
     return () => {
       cancelled = true;
+      supabase.removeChannel(channel);
     };
   }, [user, referralCode]);
 

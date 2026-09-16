@@ -311,6 +311,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
     setConversations((prev) => prev.map((c) => (c.userId === selectedId ? { ...c, status } : c)));
     const { error } = await supabase.from('profiles').update({ status }).eq('id', selectedId);
     if (error) console.error('Failed to update status:', error.message);
+    // Deals closed / commission owed are computed live from client status +
+    // deal value (see affiliate_stats), so just refresh the affiliate list.
+    void loadAffiliates();
   };
 
   const handleSaveDealValue = async () => {
@@ -319,6 +322,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
     if (value !== null && Number.isNaN(value)) return;
     const { error } = await supabase.from('profiles').update({ deal_value: value }).eq('id', selectedId);
     if (error) console.error('Failed to save deal value:', error.message);
+    void loadAffiliates();
   };
 
   const filteredConversations = conversations.filter((c) => filter === 'all' || c.status === filter);
