@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { EngagementModelId, UserProfile } from '../types';
 import { SOCIO_LOGO_URL, PAST_PROJECTS } from '../data/initialData';
 import { supabase } from '../lib/supabaseClient';
+import { checkAuthRateLimit, RATE_LIMIT_MESSAGE } from '../lib/rateLimit';
 import {
   Calendar,
   ArrowRight,
@@ -43,6 +44,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({
     e.preventDefault();
     setAuthError(null);
     setIsSubmitting(true);
+
+    const allowed = await checkAuthRateLimit(email, mode === 'signup' ? 'signup' : 'signin');
+    if (!allowed) {
+      setIsSubmitting(false);
+      setAuthError(RATE_LIMIT_MESSAGE);
+      return;
+    }
 
     if (mode === 'signup') {
       let referredBy: string | null = null;

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from '../lib/supabaseClient';
+import { checkAuthRateLimit, RATE_LIMIT_MESSAGE } from '../lib/rateLimit';
 import { UserProfile, AffiliateStats } from '../types';
 import { ArrowRight, ArrowLeft, Copy, Check, Users, TrendingUp, DollarSign, LogOut } from 'lucide-react';
 
@@ -187,6 +188,13 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
     e.preventDefault();
     setAuthError(null);
     setIsSubmitting(true);
+
+    const allowed = await checkAuthRateLimit(email, mode === 'signup' ? 'signup' : 'signin');
+    if (!allowed) {
+      setIsSubmitting(false);
+      setAuthError(RATE_LIMIT_MESSAGE);
+      return;
+    }
 
     if (mode === 'signup') {
       const { data, error } = await supabase.auth.signUp({
