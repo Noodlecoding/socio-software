@@ -74,6 +74,17 @@ export interface AdminAffiliateConversation {
   lastMessageAt: string | null;
 }
 
+export interface AffiliateReferredClient {
+  userId: string;
+  affiliateId: string;
+  fullName: string;
+  organization: string;
+  status: ClientStatus;
+  dealValue: number | null;
+  clientSince: string;
+  commissionContribution: number;
+}
+
 export interface ChatMessage {
   id: string;
   sender: 'architect' | 'user' | 'system';

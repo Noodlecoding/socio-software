@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from '../lib/supabaseClient';
 import { checkAuthRateLimit, RATE_LIMIT_MESSAGE } from '../lib/rateLimit';
 import { rowToChatMessage } from '../lib/chat';
-import { UserProfile, AffiliateStats, ChatMessage } from '../types';
+import { UserProfile, AffiliateStats, AffiliateReferredClient, ClientStatus, ChatMessage } from '../types';
 import { ArrowRight, ArrowLeft, Copy, Check, Users, TrendingUp, DollarSign, LogOut, Target, ChevronRight, Send, MessageCircle } from 'lucide-react';
 import { AffiliateLeadGuide } from './AffiliateLeadGuide';
 
@@ -136,6 +136,8 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
     };
   }, [user]);
 
+  const [referredClients, setReferredClients] = useState<AffiliateReferredClient[]>([]);
+
   useEffect(() => {
     if (!user || !referralCode) return;
 
@@ -160,16 +162,43 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
         });
     };
 
-    loadStats();
+    const loadReferredClients = () => {
+      supabase
+        .from('affiliate_referred_clients')
+        .select('*')
+        .eq('affiliate_id', user.id)
+        .order('client_since', { ascending: false })
+        .then(({ data, error }) => {
+          if (cancelled || error || !data) return;
+          setReferredClients(
+            data.map((row: any) => ({
+              userId: row.user_id,
+              affiliateId: row.affiliate_id,
+              fullName: row.full_name || 'Unnamed client',
+              organization: row.organization || '',
+              status: row.status as ClientStatus,
+              dealValue: row.deal_value != null ? Number(row.deal_value) : null,
+              clientSince: row.client_since,
+              commissionContribution: Number(row.commission_contribution)
+            }))
+          );
+        });
+    };
 
-    // Live-refresh stats whenever the admin marks a referred client's status
-    // or deal value — both feed directly into deals closed / commission owed.
+    loadStats();
+    loadReferredClients();
+
+    // Live-refresh whenever the admin marks a referred client's status or
+    // deal value — both feed directly into deals closed / commission owed.
     const channel = supabase
       .channel(`affiliate-stats:${referralCode}`)
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `referred_by=eq.${referralCode}` },
-        () => loadStats()
+        () => {
+          loadStats();
+          loadReferredClients();
+        }
       )
       .subscribe();
 
@@ -416,6 +445,65 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
               </div>
               <div className="text-xs text-slate-500 mt-1">Commission owed (23%, USD)</div>
             </div>
+          </div>
+
+          {/* Per-client breakdown — each referred client contributes separately, not one combined total */}
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden mt-8">
+            <div className="p-4 border-b border-slate-100">
+              <h3 className="font-display text-sm font-bold text-slate-900">Your Referred Clients</h3>
+              <p className="text-[11px] text-slate-500 mt-0.5">
+                {referredClients.length === 0
+                  ? 'No referrals yet'
+                  : `${referredClients.length} client${referredClients.length === 1 ? '' : 's'} referred`}
+              </p>
+            </div>
+            {referredClients.length === 0 ? (
+              <div className="p-4 text-xs text-slate-400">Share your link to start referring clients.</div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-100">
+                      <th className="px-4 py-2.5">Client</th>
+                      <th className="px-4 py-2.5">Status</th>
+                      <th className="px-4 py-2.5 text-right">Deal Value</th>
+                      <th className="px-4 py-2.5 text-right">Your Commission</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {referredClients.map((c) => (
+                      <tr key={c.userId} className="border-b border-slate-100 last:border-0">
+                        <td className="px-4 py-2.5">
+                          <div className="font-semibold text-slate-900">{c.fullName}</div>
+                          {c.organization && <div className="text-[11px] text-slate-400">{c.organization}</div>}
+                        </td>
+                        <td className="px-4 py-2.5">
+                          <span
+                            className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${
+                              c.status === 'paid'
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                : c.status === 'interested'
+                                ? 'bg-amber-50 text-amber-700 border-amber-200'
+                                : 'bg-slate-100 text-slate-700 border-slate-200'
+                            }`}
+                          >
+                            {c.status === 'paid' ? 'Paid' : c.status === 'interested' ? 'Interested' : 'New Client'}
+                          </span>
+                        </td>
+                        <td className="px-4 py-2.5 text-right text-slate-700">
+                          {c.dealValue != null ? `$${c.dealValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : '—'}
+                        </td>
+                        <td className="px-4 py-2.5 text-right font-semibold text-blue-600">
+                          {c.commissionContribution > 0
+                            ? `$${c.commissionContribution.toLocaleString(undefined, { maximumFractionDigits: 0 })}`
+                            : '—'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
 
           {/* Contact Alexis */}

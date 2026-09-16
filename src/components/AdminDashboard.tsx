@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { AdminAffiliate, AdminAffiliateConversation, AdminConversation, ChatMessage, ClientStatus, UserProfile } from '../types';
+import { AdminAffiliate, AdminAffiliateConversation, AdminConversation, AffiliateReferredClient, ChatMessage, ClientStatus, UserProfile } from '../types';
 import { supabase } from '../lib/supabaseClient';
 import { rowToChatMessage } from '../lib/chat';
 import { downloadSpecFile } from '../lib/files';
-import { Send, Users, DollarSign, Download } from 'lucide-react';
+import { Send, Users, DollarSign, Download, ChevronDown } from 'lucide-react';
 import { ProjectNotebook } from './ProjectNotebook';
 
 interface AdminDashboardProps {
@@ -66,6 +66,19 @@ function rowToAffiliateConversation(row: any): AdminAffiliateConversation {
   };
 }
 
+function rowToReferredClient(row: any): AffiliateReferredClient {
+  return {
+    userId: row.user_id,
+    affiliateId: row.affiliate_id,
+    fullName: row.full_name || 'Unnamed client',
+    organization: row.organization || '',
+    status: row.status,
+    dealValue: row.deal_value != null ? Number(row.deal_value) : null,
+    clientSince: row.client_since,
+    commissionContribution: Number(row.commission_contribution)
+  };
+}
+
 type AffiliateActivityFilter = 'all' | 'no_activity' | 'has_leads' | 'due_payment';
 
 function matchesAffiliateActivityFilter(
@@ -94,6 +107,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
   const [affiliates, setAffiliates] = useState<AdminAffiliate[]>([]);
   const [isLoadingAffiliates, setIsLoadingAffiliates] = useState(true);
   const [affiliatesActivityFilter, setAffiliatesActivityFilter] = useState<AffiliateActivityFilter>('all');
+  const [referredClients, setReferredClients] = useState<AffiliateReferredClient[]>([]);
+  const [expandedAffiliateId, setExpandedAffiliateId] = useState<string | null>(null);
 
   const [affiliateConversations, setAffiliateConversations] = useState<AdminAffiliateConversation[]>([]);
   const [isLoadingAffiliateChatList, setIsLoadingAffiliateChatList] = useState(true);
@@ -119,13 +134,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
   };
 
   const loadAffiliates = async () => {
-    const { data, error } = await supabase
-      .from('affiliate_stats')
-      .select('*')
-      .order('created_at', { ascending: false });
+    const [statsResult, referredClientsResult] = await Promise.all([
+      supabase.from('affiliate_stats').select('*').order('created_at', { ascending: false }),
+      supabase.from('affiliate_referred_clients').select('*').order('client_since', { ascending: false })
+    ]);
 
-    if (!error && data) {
-      setAffiliates(data.map(rowToAffiliate));
+    if (!statsResult.error && statsResult.data) {
+      setAffiliates(statsResult.data.map(rowToAffiliate));
+    }
+    if (!referredClientsResult.error && referredClientsResult.data) {
+      setReferredClients(referredClientsResult.data.map(rowToReferredClient));
     }
     setIsLoadingAffiliates(false);
   };
@@ -562,6 +580,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-100">
+                    <th className="px-4 py-3"></th>
                     <th className="px-4 py-3">Name</th>
                     <th className="px-4 py-3">Email</th>
                     <th className="px-4 py-3">Age</th>
@@ -574,27 +593,84 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredAffiliates.map((a) => (
-                    <tr key={a.affiliateId} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
-                      <td className="px-4 py-3 font-semibold text-slate-900 whitespace-nowrap">{a.fullName}</td>
-                      <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{a.email}</td>
-                      <td className="px-4 py-3 text-slate-600">{a.age ?? '—'}</td>
-                      <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{a.country || '—'}</td>
-                      <td className="px-4 py-3 font-mono text-xs text-slate-500">{a.referralCode}</td>
-                      <td className="px-4 py-3 text-right flex items-center justify-end gap-1 text-slate-700">
-                        <Users className="w-3.5 h-3.5 text-blue-600" />
-                        {a.leadsCount}
-                      </td>
-                      <td className="px-4 py-3 text-right text-slate-700">{a.dealsClosed}</td>
-                      <td className="px-4 py-3 text-right text-slate-700">
-                        ${a.totalDealValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                      </td>
-                      <td className="px-4 py-3 text-right font-semibold text-blue-600 flex items-center justify-end gap-1">
-                        <DollarSign className="w-3.5 h-3.5" />
-                        {a.commissionOwed.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                      </td>
-                    </tr>
-                  ))}
+                  {filteredAffiliates.map((a) => {
+                    const isExpanded = expandedAffiliateId === a.affiliateId;
+                    const clientsForAffiliate = referredClients.filter((c) => c.affiliateId === a.affiliateId);
+                    return (
+                      <React.Fragment key={a.affiliateId}>
+                        <tr
+                          onClick={() => setExpandedAffiliateId(isExpanded ? null : a.affiliateId)}
+                          className="border-b border-slate-100 last:border-0 hover:bg-slate-50 cursor-pointer"
+                        >
+                          <td className="px-4 py-3">
+                            <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                          </td>
+                          <td className="px-4 py-3 font-semibold text-slate-900 whitespace-nowrap">{a.fullName}</td>
+                          <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{a.email}</td>
+                          <td className="px-4 py-3 text-slate-600">{a.age ?? '—'}</td>
+                          <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{a.country || '—'}</td>
+                          <td className="px-4 py-3 font-mono text-xs text-slate-500">{a.referralCode}</td>
+                          <td className="px-4 py-3 text-right flex items-center justify-end gap-1 text-slate-700">
+                            <Users className="w-3.5 h-3.5 text-blue-600" />
+                            {a.leadsCount}
+                          </td>
+                          <td className="px-4 py-3 text-right text-slate-700">{a.dealsClosed}</td>
+                          <td className="px-4 py-3 text-right text-slate-700">
+                            ${a.totalDealValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                          </td>
+                          <td className="px-4 py-3 text-right font-semibold text-blue-600 flex items-center justify-end gap-1">
+                            <DollarSign className="w-3.5 h-3.5" />
+                            {a.commissionOwed.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                          </td>
+                        </tr>
+                        {isExpanded && (
+                          <tr className="bg-slate-50/70">
+                            <td colSpan={10} className="px-4 py-4">
+                              {clientsForAffiliate.length === 0 ? (
+                                <p className="text-xs text-slate-400">No referrals yet.</p>
+                              ) : (
+                                <div className="overflow-x-auto">
+                                  <table className="w-full text-xs">
+                                    <thead>
+                                      <tr className="text-left text-[10px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-200">
+                                        <th className="px-3 py-2">Client</th>
+                                        <th className="px-3 py-2">Status</th>
+                                        <th className="px-3 py-2 text-right">Deal Value</th>
+                                        <th className="px-3 py-2 text-right">Commission Contribution</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {clientsForAffiliate.map((c) => (
+                                        <tr key={c.userId} className="border-b border-slate-200/70 last:border-0">
+                                          <td className="px-3 py-2">
+                                            <div className="font-semibold text-slate-800">{c.fullName}</div>
+                                            {c.organization && <div className="text-[10px] text-slate-400">{c.organization}</div>}
+                                          </td>
+                                          <td className="px-3 py-2">
+                                            <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${STATUS_STYLES[c.status]}`}>
+                                              {STATUS_LABELS[c.status]}
+                                            </span>
+                                          </td>
+                                          <td className="px-3 py-2 text-right text-slate-700">
+                                            {c.dealValue != null ? `$${c.dealValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : '—'}
+                                          </td>
+                                          <td className="px-3 py-2 text-right font-semibold text-blue-600">
+                                            {c.commissionContribution > 0
+                                              ? `$${c.commissionContribution.toLocaleString(undefined, { maximumFractionDigits: 0 })}`
+                                              : '—'}
+                                          </td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              )}
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    );
+                  })}
                 </tbody>
               </table>
             )}
