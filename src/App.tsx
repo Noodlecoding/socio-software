@@ -73,11 +73,6 @@ export default function App() {
     const ref = params.get('ref');
 
     if (ref) {
-      // Recording the click must not depend on localStorage succeeding —
-      // previously both were in the same try block, so a localStorage
-      // failure (private browsing, blocked storage, etc.) silently skipped
-      // the click-tracking call entirely.
-      void supabase.rpc('record_affiliate_link_click', { p_referral_code: ref });
       try {
         localStorage.setItem('pendingReferralCode', ref);
       } catch {

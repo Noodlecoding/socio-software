@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabaseClient';
 import { checkAuthRateLimit, RATE_LIMIT_MESSAGE } from '../lib/rateLimit';
 import { rowToChatMessage } from '../lib/chat';
 import { UserProfile, AffiliateStats, AffiliateReferredClient, ClientStatus, ChatMessage } from '../types';
-import { ArrowRight, ArrowLeft, Copy, Check, Users, TrendingUp, MousePointerClick, LogOut, Target, ChevronRight, Send, MessageCircle } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Copy, Check, Users, TrendingUp, DollarSign, LogOut, Target, ChevronRight, Send, MessageCircle } from 'lucide-react';
 import { AffiliateLeadGuide } from './AffiliateLeadGuide';
 
 interface AffiliatePageProps {
@@ -448,9 +448,11 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
               <div className="text-xs text-slate-500 mt-1">Deals closed</div>
             </div>
             <div className="bg-white border border-slate-200 rounded-2xl p-6">
-              <MousePointerClick className="w-5 h-5 text-blue-600 mb-3" />
-              <div className="text-2xl font-extrabold text-slate-900">{stats?.clickCount ?? 0}</div>
-              <div className="text-xs text-slate-500 mt-1">Link clicks</div>
+              <DollarSign className="w-5 h-5 text-blue-600 mb-3" />
+              <div className="text-2xl font-extrabold text-slate-900">
+                ${(stats?.paidOut ?? 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+              </div>
+              <div className="text-xs text-slate-500 mt-1">Total payouts</div>
             </div>
           </div>
 
