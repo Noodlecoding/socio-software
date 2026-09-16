@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabaseClient';
 import { formatTimestamp, rowToChatMessage } from '../lib/chat';
 import { SchemaModal } from './SchemaModal';
 import { ProjectNotebook } from './ProjectNotebook';
+import { ACCEPTED_FILE_EXTENSIONS, downloadSpecFile, removeSpecFile, uploadSpecFile, validateFile } from '../lib/files';
 import {
   Paperclip,
   Network,
@@ -24,7 +25,8 @@ import {
   Calendar,
   AlertCircle,
   DollarSign,
-  MessageCircle
+  MessageCircle,
+  Download
 } from 'lucide-react';
 
 interface DiscussionWorkspaceProps {
@@ -37,7 +39,8 @@ const rowToSpecFile = (row: any): SpecFile => ({
   name: row.name,
   size: row.size,
   type: row.type,
-  dateAdded: formatTimestamp(row.created_at)
+  dateAdded: formatTimestamp(row.created_at),
+  path: row.storage_path
 });
 
 export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
@@ -50,6 +53,8 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
   const [isLoadingWorkspace, setIsLoadingWorkspace] = useState(true);
   const [isSchemaModalOpen, setIsSchemaModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'discussion' | 'specs'>('discussion');
+  const [fileUploadError, setFileUploadError] = useState<string | null>(null);
+  const [isUploadingFiles, setIsUploadingFiles] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const chatStreamRef = useRef<HTMLDivElement>(null);
@@ -162,29 +167,52 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
     }
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
+    const fileList = Array.from(files) as File[];
+    e.target.value = '';
 
-    const newFiles: SpecFile[] = (Array.from(files) as File[]).map((file: File) => ({
-      id: crypto.randomUUID(),
-      name: file.name,
-      size: `${(file.size / 1024).toFixed(0)} KB`,
-      type: file.name.endsWith('.csv') || file.name.endsWith('.xlsx')
-        ? 'Spreadsheet'
-        : file.name.endsWith('.json')
-        ? 'Data File'
-        : 'Document',
-      dateAdded: 'Just now'
-    }));
+    setFileUploadError(null);
+    setIsUploadingFiles(true);
 
-    setSpecFiles((prev) => [...newFiles, ...prev]);
-    supabase
-      .from('spec_files')
-      .insert(newFiles.map((f) => ({ id: f.id, user_id: user.id, name: f.name, size: f.size, type: f.type })))
-      .then(({ error }) => {
-        if (error) console.error('Failed to save spec files:', error.message);
+    const uploaded: SpecFile[] = [];
+    const errors: string[] = [];
+
+    for (const file of fileList) {
+      const validationError = validateFile(file);
+      if (validationError) {
+        errors.push(`${file.name}: ${validationError}`);
+        continue;
+      }
+
+      const id = crypto.randomUUID();
+      const result = await uploadSpecFile(user.id, id, file);
+      if ('error' in result) {
+        errors.push(`${file.name}: ${result.error}`);
+        continue;
+      }
+
+      uploaded.push({
+        id,
+        name: file.name,
+        size: `${(file.size / 1024).toFixed(0)} KB`,
+        type: result.type,
+        dateAdded: 'Just now',
+        path: result.path
       });
+    }
+
+    setIsUploadingFiles(false);
+    setFileUploadError(errors.length > 0 ? errors.join(' · ') : null);
+
+    if (uploaded.length === 0) return;
+
+    setSpecFiles((prev) => [...uploaded, ...prev]);
+    const { error } = await supabase
+      .from('spec_files')
+      .insert(uploaded.map((f) => ({ id: f.id, user_id: user.id, name: f.name, size: f.size, type: f.type, storage_path: f.path })));
+    if (error) console.error('Failed to save spec files:', error.message);
 
     // Add note in chat
     const fileNotice: ChatMessage = {
@@ -192,9 +220,9 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
       sender: 'user',
       senderName: user.name,
       senderInitials: user.initials,
-      text: `Shared file(s): ${newFiles.map(f => f.name).join(', ')}`,
+      text: `Shared file(s): ${uploaded.map(f => f.name).join(', ')}`,
       timestamp: 'Just now',
-      attachments: newFiles.map(f => ({ name: f.name, type: f.type, size: f.size }))
+      attachments: uploaded.map(f => ({ name: f.name, type: f.type, size: f.size, path: f.path }))
     };
     setMessages((prev) => [...prev, fileNotice]);
     void persistMessage(fileNotice);
@@ -204,7 +232,7 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
         id: crypto.randomUUID(),
         sender: 'system',
         senderName: 'System Notice',
-        text: `Alexis received your ${newFiles.length === 1 ? 'file' : `${newFiles.length} files`} and will take a look.`,
+        text: `Alexis received your ${uploaded.length === 1 ? 'file' : `${uploaded.length} files`} and will take a look.`,
         timestamp: 'Just now',
         architectReviewNotice: true
       };
@@ -221,15 +249,11 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
     }
   };
 
-  const handleRemoveFile = (fileId: string) => {
+  const handleRemoveFile = async (fileId: string, path: string) => {
     setSpecFiles((prev) => prev.filter((f) => f.id !== fileId));
-    supabase
-      .from('spec_files')
-      .delete()
-      .eq('id', fileId)
-      .then(({ error }) => {
-        if (error) console.error('Failed to delete spec file:', error.message);
-      });
+    if (path) await removeSpecFile(path);
+    const { error } = await supabase.from('spec_files').delete().eq('id', fileId);
+    if (error) console.error('Failed to delete spec file:', error.message);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -256,7 +280,7 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
         multiple
         className="hidden"
         onChange={handleFileUpload}
-        accept=".pdf,.csv,.xlsx,.json,.yaml,.fig,.png,.jpg"
+        accept={ACCEPTED_FILE_EXTENSIONS}
       />
 
       {/* Schema Modal */}
@@ -355,16 +379,32 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
                     {msg.attachments && msg.attachments.length > 0 && (
                       <div className="mt-3 pt-2.5 border-t border-white/20 flex flex-col gap-1.5">
                         {msg.attachments.map((att, i) => (
-                          <div
-                            key={i}
-                            className="bg-white/10 rounded-lg px-2.5 py-1.5 flex items-center gap-2 text-xs"
-                          >
-                            <FileText className="w-3.5 h-3.5" />
-                            <span className="font-mono">{att.name}</span>
-                            {att.size && (
-                              <span className="text-[10px] text-white/70">({att.size})</span>
-                            )}
-                          </div>
+                          att.path ? (
+                            <button
+                              key={i}
+                              type="button"
+                              onClick={() => void downloadSpecFile(att.path!, att.name)}
+                              className="bg-white/10 hover:bg-white/20 rounded-lg px-2.5 py-1.5 flex items-center gap-2 text-xs cursor-pointer transition-colors text-left"
+                            >
+                              <FileText className="w-3.5 h-3.5 shrink-0" />
+                              <span className="font-mono truncate">{att.name}</span>
+                              {att.size && (
+                                <span className="text-[10px] text-white/70 shrink-0">({att.size})</span>
+                              )}
+                              <Download className="w-3 h-3 shrink-0 ml-auto" />
+                            </button>
+                          ) : (
+                            <div
+                              key={i}
+                              className="bg-white/10 rounded-lg px-2.5 py-1.5 flex items-center gap-2 text-xs"
+                            >
+                              <FileText className="w-3.5 h-3.5" />
+                              <span className="font-mono">{att.name}</span>
+                              {att.size && (
+                                <span className="text-[10px] text-white/70">({att.size})</span>
+                              )}
+                            </div>
+                          )
                         ))}
                       </div>
                     )}
@@ -526,12 +566,16 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
           >
             <UploadCloud className="w-6 h-6 mx-auto text-blue-600/70 group-hover:scale-110 transition-transform" />
             <p className="text-xs font-semibold text-slate-900 mt-1">
-              Drag &amp; drop files here
+              {isUploadingFiles ? 'Uploading...' : 'Drag & drop files here'}
             </p>
             <p className="text-[11px] text-slate-400 mt-0.5">
-              Spreadsheets, screenshots, documents — anything that helps explain what you need
+              PDF, CSV, Excel, JSON, YAML, PNG or JPG — up to 20MB each
             </p>
           </div>
+
+          {fileUploadError && (
+            <p className="text-[11px] text-red-600 mt-2 leading-relaxed">{fileUploadError}</p>
+          )}
 
           {/* Uploaded files list */}
           <div className="mt-3 flex flex-col gap-2 max-h-48 overflow-y-auto custom-scroll">
@@ -549,13 +593,24 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
                     <p className="text-[10px] text-slate-400">{file.type} • {file.size}</p>
                   </div>
                 </div>
-                <button
-                  onClick={() => handleRemoveFile(file.id)}
-                  className="text-slate-400 hover:text-red-500 p-1 cursor-pointer"
-                  title="Remove file"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
+                <div className="flex items-center gap-1 shrink-0">
+                  {file.path && (
+                    <button
+                      onClick={() => void downloadSpecFile(file.path, file.name)}
+                      className="text-slate-400 hover:text-blue-600 p-1 cursor-pointer"
+                      title="Download file"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                  <button
+                    onClick={() => void handleRemoveFile(file.id, file.path)}
+                    className="text-slate-400 hover:text-red-500 p-1 cursor-pointer"
+                    title="Remove file"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
             ))}
           </div>

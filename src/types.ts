@@ -86,6 +86,7 @@ export interface ChatMessage {
     name: string;
     type: string;
     size?: string;
+    path?: string;
   }[];
   isPreliminaryPlan?: boolean;
   architectReviewNotice?: boolean;
@@ -97,6 +98,7 @@ export interface SpecFile {
   size: string;
   type: string;
   dateAdded: string;
+  path: string;
 }
 
 export interface NotebookSection {

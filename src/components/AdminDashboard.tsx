@@ -2,7 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { AdminAffiliate, AdminAffiliateConversation, AdminConversation, ChatMessage, ClientStatus, UserProfile } from '../types';
 import { supabase } from '../lib/supabaseClient';
 import { rowToChatMessage } from '../lib/chat';
-import { Send, Users, DollarSign } from 'lucide-react';
+import { downloadSpecFile } from '../lib/files';
+import { Send, Users, DollarSign, Download } from 'lucide-react';
 import { ProjectNotebook } from './ProjectNotebook';
 
 interface AdminDashboardProps {
@@ -680,9 +681,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
                         {msg.attachments && msg.attachments.length > 0 && (
                           <div className="mt-2 pt-2 border-t border-black/10 flex flex-col gap-1">
                             {msg.attachments.map((att, i) => (
-                              <div key={i} className="text-[11px] font-mono opacity-80">
-                                {att.name}
-                              </div>
+                              att.path ? (
+                                <button
+                                  key={i}
+                                  type="button"
+                                  onClick={() => void downloadSpecFile(att.path!, att.name)}
+                                  className="text-[11px] font-mono opacity-80 hover:opacity-100 underline decoration-dotted flex items-center gap-1.5 cursor-pointer text-left"
+                                >
+                                  <Download className="w-3 h-3 shrink-0" />
+                                  {att.name}
+                                </button>
+                              ) : (
+                                <div key={i} className="text-[11px] font-mono opacity-80">
+                                  {att.name}
+                                </div>
+                              )
                             ))}
                           </div>
                         )}
