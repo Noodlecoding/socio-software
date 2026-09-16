@@ -49,6 +49,8 @@ function rowToAffiliate(row: any): AdminAffiliate {
     leadsCount: row.leads_count ?? 0,
     dealsClosed: row.deals_closed ?? 0,
     totalDealValue: Number(row.total_deal_value ?? 0),
+    totalCommissionEarned: Number(row.total_commission_earned ?? 0),
+    paidOut: Number(row.paid_out ?? 0),
     commissionOwed: Number(row.commission_owed ?? 0)
   };
 }
@@ -109,6 +111,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
   const [affiliatesActivityFilter, setAffiliatesActivityFilter] = useState<AffiliateActivityFilter>('all');
   const [referredClients, setReferredClients] = useState<AffiliateReferredClient[]>([]);
   const [expandedAffiliateId, setExpandedAffiliateId] = useState<string | null>(null);
+  const [confirmPayoutAffiliateId, setConfirmPayoutAffiliateId] = useState<string | null>(null);
 
   const [affiliateConversations, setAffiliateConversations] = useState<AdminAffiliateConversation[]>([]);
   const [isLoadingAffiliateChatList, setIsLoadingAffiliateChatList] = useState(true);
@@ -355,6 +358,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
     if (value !== null && Number.isNaN(value)) return;
     const { error } = await supabase.from('profiles').update({ deal_value: value }).eq('id', selectedId);
     if (error) console.error('Failed to save deal value:', error.message);
+    void loadAffiliates();
+  };
+
+  const handleMarkAffiliatePaid = async (affiliateId: string, totalCommissionEarned: number) => {
+    setConfirmPayoutAffiliateId(null);
+    const { error } = await supabase.from('affiliates').update({ paid_out: totalCommissionEarned }).eq('id', affiliateId);
+    if (error) console.error('Failed to mark affiliate as paid:', error.message);
     void loadAffiliates();
   };
 
@@ -626,6 +636,58 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
                         {isExpanded && (
                           <tr className="bg-slate-50/70">
                             <td colSpan={10} className="px-4 py-4">
+                              <div className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-4 border-b border-slate-200">
+                                <div className="flex flex-wrap items-center gap-4 text-xs text-slate-600">
+                                  <span>
+                                    Total earned:{' '}
+                                    <span className="font-semibold text-slate-900">
+                                      ${a.totalCommissionEarned.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                                    </span>
+                                  </span>
+                                  <span>
+                                    Paid out so far:{' '}
+                                    <span className="font-semibold text-slate-900">
+                                      ${a.paidOut.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                                    </span>
+                                  </span>
+                                </div>
+                                {confirmPayoutAffiliateId === a.affiliateId ? (
+                                  <div className="flex items-center gap-2 text-xs font-semibold">
+                                    <span className="text-slate-700">
+                                      Mark ${a.commissionOwed.toLocaleString(undefined, { maximumFractionDigits: 0 })} as paid?
+                                    </span>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        void handleMarkAffiliatePaid(a.affiliateId, a.totalCommissionEarned);
+                                      }}
+                                      className="px-2.5 py-1 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer"
+                                    >
+                                      Confirm
+                                    </button>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setConfirmPayoutAffiliateId(null);
+                                      }}
+                                      className="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 cursor-pointer"
+                                    >
+                                      Cancel
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setConfirmPayoutAffiliateId(a.affiliateId);
+                                    }}
+                                    disabled={a.commissionOwed <= 0}
+                                    className="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 text-xs font-semibold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                  >
+                                    Mark Commission as Paid
+                                  </button>
+                                )}
+                              </div>
                               {clientsForAffiliate.length === 0 ? (
                                 <p className="text-xs text-slate-400">No referrals yet.</p>
                               ) : (

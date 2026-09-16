@@ -157,6 +157,8 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
             leadsCount: data.leads_count,
             dealsClosed: data.deals_closed,
             totalDealValue: Number(data.total_deal_value),
+            totalCommissionEarned: Number(data.total_commission_earned),
+            paidOut: Number(data.paid_out),
             commissionOwed: Number(data.commission_owed)
           });
         });

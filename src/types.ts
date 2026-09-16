@@ -46,6 +46,8 @@ export interface AffiliateStats {
   leadsCount: number;
   dealsClosed: number;
   totalDealValue: number;
+  totalCommissionEarned: number;
+  paidOut: number;
   commissionOwed: number;
 }
 
@@ -60,6 +62,8 @@ export interface AdminAffiliate {
   leadsCount: number;
   dealsClosed: number;
   totalDealValue: number;
+  totalCommissionEarned: number;
+  paidOut: number;
   commissionOwed: number;
 }
 
