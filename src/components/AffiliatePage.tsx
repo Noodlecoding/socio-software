@@ -549,7 +549,7 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
               </div>
               <div>
                 <h3 className="font-display text-sm font-bold text-slate-900">Contact Alexis</h3>
-                <p className="text-[11px] text-slate-500">Questions about a referral, payout, or anything else</p>
+                <p className="text-[11px] text-slate-500">Contact the admin for questions or to request a payout</p>
               </div>
             </div>
 
