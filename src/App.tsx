@@ -12,10 +12,12 @@ import { LandingPage } from './components/LandingPage';
 import { DiscussionWorkspace } from './components/DiscussionWorkspace';
 import { AdminDashboard } from './components/AdminDashboard';
 import { AffiliatePage } from './components/AffiliatePage';
-import { UserProfile, EngagementModelId } from './types';
+import { LegalPage } from './components/LegalPage';
+import { ClientOnboardingModal } from './components/ClientOnboardingModal';
+import { UserProfile, EngagementModelId, AccountType } from './types';
 import { ADMIN_EMAIL } from './lib/constants';
 
-export type AppView = 'landing' | 'workspace' | 'affiliate';
+export type AppView = 'landing' | 'workspace' | 'affiliate' | 'legal';
 
 const deriveInitials = (name: string) => {
   const nameParts = name.trim().split(' ').filter(Boolean);
@@ -27,21 +29,25 @@ const deriveInitials = (name: string) => {
 async function loadUserProfile(session: Session): Promise<UserProfile> {
   const { data: profile } = await supabase
     .from('profiles')
-    .select('full_name, organization, selected_model')
+    .select('full_name, organization, country, selected_model, account_type')
     .eq('id', session.user.id)
     .single();
 
   const name = profile?.full_name || session.user.user_metadata?.full_name || session.user.email || 'there';
   const organization = profile?.organization || session.user.user_metadata?.organization || '';
+  const country = profile?.country || '';
   const selectedModel = (profile?.selected_model || session.user.user_metadata?.selected_model || 'core-workflow') as EngagementModelId;
+  const accountType = (profile?.account_type || 'client') as AccountType;
 
   return {
     id: session.user.id,
     name,
     organization,
+    country,
     email: session.user.email || '',
     initials: deriveInitials(name),
-    selectedModel
+    selectedModel,
+    accountType
   };
 }
 
@@ -86,9 +92,15 @@ export default function App() {
     const { data: listener } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!isMounted) return;
       if (session) {
-        setUser(await loadUserProfile(session));
-        if (event === 'SIGNED_IN' && currentViewRef.current !== 'affiliate') {
-          setCurrentView('workspace');
+        const profile = await loadUserProfile(session);
+        setUser(profile);
+        if (event === 'SIGNED_IN') {
+          const isAffiliateAccount = profile.accountType === 'affiliate' && profile.email !== ADMIN_EMAIL;
+          if (isAffiliateAccount) {
+            setCurrentView('affiliate');
+          } else if (currentViewRef.current !== 'affiliate') {
+            setCurrentView('workspace');
+          }
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }
       } else {
@@ -104,7 +116,14 @@ export default function App() {
   }, []);
 
   const handleUpdateUser = (updated: Partial<UserProfile>) => {
-    setUser((prev) => (prev ? { ...prev, ...updated } : prev));
+    setUser((prev) => {
+      if (!prev) return prev;
+      const next = { ...prev, ...updated };
+      if (updated.name) {
+        next.initials = deriveInitials(updated.name);
+      }
+      return next;
+    });
   };
 
   const handleStartAudit = (modelId?: EngagementModelId) => {
@@ -129,6 +148,11 @@ export default function App() {
       handleStartAudit();
       return;
     }
+    if (view === 'workspace' && user && user.accountType === 'affiliate' && user.email !== ADMIN_EMAIL) {
+      setCurrentView('affiliate');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
     setCurrentView(view);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -146,7 +170,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#f8f9fd] text-slate-800 flex flex-col selection:bg-blue-100 selection:text-blue-900 font-sans">
       <Navbar
-        currentView={currentView === 'affiliate' ? 'affiliate' : user ? currentView : 'landing'}
+        currentView={currentView === 'affiliate' || currentView === 'legal' ? currentView : user ? currentView : 'landing'}
         onNavigate={handleNavigate}
         user={user}
         onSignOut={handleSignOut}
@@ -154,7 +178,18 @@ export default function App() {
       />
 
       <AnimatePresence mode="wait">
-        {currentView === 'affiliate' ? (
+        {currentView === 'legal' ? (
+          <motion.div
+            key="legal"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.18, ease: 'easeOut' }}
+            className="flex-1 flex flex-col"
+          >
+            <LegalPage onNavigate={handleNavigate} />
+          </motion.div>
+        ) : currentView === 'affiliate' || (user && user.accountType === 'affiliate' && !isAdmin) ? (
           <motion.div
             key="affiliate"
             initial={{ opacity: 0, y: 8 }}
@@ -178,6 +213,7 @@ export default function App() {
               user={user}
               onUpdateUser={handleUpdateUser}
               onStartAudit={handleStartAudit}
+              onNavigate={handleNavigate}
             />
           </motion.div>
         ) : (
@@ -191,6 +227,8 @@ export default function App() {
           >
             {isAdmin ? (
               <AdminDashboard user={user} />
+            ) : !user.country ? (
+              <ClientOnboardingModal user={user} onComplete={handleUpdateUser} />
             ) : (
               <DiscussionWorkspace
                 user={user}

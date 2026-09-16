@@ -1,16 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { UserProfile, ChatMessage, SpecFile, EngagementModelId } from '../types';
-import {
-  STARTER_CHIPS,
-  ENGAGEMENT_MODELS
-} from '../data/initialData';
+import { STARTER_CHIPS } from '../data/initialData';
 import { supabase } from '../lib/supabaseClient';
 import { formatTimestamp, rowToChatMessage } from '../lib/chat';
-import { AudioBriefModal } from './AudioBriefModal';
 import { SchemaModal } from './SchemaModal';
+import { ProjectNotebook } from './ProjectNotebook';
 import {
   Paperclip,
-  Mic,
   Network,
   ArrowRight,
   Send,
@@ -26,7 +22,9 @@ import {
   Trash2,
   CheckCircle2,
   Calendar,
-  AlertCircle
+  AlertCircle,
+  DollarSign,
+  MessageCircle
 } from 'lucide-react';
 
 interface DiscussionWorkspaceProps {
@@ -50,17 +48,12 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
   const [inputText, setInputText] = useState('');
   const [specFiles, setSpecFiles] = useState<SpecFile[]>([]);
   const [isLoadingWorkspace, setIsLoadingWorkspace] = useState(true);
-  const [isAudioModalOpen, setIsAudioModalOpen] = useState(false);
   const [isSchemaModalOpen, setIsSchemaModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'discussion' | 'specs'>('discussion');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const chatStreamRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  const selectedModelInfo = ENGAGEMENT_MODELS.find(
-    (m) => m.id === user.selectedModel
-  ) || ENGAGEMENT_MODELS[1];
 
   // Load this user's messages and spec files from Supabase
   useEffect(() => {
@@ -220,33 +213,6 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
     }, 400);
   };
 
-  const handleAudioAttach = (fileName: string, duration: string) => {
-    const audioMsg: ChatMessage = {
-      id: crypto.randomUUID(),
-      sender: 'user',
-      senderName: user.name,
-      senderInitials: user.initials,
-      text: `Attached verbal audio brief (${duration}) for Alexis Cervantes`,
-      timestamp: 'Just now',
-      attachments: [{ name: fileName, type: 'Audio Brief', size: duration }]
-    };
-    setMessages((prev) => [...prev, audioMsg]);
-    void persistMessage(audioMsg);
-
-    setTimeout(() => {
-      const receipt: ChatMessage = {
-        id: crypto.randomUUID(),
-        sender: 'system',
-        senderName: 'System Notice',
-        text: 'Alexis Cervantes is listening to your audio briefing note.',
-        timestamp: 'Just now',
-        architectReviewNotice: true
-      };
-      setMessages((prev) => [...prev, receipt]);
-      void persistMessage(receipt);
-    }, 500);
-  };
-
   const handleSchemaInsert = (schemaName: string, description: string) => {
     const promptWithSchema = `We'd like to structure this around the "${schemaName}" pattern: ${description}. Specifically for our team: `;
     setInputText(promptWithSchema);
@@ -282,7 +248,7 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
   }
 
   return (
-    <div className="flex-1 w-full max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-10 py-6 flex flex-col lg:flex-row gap-6">
+    <div className="flex-1 w-full max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-10 py-4 flex flex-col lg:flex-row gap-6">
       {/* Hidden file input */}
       <input
         ref={fileInputRef}
@@ -293,13 +259,6 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
         accept=".pdf,.csv,.xlsx,.json,.yaml,.fig,.png,.jpg"
       />
 
-      {/* Audio Modal */}
-      <AudioBriefModal
-        isOpen={isAudioModalOpen}
-        onClose={() => setIsAudioModalOpen(false)}
-        onAttachAudio={handleAudioAttach}
-      />
-
       {/* Schema Modal */}
       <SchemaModal
         isOpen={isSchemaModalOpen}
@@ -307,90 +266,37 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
         onInsertSchema={handleSchemaInsert}
       />
 
-      {/* Left / Center: Dominant Discussion Workspace */}
-      <main className="flex-1 flex flex-col min-w-0 bg-white border border-[#e5e9f5] rounded-2xl shadow-sm overflow-hidden min-h-[640px]">
-        {/* Workspace Top Banner Header */}
-        <div className="p-5 lg:p-6 border-b border-[#e5e9f5] bg-gradient-to-r from-slate-50 via-blue-50/30 to-indigo-50/40 relative overflow-hidden">
-          <div className="relative z-10 flex flex-col gap-2">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-[11px] font-bold text-blue-600 uppercase tracking-wider">
-                  {user.organization ? `Your Workspace · ${user.organization}` : 'Your Workspace'}
-                </span>
-              </div>
-              <h1 className="font-display text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-                Tell us what you need
-              </h1>
-              <p className="text-slate-600 text-xs sm:text-sm mt-1 max-w-2xl leading-relaxed">
-                You're chatting directly with Alexis, a real person on our team — not a chatbot. Describe what's slowing your business down or what you'd like built, and Alexis will tell you what's possible and roughly what it would cost.
-              </p>
-            </div>
-          </div>
-          <div className="absolute -right-8 -bottom-8 w-44 h-44 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
-        </div>
-
-        {/* Assigned Lead Architect Profile Strip */}
-        <div className="px-5 lg:px-6 py-3.5 bg-white border-b border-[#e5e9f5] flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3.5 min-w-0">
-            <div className="relative shrink-0">
-              <div className="w-10 h-10 rounded-xl bg-[#4361ee] flex items-center justify-center text-white font-bold text-sm shadow-xs font-display">
-                AC
-              </div>
-              <span
-                className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-white"
-                title="Online now"
-              ></span>
-            </div>
-            <div className="min-w-0 flex flex-col">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-bold text-slate-900 truncate">Alexis Cervantes</span>
-                <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-semibold flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                  Real Human Engineer • Active now
-                </span>
-              </div>
-              <span className="text-xs text-slate-500 truncate">
-                Lead Systems Architect · Socio Systems Engineering
-              </span>
-            </div>
-          </div>
-
-          <div className="hidden sm:flex items-center gap-3">
-            <div className="text-right">
-              <span className="text-[11px] text-slate-400 font-medium block">We usually reply within:</span>
-              <span className="text-xs font-bold text-slate-800">1–3 Days</span>
-            </div>
-            <div className="w-px h-6 bg-slate-200"></div>
-            <div className="text-right">
-              <span className="text-[11px] text-slate-400 font-medium block">Who owns the code:</span>
-              <span className="text-xs font-bold text-blue-600">100% You</span>
-            </div>
-          </div>
-        </div>
-
+      {/* Left / Center: Chat + Project Notebook stacked */}
+      <div className="flex-1 flex flex-col min-w-0 gap-6">
+      <main className="flex-1 flex flex-col min-w-0 bg-white border border-[#e5e9f5] rounded-2xl shadow-sm overflow-hidden min-h-[420px] max-h-[calc(100vh-140px)]">
         {/* Scrollable Conversation Feed */}
         <div
           ref={chatStreamRef}
-          className="flex-1 p-4 sm:p-5 lg:p-6 overflow-y-auto custom-scroll flex flex-col gap-4 min-h-[360px] max-h-[550px] bg-[#fbfcfe]"
+          className="flex-1 p-3 sm:p-4 lg:p-5 overflow-y-auto custom-scroll flex flex-col gap-3 min-h-0 bg-[#fbfcfe]"
           id="chat-stream"
         >
           {/* Welcome Briefing Card */}
-          <div className="bg-slate-50/80 border border-[#e1e6f7] rounded-xl p-5 shadow-2xs">
-            <div className="flex items-start gap-3 mb-3">
-              <div className="w-9 h-9 rounded-lg bg-[#4361ee] flex items-center justify-center text-white shrink-0 font-bold text-xs shadow-xs font-display">
-                AC
-              </div>
-              <div className="flex flex-col min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-bold text-slate-900">Alexis Cervantes</span>
-                  <span className="text-[11px] text-slate-500">Lead Systems Architect</span>
+          <div className="bg-slate-50/80 border border-[#e1e6f7] rounded-xl p-4 shadow-2xs">
+            <div className="flex items-start justify-between gap-3 mb-2.5">
+              <div className="flex items-start gap-3 min-w-0">
+                <div className="w-9 h-9 rounded-lg bg-[#4361ee] flex items-center justify-center text-white shrink-0 font-bold text-xs shadow-xs font-display">
+                  AC
                 </div>
-                <span className="text-[11px] text-slate-400">Message from Alexis</span>
+                <div className="flex flex-col min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-bold text-slate-900">Alexis Cervantes</span>
+                    <span className="text-[11px] text-slate-500">Lead Systems Architect</span>
+                  </div>
+                  <span className="text-[11px] text-slate-400">Message from Alexis</span>
+                </div>
               </div>
+              <span className="text-[11px] font-semibold text-blue-700 bg-blue-50 px-2 py-1 rounded-full border border-blue-100 shrink-0 whitespace-nowrap">
+                Avg response: 1–5h
+              </span>
             </div>
 
-            <p className="text-sm text-slate-800 leading-relaxed mb-4">
-              Hi, I'm Alexis. I personally read every message that comes in here. Tell me what's slowing your team down, or what you'd like us to build, in plain terms — no need to know any technical jargon. I'll ask follow-up questions and let you know what we can do and roughly what it would cost.
+            <p className="text-sm text-slate-800 leading-relaxed mb-3">
+              Hi, I'm Alexis. I personally read every message that comes in here. Tell me what's slowing your team down or what you'd like us to build, in plain terms, no need to know any technical jargon. I'll ask follow-up questions and let you know what we can do and roughly what it would cost.
             </p>
 
             <div className="flex flex-col gap-2 pt-2 border-t border-slate-200/60">
@@ -410,6 +316,8 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
                       {idx === 1 && <FileText className="w-3.5 h-3.5" />}
                       {idx === 2 && <Network className="w-3.5 h-3.5" />}
                       {idx === 3 && <FileCode className="w-3.5 h-3.5" />}
+                      {idx === 4 && <DollarSign className="w-3.5 h-3.5" />}
+                      {idx === 5 && <MessageCircle className="w-3.5 h-3.5" />}
                     </span>
                     <span>{chip.label}</span>
                   </button>
@@ -495,9 +403,9 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
 
         </div>
 
-        {/* Large Interactive Message Input Dock */}
-        <div className="p-4 lg:p-5 border-t border-[#e5e9f5] bg-slate-50/50">
-          <div className="bg-white border border-[#d8e0f5] rounded-xl p-3 shadow-sm focus-within:border-blue-600 focus-within:ring-2 focus-within:ring-blue-600/20 transition-all">
+        {/* Message Input Dock */}
+        <div className="p-3 lg:p-4 border-t border-[#e5e9f5] bg-slate-50/50 shrink-0">
+          <div className="bg-white border border-[#d8e0f5] rounded-xl p-2.5 shadow-sm focus-within:border-blue-600 focus-within:ring-2 focus-within:ring-blue-600/20 transition-all">
             <textarea
               ref={textareaRef}
               className="w-full bg-transparent text-slate-900 placeholder:text-slate-400 text-sm p-1.5 focus:outline-none resize-none custom-scroll leading-relaxed"
@@ -505,28 +413,20 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Explain your ideas, workflow bottlenecks, or questions for Alexis..."
-              rows={3}
+              placeholder="Explain your ideas, workflow bottlenecks or questions for Alexis..."
+              rows={2}
             ></textarea>
 
-            <div className="flex items-center justify-between gap-3 pt-2 mt-1 border-t border-slate-100">
+            <div className="flex items-center justify-between gap-3 pt-1.5 mt-1 border-t border-slate-100">
               {/* Rich Tool Attachments */}
               <div className="flex items-center gap-1 text-slate-500">
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   className="w-8 h-8 flex items-center justify-center rounded-lg hover:text-blue-600 hover:bg-slate-100 transition-colors cursor-pointer"
-                  title="Attach file, spec mockup, or export"
+                  title="Attach file, spec mockup or export"
                   type="button"
                 >
                   <Paperclip className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setIsAudioModalOpen(true)}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg hover:text-blue-600 hover:bg-slate-100 transition-colors cursor-pointer"
-                  title="Record quick audio brief"
-                  type="button"
-                >
-                  <Mic className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => setIsSchemaModalOpen(true)}
@@ -562,39 +462,35 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
         </div>
       </main>
 
+      <ProjectNotebook clientUserId={user.id} viewerLabel={user.name} />
+      </div>
+
       {/* Right: Desktop Side Context & Project Overview Panel (~360px) */}
       <aside className="w-full lg:w-[360px] xl:w-[380px] shrink-0 flex flex-col gap-4">
-        {/* Project Summary Card */}
+        {/* Client Profile Card */}
         <div className="bg-white border border-[#e5e9f5] rounded-2xl p-5 shadow-sm">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-            <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600">
-                What you picked
-              </span>
-              <h3 className="font-display text-sm font-bold text-slate-900 mt-0.5">
-                {selectedModelInfo.title}
-              </h3>
+          <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
+            <div className="w-11 h-11 rounded-xl bg-blue-600/10 border border-blue-600/20 flex items-center justify-center text-sm font-bold text-blue-600 shrink-0 font-display">
+              {user.initials}
             </div>
-            <span className="text-[11px] font-semibold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-100">
-              {selectedModelInfo.duration}
-            </span>
+            <div className="min-w-0">
+              <h3 className="font-display text-sm font-bold text-slate-900 truncate">
+                {user.name}
+              </h3>
+              {user.organization && (
+                <span className="text-xs text-slate-500 truncate block">{user.organization}</span>
+              )}
+            </div>
           </div>
 
           <div className="py-3 flex flex-col gap-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-500">Where things stand</span>
-              <span className="font-semibold text-emerald-600 flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                We're reviewing what you shared
-              </span>
+              <span className="text-slate-500">Email</span>
+              <span className="font-semibold text-slate-800 truncate max-w-[200px]">{user.email}</span>
             </div>
             <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-500">When it's done</span>
-              <span className="font-semibold text-slate-800">You get all the code — it's fully yours</span>
-            </div>
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-500">Our promise</span>
-              <span className="font-semibold text-slate-800">You approve the price before we start</span>
+              <span className="text-slate-500">Company</span>
+              <span className="font-semibold text-slate-800 truncate max-w-[200px]">{user.organization || '—'}</span>
             </div>
           </div>
 

@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { EngagementModelId, UserProfile } from '../types';
+import type { AppView } from '../App';
 import { SOCIO_LOGO_URL, PAST_PROJECTS } from '../data/initialData';
 import { supabase } from '../lib/supabaseClient';
 import { checkAuthRateLimit, RATE_LIMIT_MESSAGE } from '../lib/rateLimit';
 import {
-  Calendar,
+  Zap,
   ArrowRight,
   Check,
   CheckCircle2,
@@ -20,16 +21,16 @@ interface LandingPageProps {
   user: UserProfile | null;
   onUpdateUser: (updated: Partial<UserProfile>) => void;
   onStartAudit: (modelId?: EngagementModelId) => void;
+  onNavigate: (view: AppView) => void;
 }
 
 export const LandingPage: React.FC<LandingPageProps> = ({
   user,
   onUpdateUser,
-  onStartAudit
+  onStartAudit,
+  onNavigate
 }) => {
   const [mode, setMode] = useState<'signup' | 'signin'>('signup');
-  const [fullName, setFullName] = useState(user?.name ?? '');
-  const [organization, setOrganization] = useState(user?.organization ?? '');
   const [email, setEmail] = useState(user?.email ?? '');
   const [password, setPassword] = useState('');
   const [selectedModel, setSelectedModel] = useState<EngagementModelId>(user?.selectedModel || 'core-workflow');
@@ -65,10 +66,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         password,
         options: {
           data: {
-            full_name: fullName,
-            organization,
             selected_model: selectedModel,
-            referred_by: referredBy
+            referred_by: referredBy,
+            account_type: 'client'
           }
         }
       });
@@ -148,12 +148,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               </button>
 
               <div className="text-center max-w-lg mx-auto mb-8">
-                <span className="text-xs font-bold uppercase tracking-wider text-blue-600 mb-2 block">Direct Onboarding</span>
                 <h2 className="font-display text-2xl font-extrabold text-slate-900 tracking-tight">
-                  Create your account to get started
+                  Create your account
                 </h2>
                 <p className="text-slate-600 text-sm mt-3 leading-relaxed">
-                  Set up your workspace in under a minute and start collaborating directly with lead engineers.
+                  Start discussing your project in minutes.
                 </p>
               </div>
 
@@ -201,38 +200,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     {authError && (
                       <div className="bg-red-50 border border-red-200 text-red-700 text-xs font-medium rounded-xl px-4 py-3">
                         {authError}
-                      </div>
-                    )}
-
-                    {mode === 'signup' && (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider block mb-1.5" htmlFor="modal-client-name">
-                            Full Name
-                          </label>
-                          <input
-                            className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 shadow-sm"
-                            id="modal-client-name"
-                            value={fullName}
-                            onChange={(e) => setFullName(e.target.value)}
-                            placeholder="Marcus Vance"
-                            required
-                            type="text"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider block mb-1.5" htmlFor="modal-company-name">
-                            Organization <span className="normal-case text-slate-400 font-medium">(optional)</span>
-                          </label>
-                          <input
-                            className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 shadow-sm"
-                            id="modal-company-name"
-                            value={organization}
-                            onChange={(e) => setOrganization(e.target.value)}
-                            placeholder="Northline Logistics"
-                            type="text"
-                          />
-                        </div>
                       </div>
                     )}
 
@@ -287,11 +254,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                       </button>
                     </div>
 
-                    <p className="text-xs text-slate-500 text-center mt-1 flex items-center justify-center gap-1.5">
-                      <ShieldCheck className="w-4 h-4 text-blue-600" />
-                      <span>Takes under 60 seconds. No credit card required.</span>
-                    </p>
-
                     <div className="text-center pt-3 border-t border-slate-200/80 mt-1">
                       <span className="text-xs text-slate-500">
                         {mode === 'signup' ? 'Already have an account? ' : "Don't have an account? "}
@@ -343,12 +305,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       <main className="w-full pt-20">
 
         {/* Hero Section */}
-        <section className="w-full py-20 lg:py-28 px-6 lg:px-12 bg-gradient-to-b from-white via-blue-50/20 to-white">
+        <section className="w-full py-10 lg:py-14 px-6 lg:px-12 bg-gradient-to-b from-white via-blue-50/20 to-white">
           <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
             {/* Hero Left Column */}
             <div className="lg:col-span-7 flex flex-col items-start lg:pr-6">
               {/* Headline with elegant balance */}
-              <h1 className="font-display text-4xl sm:text-5xl lg:text-[56px] font-extrabold text-slate-900 leading-[1.12] tracking-tight">
+              <h1 className="font-display text-3xl sm:text-4xl lg:text-[44px] font-extrabold text-slate-900 leading-[1.12] tracking-tight">
                 Custom software. <br className="hidden sm:inline" />
                 <span className="text-blue-600 font-bold">Built for your needs, budget and timeframe</span>
               </h1>
@@ -366,7 +328,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-all shadow-sm hover:shadow-md text-sm cursor-pointer"
                 >
                   <span>Contact us in minutes</span>
-                  <Calendar className="w-4 h-4" />
+                  <Zap className="w-4 h-4" />
                 </button>
               </div>
 
@@ -408,9 +370,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                       1
                     </div>
                     <div>
-                      <h4 className="text-sm font-semibold text-slate-900">Find What's Slowing You Down</h4>
+                      <h4 className="text-sm font-semibold text-slate-900">Understand What You Need</h4>
                       <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                        We pinpoint where manual tasks, spreadsheets, and bottlenecks waste valuable time.
+                        We dig into your goals, workflow and pain points to figure out exactly what to build.
                       </p>
                     </div>
                   </div>
@@ -423,7 +385,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     <div>
                       <h4 className="text-sm font-semibold text-slate-900">Get a Clear Plan &amp; Timeline</h4>
                       <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                        We map out the exact software to fix it. No confusing tech jargon, no hidden fees.
+                        We map out the exact solution and adapt it to your budget, timeframe and project. No confusing tech jargon, no hidden fees.
                       </p>
                     </div>
                   </div>
@@ -479,7 +441,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   <span className="text-3xl font-extrabold text-blue-600">01</span>
                   <h3 className="font-display text-lg font-bold text-slate-900 mt-4">We map your workflow</h3>
                   <p className="text-sm text-slate-600 mt-2 leading-relaxed">
-                    Understand your daily workflow and shape the right solution based on your budget, timeframe, and needs.
+                    Understand your daily workflow and shape the right solution based on your budget, timeframe and needs.
                   </p>
                 </div>
                 <div className="mt-8 pt-4 border-t border-slate-200/60 flex items-center gap-2 text-xs font-semibold text-blue-700">
@@ -494,7 +456,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   <span className="text-3xl font-extrabold text-blue-600">02</span>
                   <h3 className="font-display text-lg font-bold text-slate-900 mt-4">We propose a solution</h3>
                   <p className="text-sm text-slate-600 mt-2 leading-relaxed">
-                    Tell you what we'd build, how it works, and delivery timeline.
+                    Tell you what we'd build, how it works and delivery timeline.
                   </p>
                 </div>
                 <div className="mt-8 pt-4 border-t border-slate-200/60 flex items-center gap-2 text-xs font-semibold text-blue-700">
@@ -545,7 +507,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 A few examples of what we've built.
               </h2>
               <p className="text-base sm:text-lg text-slate-600 mt-3">
-                Client names stay private, but here's the kind of work we do — and there's no fixed price list. Tell us what you're solving for and your budget, and we'll shape a plan around it.
+                Client names stay private, but here's the kind of work we do — and there's no fixed price list. Tell us what you're solving for and your budget and we'll shape a plan around it.
               </p>
             </div>
           </div>
@@ -601,12 +563,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         <section className="w-full py-24 px-6 lg:px-12 bg-white" id="get-started">
           <div className="max-w-xl mx-auto bg-slate-50 border border-slate-200 rounded-3xl p-8 sm:p-10 shadow-sm">
             <div className="text-center max-w-lg mx-auto mb-8">
-              <span className="text-xs font-bold uppercase tracking-wider text-blue-600 mb-2 block">Direct Onboarding</span>
               <h2 className="font-display text-3xl font-extrabold text-slate-900 tracking-tight">
-                Create your account to get started
+                Create your account
               </h2>
               <p className="text-slate-600 text-sm mt-3 leading-relaxed">
-                Set up your workspace in under a minute and start collaborating directly with lead engineers.
+                Start discussing your project in minutes.
               </p>
             </div>
 
@@ -644,38 +605,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     <div className="bg-red-50 border border-red-200 text-red-700 text-xs font-medium rounded-xl px-4 py-3">
                       {authError}
                     </div>
-                  )}
-
-                  {mode === 'signup' && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider block mb-1.5" htmlFor="client-name">
-                        Full Name
-                      </label>
-                      <input
-                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 shadow-sm"
-                        id="client-name"
-                        value={fullName}
-                        onChange={(e) => setFullName(e.target.value)}
-                        placeholder="Marcus Vance"
-                        required
-                        type="text"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider block mb-1.5" htmlFor="company-name">
-                        Organization <span className="normal-case text-slate-400 font-medium">(optional)</span>
-                      </label>
-                      <input
-                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 shadow-sm"
-                        id="company-name"
-                        value={organization}
-                        onChange={(e) => setOrganization(e.target.value)}
-                        placeholder="Northline Logistics"
-                        type="text"
-                      />
-                    </div>
-                  </div>
                   )}
 
                   <div>
@@ -728,11 +657,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                       <ArrowRight className="w-4 h-4" />
                     </button>
                   </div>
-
-                  <p className="text-xs text-slate-500 text-center mt-1 flex items-center justify-center gap-1.5">
-                    <ShieldCheck className="w-4 h-4 text-blue-600" />
-                    <span>Takes under 60 seconds. No credit card required. SOC-2 Type II secure.</span>
-                  </p>
 
                   <div className="text-center pt-3 border-t border-slate-200/80 mt-1">
                     <span className="text-xs text-slate-500">
@@ -792,9 +716,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <p className="text-sm text-slate-400 mt-1">Custom software. No fluff. Just results.</p>
             </div>
             <div className="flex flex-wrap gap-8 text-sm font-medium text-slate-300">
-              <a className="hover:text-white transition-colors" href="#approach">
-                Approach
-              </a>
               <a className="hover:text-white transition-colors" href="#how-it-works">
                 How It Works
               </a>
@@ -811,10 +732,23 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </div>
           <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
             <p>© 2025 Socio Software Inc. All rights reserved.</p>
-            <div className="flex items-center gap-6">
+            <div className="flex flex-wrap items-center justify-center gap-6">
               <span>Budget-First Scoping</span>
               <span>•</span>
               <span>100% Client Code Ownership</span>
+              <span className="hidden sm:inline">•</span>
+              <button
+                onClick={() => onNavigate('legal')}
+                className="hover:text-slate-300 transition-colors cursor-pointer"
+              >
+                Privacy Policy
+              </button>
+              <button
+                onClick={() => onNavigate('legal')}
+                className="hover:text-slate-300 transition-colors cursor-pointer"
+              >
+                Terms of Service
+              </button>
             </div>
           </div>
         </div>

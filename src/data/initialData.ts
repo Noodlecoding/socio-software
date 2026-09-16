@@ -9,7 +9,7 @@ export const ENGAGEMENT_MODELS: EngagementModel[] = [
     title: 'Quick Module',
     name: 'Smaller Scope',
     duration: 'Typically days, not months',
-    description: 'Focused fixes for specific bottlenecks, repetitive manual tasks, or single API integrations.',
+    description: 'Focused fixes for specific bottlenecks, repetitive manual tasks or single API integrations.',
     features: [
       'API integrations & webhooks',
       'Automated workflows',
@@ -39,7 +39,7 @@ export const ENGAGEMENT_MODELS: EngagementModel[] = [
     title: 'Comprehensive System',
     name: 'Larger Initiative',
     duration: 'A longer-term engagement',
-    description: 'Full-scale backbones unifying multiple departments, warehouse workflows, and complex legacy data.',
+    description: 'Full-scale backbones unifying multiple departments, warehouse workflows and complex legacy data.',
     features: [
       'Multi-location operational systems',
       'Full legacy database migrations',
@@ -105,9 +105,11 @@ export const PAST_PROJECTS = [
 
 export const STARTER_CHIPS = [
   { label: 'Get rid of manual spreadsheet work', icon: 'table_view', prompt: 'We want to replace our multi-sheet Excel tracking with an automated pipeline that syncs inventory and customer orders in real time.' },
-  { label: 'Build a dashboard for my team', icon: 'dashboard', prompt: 'Our team needs a unified operations dashboard where ops leads can assign tickets, track fulfillment, and view daily dispatch metrics.' },
+  { label: 'Build a dashboard for my team', icon: 'dashboard', prompt: 'Our team needs a unified operations dashboard where ops leads can assign tickets, track fulfillment and view daily dispatch metrics.' },
   { label: 'Connect two tools we already use', icon: 'hub', prompt: 'We need to bridge our legacy accounting software with our Shopify store and warehouse 3PL via secure webhooks.' },
-  { label: 'Our software is slow or breaking', icon: 'database', prompt: 'Our current system is suffering from slow performance during peak volume, and we need help figuring out why and fixing it.' }
+  { label: 'Our software is slow or breaking', icon: 'database', prompt: 'Our current system is suffering from slow performance during peak volume, and we need help figuring out why and fixing it.' },
+  { label: "I'd like to discuss my budget", icon: 'payments', prompt: "I'd like to discuss my budget for this project before we get into the details." },
+  { label: "I'd like to discuss my project", icon: 'chat', prompt: "I'd like to walk you through my project and what we're trying to build." }
 ];
 
 export function generateArchitectResponse(userPrompt: string, orgName: string): string {

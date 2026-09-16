@@ -14,13 +14,17 @@ export interface EngagementModel {
 
 export type ClientStatus = 'new_client' | 'interested' | 'paid';
 
+export type AccountType = 'client' | 'affiliate';
+
 export interface UserProfile {
   id: string;
   name: string;
   organization: string;
+  country: string;
   email: string;
   initials: string;
   selectedModel: EngagementModelId;
+  accountType: AccountType;
 }
 
 export interface AdminConversation {
@@ -82,4 +86,13 @@ export interface SpecFile {
   size: string;
   type: string;
   dateAdded: string;
+}
+
+export interface NotebookSection {
+  key: string;
+  label: string;
+  content: string;
+  sortOrder: number;
+  updatedBy: string | null;
+  updatedAt: string | null;
 }

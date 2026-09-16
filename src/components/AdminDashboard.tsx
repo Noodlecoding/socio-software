@@ -3,6 +3,7 @@ import { AdminAffiliate, AdminConversation, ChatMessage, ClientStatus, UserProfi
 import { supabase } from '../lib/supabaseClient';
 import { rowToChatMessage } from '../lib/chat';
 import { Send, Users, DollarSign } from 'lucide-react';
+import { ProjectNotebook } from './ProjectNotebook';
 
 interface AdminDashboardProps {
   user: UserProfile;
@@ -364,7 +365,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
         </div>
       </aside>
 
-      {/* Conversation thread */}
+      {/* Conversation thread + Project Notebook stacked */}
+      <div className="flex-1 flex flex-col min-w-0 gap-6">
       <main className="flex-1 flex flex-col min-w-0 bg-white border border-[#e5e9f5] rounded-2xl shadow-sm overflow-hidden min-h-[640px]">
         {!selectedConversation ? (
           <div className="flex-1 flex items-center justify-center text-sm text-slate-400">
@@ -480,6 +482,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
           </>
         )}
       </main>
+
+      {selectedConversation && selectedId && (
+        <ProjectNotebook clientUserId={selectedId} viewerLabel="Alexis Cervantes" />
+      )}
+      </div>
     </div>
       )}
     </div>

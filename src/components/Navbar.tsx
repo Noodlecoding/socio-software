@@ -91,16 +91,11 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, user, o
             className="h-9 w-auto object-contain"
             src={SOCIO_LOGO_URL}
           />
+          <span className="text-lg font-extrabold text-[#0f172a] tracking-tight font-display">Socio</span>
         </button>
 
         {/* Navigation Links */}
         <nav className="hidden md:flex items-center gap-8">
-          <a
-            className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors"
-            href="#approach"
-          >
-            Approach
-          </a>
           <a
             className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors"
             href="#how-it-works"
