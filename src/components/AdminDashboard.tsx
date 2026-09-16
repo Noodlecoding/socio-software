@@ -51,7 +51,8 @@ function rowToAffiliate(row: any): AdminAffiliate {
     totalDealValue: Number(row.total_deal_value ?? 0),
     totalCommissionEarned: Number(row.total_commission_earned ?? 0),
     paidOut: Number(row.paid_out ?? 0),
-    commissionOwed: Number(row.commission_owed ?? 0)
+    commissionOwed: Number(row.commission_owed ?? 0),
+    clickCount: row.click_count ?? 0
   };
 }
 
@@ -596,6 +597,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
                     <th className="px-4 py-3">Age</th>
                     <th className="px-4 py-3">Country</th>
                     <th className="px-4 py-3">Referral Code</th>
+                    <th className="px-4 py-3 text-right">Clicks</th>
                     <th className="px-4 py-3 text-right">Leads</th>
                     <th className="px-4 py-3 text-right">Deals Closed</th>
                     <th className="px-4 py-3 text-right">Deal Value</th>
@@ -620,6 +622,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
                           <td className="px-4 py-3 text-slate-600">{a.age ?? '—'}</td>
                           <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{a.country || '—'}</td>
                           <td className="px-4 py-3 font-mono text-xs text-slate-500">{a.referralCode}</td>
+                          <td className="px-4 py-3 text-right text-slate-700">{a.clickCount}</td>
                           <td className="px-4 py-3 text-right flex items-center justify-end gap-1 text-slate-700">
                             <Users className="w-3.5 h-3.5 text-blue-600" />
                             {a.leadsCount}
@@ -635,7 +638,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
                         </tr>
                         {isExpanded && (
                           <tr className="bg-slate-50/70">
-                            <td colSpan={10} className="px-4 py-4">
+                            <td colSpan={11} className="px-4 py-4">
                               <div className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-4 border-b border-slate-200">
                                 <div className="flex flex-wrap items-center gap-4 text-xs text-slate-600">
                                   <span>

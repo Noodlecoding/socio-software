@@ -49,6 +49,7 @@ export interface AffiliateStats {
   totalCommissionEarned: number;
   paidOut: number;
   commissionOwed: number;
+  clickCount: number;
 }
 
 export interface AdminAffiliate {
@@ -65,6 +66,7 @@ export interface AdminAffiliate {
   totalCommissionEarned: number;
   paidOut: number;
   commissionOwed: number;
+  clickCount: number;
 }
 
 export interface AdminAffiliateConversation {

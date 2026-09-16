@@ -74,6 +74,7 @@ export default function App() {
       const ref = params.get('ref');
       if (ref) {
         localStorage.setItem('pendingReferralCode', ref);
+        void supabase.rpc('record_affiliate_link_click', { p_referral_code: ref });
       }
       if (params.get('view') === 'affiliate') {
         setCurrentView('affiliate');
