@@ -193,6 +193,7 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
 
     // Live-refresh whenever the admin marks a referred client's status or
     // deal value — both feed directly into deals closed / commission owed.
+    // Also refresh on the affiliate's own row changing (link clicks, payouts).
     const channel = supabase
       .channel(`affiliate-stats:${referralCode}`)
       .on(
@@ -202,6 +203,11 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
           loadStats();
           loadReferredClients();
         }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'affiliates', filter: `id=eq.${user.id}` },
+        () => loadStats()
       )
       .subscribe();
 

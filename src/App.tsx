@@ -69,19 +69,25 @@ export default function App() {
   // Capture ?ref=CODE from an affiliate link so signup can attribute it later,
   // and restore ?view=affiliate after a full-page Google OAuth redirect
   useEffect(() => {
-    try {
-      const params = new URLSearchParams(window.location.search);
-      const ref = params.get('ref');
-      if (ref) {
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get('ref');
+
+    if (ref) {
+      // Recording the click must not depend on localStorage succeeding —
+      // previously both were in the same try block, so a localStorage
+      // failure (private browsing, blocked storage, etc.) silently skipped
+      // the click-tracking call entirely.
+      void supabase.rpc('record_affiliate_link_click', { p_referral_code: ref });
+      try {
         localStorage.setItem('pendingReferralCode', ref);
-        void supabase.rpc('record_affiliate_link_click', { p_referral_code: ref });
+      } catch {
+        // localStorage unavailable — referral attribution just won't happen
       }
-      if (params.get('view') === 'affiliate') {
-        setCurrentView('affiliate');
-        oauthAffiliateRedirectRef.current = true;
-      }
-    } catch {
-      // localStorage unavailable — referral attribution just won't happen
+    }
+
+    if (params.get('view') === 'affiliate') {
+      setCurrentView('affiliate');
+      oauthAffiliateRedirectRef.current = true;
     }
   }, []);
 
