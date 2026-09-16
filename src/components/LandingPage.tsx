@@ -17,6 +17,19 @@ import {
   X
 } from 'lucide-react';
 
+// Skips the "check your inbox" confirmation link for client signups, same as
+// affiliate signups — reuses the same edge function (its logic isn't
+// affiliate-specific: it just verifies the caller's own email matches the
+// account and confirms it), then signs them in immediately.
+async function confirmClientEmail(userId: string, email: string): Promise<boolean> {
+  const { error } = await supabase.functions.invoke('confirm-affiliate-email', { body: { userId, email } });
+  if (error) {
+    console.error('Failed to auto-confirm client email:', error);
+    return false;
+  }
+  return true;
+}
+
 interface LandingPageProps {
   user: UserProfile | null;
   onUpdateUser: (updated: Partial<UserProfile>) => void;
@@ -36,7 +49,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   const [selectedModel, setSelectedModel] = useState<EngagementModelId>(user?.selectedModel || 'core-workflow');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [needsEmailConfirmation, setNeedsEmailConfirmation] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isEmailFormOpen, setIsEmailFormOpen] = useState(false);
@@ -73,19 +85,33 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         }
       });
 
-      setIsSubmitting(false);
-
       if (error) {
+        setIsSubmitting(false);
         setAuthError(error.message);
         return;
       }
 
-      if (!data.session) {
-        setNeedsEmailConfirmation(true);
+      // No confirmation email for clients: if the project requires email
+      // confirmation (so signUp didn't return a session), have the edge
+      // function confirm it immediately, then sign in right away.
+      if (!data.session && data.user) {
+        const confirmed = await confirmClientEmail(data.user.id, email);
+        if (!confirmed) {
+          setIsSubmitting(false);
+          setAuthError('Could not finish setting up your account. Please try again in a moment.');
+          return;
+        }
+        const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+        setIsSubmitting(false);
+        if (signInError) {
+          setAuthError(signInError.message);
+          return;
+        }
         setShowSuccess(true);
         return;
       }
 
+      setIsSubmitting(false);
       setShowSuccess(true);
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -269,16 +295,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                         {mode === 'signup' ? 'Sign in to Discussion Desk' : 'Create an account'}
                       </button>
                     </div>
-                  </div>
-                ) : needsEmailConfirmation ? (
-                  <div className="flex flex-col items-center text-center py-8">
-                    <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mb-3">
-                      <CheckCircle2 className="w-7 h-7" />
-                    </div>
-                    <h4 className="font-display text-lg font-bold text-slate-900">Check your inbox</h4>
-                    <p className="text-sm text-slate-600 mt-1">
-                      We sent a confirmation link to {email}. Confirm your email, then sign in to reach the Discussion Desk.
-                    </p>
                   </div>
                 ) : (
                   <div className="flex flex-col items-center text-center py-8">
@@ -673,17 +689,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                       {mode === 'signup' ? 'Sign in to Discussion Desk' : 'Create an account'}
                     </button>
                   </div>
-                </div>
-              ) : needsEmailConfirmation ? (
-                /* Email confirmation required */
-                <div className="flex flex-col items-center text-center py-8">
-                  <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mb-3">
-                    <CheckCircle2 className="w-7 h-7" />
-                  </div>
-                  <h4 className="font-display text-lg font-bold text-slate-900">Check your inbox</h4>
-                  <p className="text-sm text-slate-600 mt-1">
-                    We sent a confirmation link to {email}. Confirm your email, then sign in to reach the Discussion Desk.
-                  </p>
                 </div>
               ) : (
                 /* Success State */
