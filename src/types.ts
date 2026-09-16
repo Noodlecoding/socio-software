@@ -63,6 +63,17 @@ export interface AdminAffiliate {
   commissionOwed: number;
 }
 
+export interface AdminAffiliateConversation {
+  affiliateId: string;
+  fullName: string;
+  email: string;
+  referralCode: string;
+  affiliateSince: string;
+  unreadCount: number;
+  lastMessage: string | null;
+  lastMessageAt: string | null;
+}
+
 export interface ChatMessage {
   id: string;
   sender: 'architect' | 'user' | 'system';

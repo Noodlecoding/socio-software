@@ -106,28 +106,19 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, user, o
             className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors"
             href="#models"
           >
-            Engagement Models
+            Our Work
           </a>
           <button
-            onClick={() => onNavigate('affiliate')}
-            className={`text-sm font-medium transition-colors cursor-pointer ${
-              currentView === 'affiliate' ? 'text-blue-600' : 'text-slate-600 hover:text-blue-600'
-            }`}
+            onClick={() => onNavigate('workspace')}
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors cursor-pointer"
           >
-            Affiliates
+            <MessageSquare className="w-4 h-4" />
+            <span>{user ? (isAdmin ? 'Client Inbox' : 'Discussion Desk') : 'Sign in'}</span>
           </button>
         </nav>
 
         {/* Header CTAs */}
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => onNavigate('workspace')}
-            className="hidden sm:inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-slate-700 hover:text-blue-600 px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer"
-          >
-            <MessageSquare className="w-4 h-4 text-blue-600" />
-            <span>{user ? (isAdmin ? 'Client Inbox' : 'Discussion Desk') : 'Sign in'}</span>
-          </button>
-
           {user ? (
             <button
               onClick={onSignOut}

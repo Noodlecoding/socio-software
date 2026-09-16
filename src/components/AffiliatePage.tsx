@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from '../lib/supabaseClient';
 import { checkAuthRateLimit, RATE_LIMIT_MESSAGE } from '../lib/rateLimit';
-import { UserProfile, AffiliateStats } from '../types';
-import { ArrowRight, ArrowLeft, Copy, Check, Users, TrendingUp, DollarSign, LogOut, Target, ChevronDown } from 'lucide-react';
+import { rowToChatMessage } from '../lib/chat';
+import { UserProfile, AffiliateStats, ChatMessage } from '../types';
+import { ArrowRight, ArrowLeft, Copy, Check, Users, TrendingUp, DollarSign, LogOut, Target, ChevronRight, Send, MessageCircle } from 'lucide-react';
+import { AffiliateLeadGuide } from './AffiliateLeadGuide';
 
 interface AffiliatePageProps {
   user: UserProfile | null;
@@ -75,11 +77,11 @@ const STEPS = [
   },
   {
     title: 'We handle the rest',
-    body: "You don't need to sell anything. Once someone signs up through your link, our team takes the conversation from there — scoping, pricing, and building."
+    body: "You don't need to sell anything. Once someone signs up through your link, our team takes the conversation from there — scoping, pricing and building."
   },
   {
     title: 'Track it all in your dashboard',
-    body: "See exactly how many leads you've sent, how many turned into paid deals, and how much commission you've earned — updated in real time."
+    body: "See exactly how many leads you've sent, how many turned into paid deals and how much commission you've earned — updated in real time."
   }
 ];
 
@@ -98,7 +100,7 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
   const [isBecoming, setIsBecoming] = useState(false);
   const [copied, setCopied] = useState(false);
   const [leadsSlider, setLeadsSlider] = useState(3);
-  const [showLeadTips, setShowLeadTips] = useState(false);
+  const [showLeadGuide, setShowLeadGuide] = useState(false);
 
   const [ageInput, setAgeInput] = useState('');
   const [countryInput, setCountryInput] = useState('');
@@ -159,6 +161,80 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
       cancelled = true;
     };
   }, [user, referralCode]);
+
+  // Contact Alexis chat: same public.messages table/mechanics the client
+  // Discussion Desk uses, scoped to this affiliate's own user_id.
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [isLoadingChat, setIsLoadingChat] = useState(false);
+  const [chatInput, setChatInput] = useState('');
+  const chatStreamRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!user || !referralCode) return;
+
+    let cancelled = false;
+    setIsLoadingChat(true);
+
+    supabase
+      .from('messages')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: true })
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        if (!error && data) setChatMessages(data.map(rowToChatMessage));
+        setIsLoadingChat(false);
+      });
+
+    const channel = supabase
+      .channel(`affiliate-chat:${user.id}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'messages', filter: `user_id=eq.${user.id}` },
+        (payload) => {
+          const incoming = rowToChatMessage(payload.new as any);
+          setChatMessages((prev) => (prev.some((m) => m.id === incoming.id) ? prev : [...prev, incoming]));
+        }
+      )
+      .subscribe();
+
+    return () => {
+      cancelled = true;
+      supabase.removeChannel(channel);
+    };
+  }, [user, referralCode]);
+
+  useEffect(() => {
+    if (chatStreamRef.current) {
+      chatStreamRef.current.scrollTo({ top: chatStreamRef.current.scrollHeight, behavior: 'smooth' });
+    }
+  }, [chatMessages]);
+
+  const handleSendChatMessage = async () => {
+    const content = chatInput.trim();
+    if (!content || !user) return;
+
+    const message: ChatMessage = {
+      id: crypto.randomUUID(),
+      sender: 'user',
+      senderName: user.name,
+      senderInitials: user.initials,
+      text: content,
+      timestamp: 'Just now'
+    };
+    setChatMessages((prev) => [...prev, message]);
+    setChatInput('');
+
+    const { error } = await supabase.from('messages').insert({
+      id: message.id,
+      user_id: user.id,
+      sender: 'user',
+      sender_name: user.name,
+      sender_initials: user.initials,
+      text: content
+    });
+    if (error) console.error('Failed to send message:', error.message);
+  };
 
   const handleBecomeAffiliate = async () => {
     if (!user) return;
@@ -256,6 +332,9 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
 
   // Dashboard: logged in and already an affiliate
   if (user && referralCode) {
+    if (showLeadGuide) {
+      return <AffiliateLeadGuide referralLink={referralLink} onBack={() => setShowLeadGuide(false)} />;
+    }
     return (
       <main className="w-full pt-32 pb-20 px-6 lg:px-12 min-h-screen bg-[#f8f9fd]">
         <div className="max-w-4xl mx-auto">
@@ -307,60 +386,86 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
             </div>
           </div>
 
-          {/* Higher-ticket clients = higher commission */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 mt-6">
-            <button
-              type="button"
-              onClick={() => setShowLeadTips((v) => !v)}
-              className="w-full flex items-center justify-between gap-4 text-left cursor-pointer"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-600/10 text-blue-600 flex items-center justify-center shrink-0">
-                  <Target className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="font-display text-sm font-bold text-slate-900">Proven ways to find high-quality leads</h3>
-                  <p className="text-xs text-slate-500 mt-0.5">Bigger clients pay you more — here's how to find them</p>
-                </div>
+          {/* Contact Alexis */}
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden mt-8">
+            <div className="p-4 border-b border-slate-100 flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-blue-600/10 text-blue-600 flex items-center justify-center shrink-0">
+                <MessageCircle className="w-4 h-4" />
               </div>
-              <ChevronDown className={`w-4 h-4 text-slate-400 shrink-0 transition-transform ${showLeadTips ? 'rotate-180' : ''}`} />
-            </button>
+              <div>
+                <h3 className="font-display text-sm font-bold text-slate-900">Contact Alexis</h3>
+                <p className="text-[11px] text-slate-500">Questions about a referral, payout, or anything else</p>
+              </div>
+            </div>
 
-            {showLeadTips && (
-              <div className="mt-5 pt-5 border-t border-slate-100">
-                <div className="bg-blue-50/60 border border-blue-100 rounded-xl p-4 mb-4">
-                  <p className="text-sm text-slate-700 leading-relaxed">
-                    You earn <span className="font-semibold text-blue-700">23% of the deal value</span>, so the size of the
-                    client you refer matters as much as the number of referrals. A $2,000 project pays you $460 — a
-                    $10,000 project pays you $2,300 for the same referral. Going after fewer, higher-ticket clients can
-                    earn you more than chasing a lot of small ones.
-                  </p>
-                </div>
-                <ul className="flex flex-col gap-3 text-sm text-slate-700">
-                  <li className="flex items-start gap-2.5">
-                    <span className="w-5 h-5 rounded-full bg-blue-600/10 text-blue-600 text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">1</span>
-                    <span>Look for businesses already paying for multiple software tools — they have budget and are used to paying for solutions.</span>
-                  </li>
-                  <li className="flex items-start gap-2.5">
-                    <span className="w-5 h-5 rounded-full bg-blue-600/10 text-blue-600 text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">2</span>
-                    <span>Target owners actively complaining about manual work, spreadsheets or slow systems — that's a real, felt pain point.</span>
-                  </li>
-                  <li className="flex items-start gap-2.5">
-                    <span className="w-5 h-5 rounded-full bg-blue-600/10 text-blue-600 text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">3</span>
-                    <span>Prioritize companies with a team, not solo founders — more employees usually means more budget and more urgency.</span>
-                  </li>
-                  <li className="flex items-start gap-2.5">
-                    <span className="w-5 h-5 rounded-full bg-blue-600/10 text-blue-600 text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">4</span>
-                    <span>Ask about their rough budget before referring — it helps qualify the lead so our team can move fast.</span>
-                  </li>
-                  <li className="flex items-start gap-2.5">
-                    <span className="w-5 h-5 rounded-full bg-blue-600/10 text-blue-600 text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">5</span>
-                    <span>A short personal introduction converts better than just dropping your link in a group chat.</span>
-                  </li>
-                </ul>
-              </div>
-            )}
+            <div ref={chatStreamRef} className="max-h-80 overflow-y-auto custom-scroll flex flex-col gap-3 p-4 bg-[#fbfcfe]">
+              {isLoadingChat ? (
+                <div className="text-xs text-slate-400">Loading conversation...</div>
+              ) : chatMessages.length === 0 ? (
+                <div className="text-xs text-slate-400">No messages yet — say hello.</div>
+              ) : (
+                chatMessages.map((msg) => {
+                  const isMe = msg.sender === 'user';
+                  return (
+                    <div key={msg.id} className={`flex flex-col gap-1 max-w-[80%] ${isMe ? 'self-end items-end' : 'self-start'}`}>
+                      <div
+                        className={`text-sm rounded-2xl p-3 leading-relaxed whitespace-pre-wrap break-words ${
+                          isMe ? 'bg-blue-600 text-white rounded-tr-xs' : 'bg-slate-100 text-slate-800 rounded-tl-xs'
+                        }`}
+                      >
+                        {msg.text}
+                      </div>
+                      <span className="text-[10px] text-slate-400">
+                        {isMe ? 'You' : 'Alexis Cervantes'} · {msg.timestamp}
+                      </span>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            <div className="p-4 border-t border-slate-100 flex items-end gap-2">
+              <textarea
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                    e.preventDefault();
+                    void handleSendChatMessage();
+                  }
+                }}
+                placeholder="Message Alexis..."
+                rows={2}
+                className="flex-1 text-sm border border-slate-200 rounded-xl p-2.5 focus:outline-none focus:border-blue-600 resize-none"
+              />
+              <button
+                onClick={() => void handleSendChatMessage()}
+                disabled={!chatInput.trim()}
+                className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold flex items-center gap-1.5 disabled:opacity-50 cursor-pointer shrink-0"
+              >
+                <Send className="w-3.5 h-3.5" />
+                Send
+              </button>
+            </div>
           </div>
+
+          {/* Higher-ticket clients = higher commission */}
+          <button
+            type="button"
+            onClick={() => setShowLeadGuide(true)}
+            className="w-full bg-white border border-slate-200 rounded-2xl p-6 mt-6 flex items-center justify-between gap-4 text-left cursor-pointer hover:border-blue-300 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-blue-600/10 text-blue-600 flex items-center justify-center shrink-0">
+                <Target className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="font-display text-sm font-bold text-slate-900">Proven ways to find high-quality leads</h3>
+                <p className="text-xs text-slate-500 mt-0.5">Bigger clients pay you more — here's how to find them</p>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />
+          </button>
 
           <p className="text-xs text-slate-400 mt-6">
             Stats update once our team records a closed deal. Questions about a payout? Reach us at{' '}

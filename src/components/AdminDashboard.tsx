@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { AdminAffiliate, AdminConversation, ChatMessage, ClientStatus, UserProfile } from '../types';
+import { AdminAffiliate, AdminAffiliateConversation, AdminConversation, ChatMessage, ClientStatus, UserProfile } from '../types';
 import { supabase } from '../lib/supabaseClient';
 import { rowToChatMessage } from '../lib/chat';
 import { Send, Users, DollarSign } from 'lucide-react';
@@ -52,8 +52,21 @@ function rowToAffiliate(row: any): AdminAffiliate {
   };
 }
 
+function rowToAffiliateConversation(row: any): AdminAffiliateConversation {
+  return {
+    affiliateId: row.affiliate_id,
+    fullName: row.full_name || 'Unnamed affiliate',
+    email: row.email || '',
+    referralCode: row.referral_code,
+    affiliateSince: row.affiliate_since,
+    unreadCount: row.unread_count ?? 0,
+    lastMessage: row.last_message,
+    lastMessageAt: row.last_message_at
+  };
+}
+
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
-  const [dashboardTab, setDashboardTab] = useState<'clients' | 'affiliates'>('clients');
+  const [dashboardTab, setDashboardTab] = useState<'clients' | 'affiliates' | 'affiliate-chats'>('clients');
 
   const [conversations, setConversations] = useState<AdminConversation[]>([]);
   const [filter, setFilter] = useState<'all' | ClientStatus>('all');
@@ -67,7 +80,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
   const [affiliates, setAffiliates] = useState<AdminAffiliate[]>([]);
   const [isLoadingAffiliates, setIsLoadingAffiliates] = useState(true);
 
+  const [affiliateConversations, setAffiliateConversations] = useState<AdminAffiliateConversation[]>([]);
+  const [isLoadingAffiliateChatList, setIsLoadingAffiliateChatList] = useState(true);
+  const [selectedAffiliateChatId, setSelectedAffiliateChatId] = useState<string | null>(null);
+  const [affiliateChatMessages, setAffiliateChatMessages] = useState<ChatMessage[]>([]);
+  const [isLoadingAffiliateChatThread, setIsLoadingAffiliateChatThread] = useState(false);
+  const [affiliateReplyText, setAffiliateReplyText] = useState('');
+
   const chatStreamRef = useRef<HTMLDivElement>(null);
+  const affiliateChatStreamRef = useRef<HTMLDivElement>(null);
 
   const loadConversations = async () => {
     const { data, error } = await supabase
@@ -93,22 +114,45 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
     setIsLoadingAffiliates(false);
   };
 
+  const loadAffiliateConversations = async () => {
+    const { data, error } = await supabase
+      .from('admin_affiliate_conversations')
+      .select('*')
+      .order('last_message_at', { ascending: false, nullsFirst: false });
+
+    if (!error && data) {
+      setAffiliateConversations(data.map(rowToAffiliateConversation));
+    }
+    setIsLoadingAffiliateChatList(false);
+  };
+
   useEffect(() => {
     void loadConversations();
     void loadAffiliates();
+    void loadAffiliateConversations();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Live updates: refresh the inbox and the open thread whenever any client message changes
+  // Live updates: refresh both inboxes and whichever thread is open whenever any message changes
   useEffect(() => {
     const channel = supabase
       .channel('admin-inbox')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
         void loadConversations();
+        void loadAffiliateConversations();
         const row = payload.new as any;
+
         if (row.user_id === selectedId) {
           const incoming = rowToChatMessage(row);
           setMessages((prev) => (prev.some((m) => m.id === incoming.id) ? prev : [...prev, incoming]));
+          if (row.sender === 'user') {
+            void supabase.from('messages').update({ read_by_admin: true }).eq('id', row.id);
+          }
+        }
+
+        if (row.user_id === selectedAffiliateChatId) {
+          const incoming = rowToChatMessage(row);
+          setAffiliateChatMessages((prev) => (prev.some((m) => m.id === incoming.id) ? prev : [...prev, incoming]));
           if (row.sender === 'user') {
             void supabase.from('messages').update({ read_by_admin: true }).eq('id', row.id);
           }
@@ -120,13 +164,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
       supabase.removeChannel(channel);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedId]);
+  }, [selectedId, selectedAffiliateChatId]);
 
   useEffect(() => {
     if (chatStreamRef.current) {
       chatStreamRef.current.scrollTo({ top: chatStreamRef.current.scrollHeight, behavior: 'smooth' });
     }
   }, [messages]);
+
+  useEffect(() => {
+    if (affiliateChatStreamRef.current) {
+      affiliateChatStreamRef.current.scrollTo({ top: affiliateChatStreamRef.current.scrollHeight, behavior: 'smooth' });
+    }
+  }, [affiliateChatMessages]);
 
   const openConversation = async (userId: string) => {
     setSelectedId(userId);
@@ -193,6 +243,68 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
     );
   };
 
+  const openAffiliateChat = async (affiliateId: string) => {
+    setSelectedAffiliateChatId(affiliateId);
+    setIsLoadingAffiliateChatThread(true);
+    setAffiliateChatMessages([]);
+
+    const { data, error } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('user_id', affiliateId)
+      .order('created_at', { ascending: true });
+
+    if (!error && data) {
+      setAffiliateChatMessages(data.map(rowToChatMessage));
+    }
+    setIsLoadingAffiliateChatThread(false);
+
+    await supabase
+      .from('messages')
+      .update({ read_by_admin: true })
+      .eq('user_id', affiliateId)
+      .eq('sender', 'user')
+      .eq('read_by_admin', false);
+
+    setAffiliateConversations((prev) => prev.map((c) => (c.affiliateId === affiliateId ? { ...c, unreadCount: 0 } : c)));
+  };
+
+  const handleSendAffiliateReply = async () => {
+    const content = affiliateReplyText.trim();
+    if (!content || !selectedAffiliateChatId) return;
+
+    const reply: ChatMessage = {
+      id: crypto.randomUUID(),
+      sender: 'architect',
+      senderName: 'Alexis Cervantes',
+      senderTitle: 'Lead Systems Architect',
+      senderInitials: 'AC',
+      text: content,
+      timestamp: 'Just now'
+    };
+
+    setAffiliateChatMessages((prev) => [...prev, reply]);
+    setAffiliateReplyText('');
+
+    const { error } = await supabase.from('messages').insert({
+      id: reply.id,
+      user_id: selectedAffiliateChatId,
+      sender: 'architect',
+      sender_name: 'Alexis Cervantes',
+      sender_title: 'Lead Systems Architect',
+      sender_initials: 'AC',
+      text: content,
+      read_by_admin: true
+    });
+    if (error) console.error('Failed to send reply:', error.message);
+
+    setAffiliateConversations((prev) =>
+      prev.map((c) =>
+        c.affiliateId === selectedAffiliateChatId ? { ...c, lastMessage: content, lastMessageAt: new Date().toISOString() } : c
+      )
+    );
+  };
+
   const handleStatusChange = async (status: ClientStatus) => {
     if (!selectedId) return;
     setConversations((prev) => prev.map((c) => (c.userId === selectedId ? { ...c, status } : c)));
@@ -211,6 +323,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
   const filteredConversations = conversations.filter((c) => filter === 'all' || c.status === filter);
   const selectedConversation = conversations.find((c) => c.userId === selectedId) || null;
   const totalUnread = conversations.reduce((sum, c) => sum + c.unreadCount, 0);
+
+  const selectedAffiliateConversation = affiliateConversations.find((c) => c.affiliateId === selectedAffiliateChatId) || null;
+  const totalAffiliateUnread = affiliateConversations.reduce((sum, c) => sum + c.unreadCount, 0);
 
   const filterTabs: { id: 'all' | ClientStatus; label: string }[] = [
     { id: 'all', label: 'All' },
@@ -239,9 +354,134 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
         >
           Affiliates
         </button>
+        <button
+          onClick={() => setDashboardTab('affiliate-chats')}
+          className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-colors cursor-pointer inline-flex items-center gap-1.5 ${
+            dashboardTab === 'affiliate-chats' ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-slate-100'
+          }`}
+        >
+          Affiliate Chats
+          {totalAffiliateUnread > 0 && (
+            <span
+              className={`min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold flex items-center justify-center ${
+                dashboardTab === 'affiliate-chats' ? 'bg-white text-blue-600' : 'bg-red-500 text-white'
+              }`}
+            >
+              {totalAffiliateUnread}
+            </span>
+          )}
+        </button>
       </div>
 
-      {dashboardTab === 'affiliates' ? (
+      {dashboardTab === 'affiliate-chats' ? (
+        <div className="flex-1 w-full flex flex-col lg:flex-row gap-6 min-h-[640px]">
+          {/* Affiliate conversation list */}
+          <aside className="w-full lg:w-[340px] shrink-0 bg-white border border-[#e5e9f5] rounded-2xl shadow-sm flex flex-col overflow-hidden">
+            <div className="p-4 border-b border-[#e5e9f5]">
+              <h2 className="font-display text-lg font-bold text-slate-900">Affiliate Chats</h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                {totalAffiliateUnread > 0 ? `${totalAffiliateUnread} unread message${totalAffiliateUnread === 1 ? '' : 's'}` : 'All caught up'}
+              </p>
+            </div>
+
+            <div className="flex-1 overflow-y-auto custom-scroll">
+              {isLoadingAffiliateChatList ? (
+                <div className="p-4 text-xs text-slate-400">Loading...</div>
+              ) : affiliateConversations.length === 0 ? (
+                <div className="p-4 text-xs text-slate-400">No affiliates yet.</div>
+              ) : (
+                affiliateConversations.map((c) => (
+                  <button
+                    key={c.affiliateId}
+                    onClick={() => void openAffiliateChat(c.affiliateId)}
+                    className={`w-full text-left px-4 py-3 border-b border-slate-100 hover:bg-slate-50 transition-colors cursor-pointer ${
+                      selectedAffiliateChatId === c.affiliateId ? 'bg-blue-50/60' : ''
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-sm font-semibold text-slate-900 truncate">{c.fullName}</span>
+                      {c.unreadCount > 0 && (
+                        <span className="shrink-0 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
+                          {c.unreadCount}
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-[11px] text-slate-400 truncate block mt-0.5">{c.email}</span>
+                    {c.lastMessage && <p className="text-xs text-slate-500 mt-1 truncate">{c.lastMessage}</p>}
+                  </button>
+                ))
+              )}
+            </div>
+          </aside>
+
+          {/* Affiliate conversation thread */}
+          <main className="flex-1 flex flex-col min-w-0 bg-white border border-[#e5e9f5] rounded-2xl shadow-sm overflow-hidden min-h-[640px]">
+            {!selectedAffiliateConversation ? (
+              <div className="flex-1 flex items-center justify-center text-sm text-slate-400">
+                Pick an affiliate on the left to start replying.
+              </div>
+            ) : (
+              <>
+                <div className="p-4 border-b border-[#e5e9f5]">
+                  <h3 className="font-display text-sm font-bold text-slate-900">{selectedAffiliateConversation.fullName}</h3>
+                  <p className="text-xs text-slate-500">{selectedAffiliateConversation.email}</p>
+                  <p className="text-[11px] font-mono text-slate-400 mt-0.5">Referral code: {selectedAffiliateConversation.referralCode}</p>
+                </div>
+
+                <div ref={affiliateChatStreamRef} className="flex-1 p-4 sm:p-5 overflow-y-auto custom-scroll flex flex-col gap-3 bg-[#fbfcfe]">
+                  {isLoadingAffiliateChatThread ? (
+                    <div className="text-xs text-slate-400">Loading conversation...</div>
+                  ) : affiliateChatMessages.length === 0 ? (
+                    <div className="text-xs text-slate-400">No messages yet.</div>
+                  ) : (
+                    affiliateChatMessages.map((msg) => {
+                      const isAffiliate = msg.sender === 'user';
+                      return (
+                        <div key={msg.id} className={`flex flex-col gap-1 max-w-[80%] ${isAffiliate ? 'self-start' : 'self-end items-end'}`}>
+                          <div
+                            className={`text-sm rounded-2xl p-3 leading-relaxed whitespace-pre-wrap break-words ${
+                              isAffiliate ? 'bg-slate-100 text-slate-800 rounded-tl-xs' : 'bg-blue-600 text-white rounded-tr-xs'
+                            }`}
+                          >
+                            {msg.text}
+                          </div>
+                          <span className="text-[10px] text-slate-400">
+                            {isAffiliate ? selectedAffiliateConversation.fullName : 'You'} · {msg.timestamp}
+                          </span>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+
+                <div className="p-4 border-t border-[#e5e9f5] flex items-end gap-2">
+                  <textarea
+                    value={affiliateReplyText}
+                    onChange={(e) => setAffiliateReplyText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                        e.preventDefault();
+                        void handleSendAffiliateReply();
+                      }
+                    }}
+                    placeholder="Reply to this affiliate..."
+                    rows={2}
+                    className="flex-1 text-sm border border-slate-200 rounded-xl p-2.5 focus:outline-none focus:border-blue-600 resize-none"
+                  />
+                  <button
+                    onClick={() => void handleSendAffiliateReply()}
+                    disabled={!affiliateReplyText.trim()}
+                    className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
+                  >
+                    <Send className="w-3.5 h-3.5" />
+                    Send
+                  </button>
+                </div>
+              </>
+            )}
+          </main>
+        </div>
+      ) : dashboardTab === 'affiliates' ? (
         <div className="bg-white border border-[#e5e9f5] rounded-2xl shadow-sm overflow-hidden">
           <div className="p-4 border-b border-[#e5e9f5]">
             <h2 className="font-display text-lg font-bold text-slate-900">Affiliates</h2>
