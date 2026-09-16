@@ -48,12 +48,13 @@ async function ensureAffiliateRow(user: UserProfile, details?: AffiliateDetails)
 // having a service-role edge function mark the email confirmed, then signs
 // them in immediately. No-op (and harmless) if confirmation is already off
 // at the project level. Client signups are untouched.
-async function confirmAffiliateEmail(userId: string): Promise<void> {
-  try {
-    await supabase.functions.invoke('confirm-affiliate-email', { body: { userId } });
-  } catch (err) {
-    console.error('Failed to auto-confirm affiliate email:', err);
+async function confirmAffiliateEmail(userId: string): Promise<boolean> {
+  const { error } = await supabase.functions.invoke('confirm-affiliate-email', { body: { userId } });
+  if (error) {
+    console.error('Failed to auto-confirm affiliate email:', error);
+    return false;
   }
+  return true;
 }
 
 const MIN_AFFILIATE_AGE = 18;
@@ -204,7 +205,12 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
       // confirmation (so signUp didn't return a session), have the edge
       // function confirm it immediately, then sign in right away.
       if (!data.session && data.user) {
-        await confirmAffiliateEmail(data.user.id);
+        const confirmed = await confirmAffiliateEmail(data.user.id);
+        if (!confirmed) {
+          setIsSubmitting(false);
+          setAuthError('Could not finish setting up your account. Please try again in a moment.');
+          return;
+        }
         const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
         setIsSubmitting(false);
         if (signInError) {
