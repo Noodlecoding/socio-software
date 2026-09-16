@@ -56,6 +56,11 @@ export default function App() {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
   const currentViewRef = useRef<AppView>('landing');
+  // One-shot: true only when this page load is a real OAuth redirect back
+  // from the affiliate page's "Continue with Google" button — not from
+  // ordinary in-app navigation to /affiliate. Used to gate the affiliate
+  // account claim below to just that moment.
+  const oauthAffiliateRedirectRef = useRef(false);
 
   useEffect(() => {
     currentViewRef.current = currentView;
@@ -72,6 +77,7 @@ export default function App() {
       }
       if (params.get('view') === 'affiliate') {
         setCurrentView('affiliate');
+        oauthAffiliateRedirectRef.current = true;
       }
     } catch {
       // localStorage unavailable — referral attribution just won't happen
@@ -92,7 +98,16 @@ export default function App() {
     const { data: listener } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!isMounted) return;
       if (session) {
-        const profile = await loadUserProfile(session);
+        let profile = await loadUserProfile(session);
+
+        if (event === 'SIGNED_IN' && oauthAffiliateRedirectRef.current && profile.accountType === 'client') {
+          oauthAffiliateRedirectRef.current = false;
+          const { data: claimed } = await supabase.rpc('claim_affiliate_account');
+          if (claimed) {
+            profile = { ...profile, accountType: 'affiliate' };
+          }
+        }
+
         setUser(profile);
         if (event === 'SIGNED_IN') {
           const isAffiliateAccount = profile.accountType === 'affiliate' && profile.email !== ADMIN_EMAIL;
