@@ -470,38 +470,64 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
                       <th className="px-4 py-2.5">Status</th>
                       <th className="px-4 py-2.5 text-right">Deal Value</th>
                       <th className="px-4 py-2.5 text-right">Your Commission</th>
+                      <th className="px-4 py-2.5 text-right">Amount Paid</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {referredClients.map((c) => (
-                      <tr key={c.userId} className="border-b border-slate-100 last:border-0">
-                        <td className="px-4 py-2.5">
-                          <div className="font-semibold text-slate-900">{c.fullName}</div>
-                          {c.organization && <div className="text-[11px] text-slate-400">{c.organization}</div>}
-                        </td>
-                        <td className="px-4 py-2.5">
-                          <span
-                            className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${
-                              c.status === 'paid'
-                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                                : c.status === 'interested'
-                                ? 'bg-amber-50 text-amber-700 border-amber-200'
-                                : 'bg-slate-100 text-slate-700 border-slate-200'
-                            }`}
-                          >
-                            {c.status === 'paid' ? 'Paid' : c.status === 'interested' ? 'Interested' : 'New Client'}
-                          </span>
-                        </td>
-                        <td className="px-4 py-2.5 text-right text-slate-700">
-                          {c.dealValue != null ? `$${c.dealValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : '—'}
-                        </td>
-                        <td className="px-4 py-2.5 text-right font-semibold text-blue-600">
-                          {c.commissionContribution > 0
-                            ? `$${c.commissionContribution.toLocaleString(undefined, { maximumFractionDigits: 0 })}`
-                            : '—'}
-                        </td>
-                      </tr>
-                    ))}
+                    {(() => {
+                      // Payouts are only tracked as one running total per
+                      // affiliate (paid_out), not itemized per client, so
+                      // this allocates it across clients oldest-referral-first
+                      // for display — a reasonable "paid off in order"
+                      // assumption, not a separate source of truth.
+                      let remainingPaidOut = stats?.paidOut ?? 0;
+                      const rows = [...referredClients].sort(
+                        (a, b) => new Date(a.clientSince).getTime() - new Date(b.clientSince).getTime()
+                      );
+                      const amountPaidByClient = new Map<string, number>();
+                      for (const c of rows) {
+                        const paid = Math.min(remainingPaidOut, c.commissionContribution);
+                        amountPaidByClient.set(c.userId, paid);
+                        remainingPaidOut -= paid;
+                      }
+                      return referredClients.map((c) => {
+                        const amountPaid = amountPaidByClient.get(c.userId) ?? 0;
+                        return (
+                          <tr key={c.userId} className="border-b border-slate-100 last:border-0">
+                            <td className="px-4 py-2.5">
+                              <div className="font-semibold text-slate-900">{c.fullName}</div>
+                              {c.organization && <div className="text-[11px] text-slate-400">{c.organization}</div>}
+                            </td>
+                            <td className="px-4 py-2.5">
+                              <span
+                                className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${
+                                  c.status === 'paid'
+                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                    : c.status === 'interested'
+                                    ? 'bg-amber-50 text-amber-700 border-amber-200'
+                                    : 'bg-slate-100 text-slate-700 border-slate-200'
+                                }`}
+                              >
+                                {c.status === 'paid' ? 'Paid' : c.status === 'interested' ? 'Interested' : 'New Client'}
+                              </span>
+                            </td>
+                            <td className="px-4 py-2.5 text-right text-slate-700">
+                              {c.dealValue != null ? `$${c.dealValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : '—'}
+                            </td>
+                            <td className="px-4 py-2.5 text-right font-semibold text-blue-600">
+                              {c.commissionContribution > 0
+                                ? `$${c.commissionContribution.toLocaleString(undefined, { maximumFractionDigits: 0 })}`
+                                : '—'}
+                            </td>
+                            <td className="px-4 py-2.5 text-right font-semibold text-emerald-600">
+                              {amountPaid > 0
+                                ? `$${amountPaid.toLocaleString(undefined, { maximumFractionDigits: 0 })}`
+                                : '—'}
+                            </td>
+                          </tr>
+                        );
+                      });
+                    })()}
                   </tbody>
                 </table>
               </div>
