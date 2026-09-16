@@ -32,11 +32,27 @@ export interface AdminConversation {
   unreadCount: number;
   lastMessage: string | null;
   lastMessageAt: string | null;
+  affiliateEmail: string | null;
+  affiliateName: string | null;
 }
 
 export interface AffiliateStats {
   affiliateId: string;
   referralCode: string;
+  leadsCount: number;
+  dealsClosed: number;
+  totalDealValue: number;
+  commissionOwed: number;
+}
+
+export interface AdminAffiliate {
+  affiliateId: string;
+  fullName: string;
+  email: string;
+  age: number | null;
+  country: string | null;
+  referralCode: string;
+  createdAt: string;
   leadsCount: number;
   dealsClosed: number;
   totalDealValue: number;

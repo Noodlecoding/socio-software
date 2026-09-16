@@ -142,22 +142,13 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, user, o
               <span>Sign out</span>
             </button>
           ) : (
-            <>
-              <a
-                className="hidden lg:inline-flex text-sm font-semibold text-slate-700 hover:text-blue-600 px-4 py-2 transition-colors"
-                href="#get-started"
-              >
-                Tell us what you need
-              </a>
-
-              <a
-                className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-lg text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-all shadow-sm hover:shadow-md"
-                href="#get-started"
-              >
-                <span>Get started</span>
-                <ArrowRight className="w-4 h-4" />
-              </a>
-            </>
+            <a
+              className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-lg text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-all shadow-sm hover:shadow-md"
+              href="#get-started"
+            >
+              <span>Get started</span>
+              <ArrowRight className="w-4 h-4" />
+            </a>
           )}
         </div>
       </div>

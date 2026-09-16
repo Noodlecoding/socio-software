@@ -50,6 +50,59 @@ export const ENGAGEMENT_MODELS: EngagementModel[] = [
   }
 ];
 
+export const PAST_PROJECTS = [
+  // Simple — small, focused fixes
+  {
+    scale: 'Quick Fix',
+    tag: 'Regional Logistics Company',
+    title: 'Automated Dispatch Sync',
+    description: 'Bridged their warehouse and accounting software so orders sync automatically — no more manual re-entry.'
+  },
+  {
+    scale: 'Quick Fix',
+    tag: 'Boutique E-commerce Brand',
+    title: 'Abandoned Cart Automation',
+    description: 'Automated follow-up emails when a shopper leaves items in their cart, recovering lost sales.'
+  },
+  {
+    scale: 'Quick Fix',
+    tag: 'Local Home Services Company',
+    title: 'Appointment Reminders',
+    description: 'Automated text reminders the day before a job, cutting down on no-shows.'
+  },
+  {
+    scale: 'Quick Fix',
+    tag: 'Independent Accounting Firm',
+    title: 'Invoice Export Automation',
+    description: 'Automated their monthly invoice exports from billing software straight into their books.'
+  },
+  // Medium — multi-week custom builds
+  {
+    scale: 'Multi-Week Build',
+    tag: 'Regional Retailer',
+    title: 'Custom Ops Dashboard',
+    description: 'Replaced five spreadsheets and two SaaS tools with one dashboard built around how their team works.'
+  },
+  {
+    scale: 'Multi-Week Build',
+    tag: 'Multi-Location Service Business',
+    title: 'Unified Operations Platform',
+    description: 'Migrated every location off an aging legacy database and onto one shared system.'
+  },
+  {
+    scale: 'Multi-Week Build',
+    tag: 'Property Management Firm',
+    title: 'Tenant Request Portal',
+    description: 'Built a portal for tenants to submit maintenance requests and track status in real time.'
+  },
+  {
+    scale: 'Multi-Week Build',
+    tag: 'Regional Healthcare Clinic',
+    title: 'Patient Intake System',
+    description: 'Digitized paper intake forms into a secure, structured system staff could actually search.'
+  }
+];
+
 export const STARTER_CHIPS = [
   { label: 'Get rid of manual spreadsheet work', icon: 'table_view', prompt: 'We want to replace our multi-sheet Excel tracking with an automated pipeline that syncs inventory and customer orders in real time.' },
   { label: 'Build a dashboard for my team', icon: 'dashboard', prompt: 'Our team needs a unified operations dashboard where ops leads can assign tickets, track fulfillment, and view daily dispatch metrics.' },

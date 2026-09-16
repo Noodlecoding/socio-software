@@ -4,6 +4,7 @@
  */
 
 import React, { useEffect, useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from './lib/supabaseClient';
 import { Navbar } from './components/Navbar';
@@ -54,12 +55,17 @@ export default function App() {
     currentViewRef.current = currentView;
   }, [currentView]);
 
-  // Capture ?ref=CODE from an affiliate link so signup can attribute it later
+  // Capture ?ref=CODE from an affiliate link so signup can attribute it later,
+  // and restore ?view=affiliate after a full-page Google OAuth redirect
   useEffect(() => {
     try {
-      const ref = new URLSearchParams(window.location.search).get('ref');
+      const params = new URLSearchParams(window.location.search);
+      const ref = params.get('ref');
       if (ref) {
         localStorage.setItem('pendingReferralCode', ref);
+      }
+      if (params.get('view') === 'affiliate') {
+        setCurrentView('affiliate');
       }
     } catch {
       // localStorage unavailable — referral attribution just won't happen
@@ -147,26 +153,53 @@ export default function App() {
         isAdmin={isAdmin}
       />
 
-      {currentView === 'affiliate' ? (
-        <AffiliatePage user={user} />
-      ) : currentView === 'landing' || !user ? (
-        <LandingPage
-          user={user}
-          onUpdateUser={handleUpdateUser}
-          onStartAudit={handleStartAudit}
-        />
-      ) : (
-        <div className="pt-2 pb-16 flex-1 flex flex-col">
-          {isAdmin ? (
-            <AdminDashboard user={user} />
-          ) : (
-            <DiscussionWorkspace
+      <AnimatePresence mode="wait">
+        {currentView === 'affiliate' ? (
+          <motion.div
+            key="affiliate"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.18, ease: 'easeOut' }}
+            className="flex-1 flex flex-col"
+          >
+            <AffiliatePage user={user} onSignOut={handleSignOut} />
+          </motion.div>
+        ) : currentView === 'landing' || !user ? (
+          <motion.div
+            key="landing"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.18, ease: 'easeOut' }}
+            className="flex-1 flex flex-col"
+          >
+            <LandingPage
               user={user}
-              onNavigate={handleNavigate}
+              onUpdateUser={handleUpdateUser}
+              onStartAudit={handleStartAudit}
             />
-          )}
-        </div>
-      )}
+          </motion.div>
+        ) : (
+          <motion.div
+            key="workspace"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.18, ease: 'easeOut' }}
+            className="pt-2 pb-16 flex-1 flex flex-col"
+          >
+            {isAdmin ? (
+              <AdminDashboard user={user} />
+            ) : (
+              <DiscussionWorkspace
+                user={user}
+                onNavigate={handleNavigate}
+              />
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

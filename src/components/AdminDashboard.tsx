@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { AdminConversation, ChatMessage, ClientStatus, UserProfile } from '../types';
+import { AdminAffiliate, AdminConversation, ChatMessage, ClientStatus, UserProfile } from '../types';
 import { supabase } from '../lib/supabaseClient';
 import { rowToChatMessage } from '../lib/chat';
-import { Send } from 'lucide-react';
+import { Send, Users, DollarSign } from 'lucide-react';
 
 interface AdminDashboardProps {
   user: UserProfile;
@@ -29,11 +29,31 @@ function rowToConversation(row: any): AdminConversation {
     clientSince: row.client_since,
     unreadCount: row.unread_count ?? 0,
     lastMessage: row.last_message,
-    lastMessageAt: row.last_message_at
+    lastMessageAt: row.last_message_at,
+    affiliateEmail: row.affiliate_email ?? null,
+    affiliateName: row.affiliate_name ?? null
+  };
+}
+
+function rowToAffiliate(row: any): AdminAffiliate {
+  return {
+    affiliateId: row.affiliate_id,
+    fullName: row.full_name || 'Unnamed affiliate',
+    email: row.email || '',
+    age: row.age ?? null,
+    country: row.country ?? null,
+    referralCode: row.referral_code,
+    createdAt: row.created_at,
+    leadsCount: row.leads_count ?? 0,
+    dealsClosed: row.deals_closed ?? 0,
+    totalDealValue: Number(row.total_deal_value ?? 0),
+    commissionOwed: Number(row.commission_owed ?? 0)
   };
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
+  const [dashboardTab, setDashboardTab] = useState<'clients' | 'affiliates'>('clients');
+
   const [conversations, setConversations] = useState<AdminConversation[]>([]);
   const [filter, setFilter] = useState<'all' | ClientStatus>('all');
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -42,6 +62,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
   const [isLoadingList, setIsLoadingList] = useState(true);
   const [isLoadingThread, setIsLoadingThread] = useState(false);
   const [dealValue, setDealValue] = useState<string>('');
+
+  const [affiliates, setAffiliates] = useState<AdminAffiliate[]>([]);
+  const [isLoadingAffiliates, setIsLoadingAffiliates] = useState(true);
 
   const chatStreamRef = useRef<HTMLDivElement>(null);
 
@@ -57,8 +80,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
     setIsLoadingList(false);
   };
 
+  const loadAffiliates = async () => {
+    const { data, error } = await supabase
+      .from('affiliate_stats')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (!error && data) {
+      setAffiliates(data.map(rowToAffiliate));
+    }
+    setIsLoadingAffiliates(false);
+  };
+
   useEffect(() => {
     void loadConversations();
+    void loadAffiliates();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -183,7 +219,85 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
   ];
 
   return (
-    <div className="flex-1 w-full max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-10 py-6 flex flex-col lg:flex-row gap-6 min-h-[640px]">
+    <div className="flex-1 w-full max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-10 py-6 flex flex-col gap-6 min-h-[640px]">
+      {/* Dashboard section selector */}
+      <div className="flex items-center gap-1.5 bg-white border border-[#e5e9f5] rounded-xl p-1.5 w-fit shadow-sm">
+        <button
+          onClick={() => setDashboardTab('clients')}
+          className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-colors cursor-pointer ${
+            dashboardTab === 'clients' ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-slate-100'
+          }`}
+        >
+          Clients
+        </button>
+        <button
+          onClick={() => setDashboardTab('affiliates')}
+          className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-colors cursor-pointer ${
+            dashboardTab === 'affiliates' ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-slate-100'
+          }`}
+        >
+          Affiliates
+        </button>
+      </div>
+
+      {dashboardTab === 'affiliates' ? (
+        <div className="bg-white border border-[#e5e9f5] rounded-2xl shadow-sm overflow-hidden">
+          <div className="p-4 border-b border-[#e5e9f5]">
+            <h2 className="font-display text-lg font-bold text-slate-900">Affiliates</h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              {affiliates.length} affiliate{affiliates.length === 1 ? '' : 's'} registered
+            </p>
+          </div>
+
+          <div className="overflow-x-auto">
+            {isLoadingAffiliates ? (
+              <div className="p-4 text-xs text-slate-400">Loading...</div>
+            ) : affiliates.length === 0 ? (
+              <div className="p-4 text-xs text-slate-400">No affiliates yet.</div>
+            ) : (
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-100">
+                    <th className="px-4 py-3">Name</th>
+                    <th className="px-4 py-3">Email</th>
+                    <th className="px-4 py-3">Age</th>
+                    <th className="px-4 py-3">Country</th>
+                    <th className="px-4 py-3">Referral Code</th>
+                    <th className="px-4 py-3 text-right">Leads</th>
+                    <th className="px-4 py-3 text-right">Deals Closed</th>
+                    <th className="px-4 py-3 text-right">Deal Value</th>
+                    <th className="px-4 py-3 text-right">Commission Owed</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {affiliates.map((a) => (
+                    <tr key={a.affiliateId} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
+                      <td className="px-4 py-3 font-semibold text-slate-900 whitespace-nowrap">{a.fullName}</td>
+                      <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{a.email}</td>
+                      <td className="px-4 py-3 text-slate-600">{a.age ?? '—'}</td>
+                      <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{a.country || '—'}</td>
+                      <td className="px-4 py-3 font-mono text-xs text-slate-500">{a.referralCode}</td>
+                      <td className="px-4 py-3 text-right flex items-center justify-end gap-1 text-slate-700">
+                        <Users className="w-3.5 h-3.5 text-blue-600" />
+                        {a.leadsCount}
+                      </td>
+                      <td className="px-4 py-3 text-right text-slate-700">{a.dealsClosed}</td>
+                      <td className="px-4 py-3 text-right text-slate-700">
+                        ${a.totalDealValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                      </td>
+                      <td className="px-4 py-3 text-right font-semibold text-blue-600 flex items-center justify-end gap-1">
+                        <DollarSign className="w-3.5 h-3.5" />
+                        {a.commissionOwed.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+      ) : (
+      <div className="flex-1 w-full flex flex-col lg:flex-row gap-6 min-h-[640px]">
       {/* Conversation list */}
       <aside className="w-full lg:w-[340px] shrink-0 bg-white border border-[#e5e9f5] rounded-2xl shadow-sm flex flex-col overflow-hidden">
         <div className="p-4 border-b border-[#e5e9f5]">
@@ -234,6 +348,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
                   </span>
                   {c.organization && <span className="text-[11px] text-slate-400 truncate">{c.organization}</span>}
                 </div>
+                <div className="mt-1">
+                  {c.affiliateEmail ? (
+                    <span className="text-[10px] font-semibold text-blue-600 truncate block">
+                      via affiliate: {c.affiliateEmail}
+                    </span>
+                  ) : (
+                    <span className="text-[10px] text-slate-400">Direct signup</span>
+                  )}
+                </div>
                 {c.lastMessage && <p className="text-xs text-slate-500 mt-1 truncate">{c.lastMessage}</p>}
               </button>
             ))
@@ -253,6 +376,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
               <div>
                 <h3 className="font-display text-sm font-bold text-slate-900">{selectedConversation.fullName}</h3>
                 <p className="text-xs text-slate-500">{selectedConversation.organization || 'No organization given'}</p>
+                <p className="text-xs mt-0.5">
+                  {selectedConversation.affiliateEmail ? (
+                    <span className="text-blue-600 font-medium">Referred by {selectedConversation.affiliateEmail}</span>
+                  ) : (
+                    <span className="text-slate-400">Direct signup</span>
+                  )}
+                </p>
               </div>
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-1 text-xs">
@@ -350,6 +480,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
           </>
         )}
       </main>
+    </div>
+      )}
     </div>
   );
 };
