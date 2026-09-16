@@ -66,6 +66,19 @@ function rowToAffiliateConversation(row: any): AdminAffiliateConversation {
   };
 }
 
+type AffiliateActivityFilter = 'all' | 'no_activity' | 'has_leads' | 'due_payment';
+
+function matchesAffiliateActivityFilter(
+  activityFilter: AffiliateActivityFilter,
+  leadsCount: number,
+  commissionOwed: number
+): boolean {
+  if (activityFilter === 'no_activity') return leadsCount === 0;
+  if (activityFilter === 'has_leads') return leadsCount > 0;
+  if (activityFilter === 'due_payment') return commissionOwed > 0;
+  return true;
+}
+
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
   const [dashboardTab, setDashboardTab] = useState<'clients' | 'affiliates' | 'affiliate-chats'>('clients');
 
@@ -80,9 +93,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
 
   const [affiliates, setAffiliates] = useState<AdminAffiliate[]>([]);
   const [isLoadingAffiliates, setIsLoadingAffiliates] = useState(true);
+  const [affiliatesActivityFilter, setAffiliatesActivityFilter] = useState<AffiliateActivityFilter>('all');
 
   const [affiliateConversations, setAffiliateConversations] = useState<AdminAffiliateConversation[]>([]);
   const [isLoadingAffiliateChatList, setIsLoadingAffiliateChatList] = useState(true);
+  const [affiliateChatsActivityFilter, setAffiliateChatsActivityFilter] = useState<AffiliateActivityFilter>('all');
   const [selectedAffiliateChatId, setSelectedAffiliateChatId] = useState<string | null>(null);
   const [affiliateChatMessages, setAffiliateChatMessages] = useState<ChatMessage[]>([]);
   const [isLoadingAffiliateChatThread, setIsLoadingAffiliateChatThread] = useState(false);
@@ -332,11 +347,28 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
   const selectedAffiliateConversation = affiliateConversations.find((c) => c.affiliateId === selectedAffiliateChatId) || null;
   const totalAffiliateUnread = affiliateConversations.reduce((sum, c) => sum + c.unreadCount, 0);
 
+  const affiliateById = new Map<string, AdminAffiliate>(affiliates.map((a) => [a.affiliateId, a]));
+
+  const filteredAffiliates = affiliates.filter((a) =>
+    matchesAffiliateActivityFilter(affiliatesActivityFilter, a.leadsCount, a.commissionOwed)
+  );
+  const filteredAffiliateConversations = affiliateConversations.filter((c) => {
+    const stats = affiliateById.get(c.affiliateId);
+    return matchesAffiliateActivityFilter(affiliateChatsActivityFilter, stats?.leadsCount ?? 0, stats?.commissionOwed ?? 0);
+  });
+
   const filterTabs: { id: 'all' | ClientStatus; label: string }[] = [
     { id: 'all', label: 'All' },
     { id: 'new_client', label: 'New Client' },
     { id: 'interested', label: 'Interested' },
     { id: 'paid', label: 'Paid' }
+  ];
+
+  const affiliateActivityFilterTabs: { id: AffiliateActivityFilter; label: string }[] = [
+    { id: 'all', label: 'All' },
+    { id: 'no_activity', label: 'No Activity' },
+    { id: 'has_leads', label: 'Leads Referred' },
+    { id: 'due_payment', label: 'Due Payments' }
   ];
 
   return (
@@ -387,15 +419,28 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
               <p className="text-xs text-slate-500 mt-0.5">
                 {totalAffiliateUnread > 0 ? `${totalAffiliateUnread} unread message${totalAffiliateUnread === 1 ? '' : 's'}` : 'All caught up'}
               </p>
+              <div className="flex flex-wrap gap-1.5 mt-3">
+                {affiliateActivityFilterTabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setAffiliateChatsActivityFilter(tab.id)}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                      affiliateChatsActivityFilter === tab.id ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div className="flex-1 overflow-y-auto custom-scroll">
               {isLoadingAffiliateChatList ? (
                 <div className="p-4 text-xs text-slate-400">Loading...</div>
-              ) : affiliateConversations.length === 0 ? (
-                <div className="p-4 text-xs text-slate-400">No affiliates yet.</div>
+              ) : filteredAffiliateConversations.length === 0 ? (
+                <div className="p-4 text-xs text-slate-400">No affiliates here yet.</div>
               ) : (
-                affiliateConversations.map((c) => (
+                filteredAffiliateConversations.map((c) => (
                   <button
                     key={c.affiliateId}
                     onClick={() => void openAffiliateChat(c.affiliateId)}
@@ -493,13 +538,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
             <p className="text-xs text-slate-500 mt-0.5">
               {affiliates.length} affiliate{affiliates.length === 1 ? '' : 's'} registered
             </p>
+            <div className="flex flex-wrap gap-1.5 mt-3">
+              {affiliateActivityFilterTabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setAffiliatesActivityFilter(tab.id)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                    affiliatesActivityFilter === tab.id ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="overflow-x-auto">
             {isLoadingAffiliates ? (
               <div className="p-4 text-xs text-slate-400">Loading...</div>
-            ) : affiliates.length === 0 ? (
-              <div className="p-4 text-xs text-slate-400">No affiliates yet.</div>
+            ) : filteredAffiliates.length === 0 ? (
+              <div className="p-4 text-xs text-slate-400">No affiliates match this filter.</div>
             ) : (
               <table className="w-full text-sm">
                 <thead>
@@ -516,7 +574,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {affiliates.map((a) => (
+                  {filteredAffiliates.map((a) => (
                     <tr key={a.affiliateId} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
                       <td className="px-4 py-3 font-semibold text-slate-900 whitespace-nowrap">{a.fullName}</td>
                       <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{a.email}</td>
