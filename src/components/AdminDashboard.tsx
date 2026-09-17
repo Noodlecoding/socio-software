@@ -106,6 +106,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
   const [isLoadingList, setIsLoadingList] = useState(true);
   const [isLoadingThread, setIsLoadingThread] = useState(false);
   const [dealValue, setDealValue] = useState<string>('');
+  const [amountPaid, setAmountPaid] = useState<string>('');
   const [dealContributionInput, setDealContributionInput] = useState('');
 
   const [affiliates, setAffiliates] = useState<AdminAffiliate[]>([]);
@@ -223,18 +224,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
     setIsLoadingThread(true);
     setMessages([]);
     setDealValue('');
+    setAmountPaid('');
     setDealContributionInput('');
 
     const [messagesResult, profileResult] = await Promise.all([
       supabase.from('messages').select('*').eq('user_id', userId).order('created_at', { ascending: true }),
-      supabase.from('profiles').select('deal_value').eq('id', userId).single()
+      supabase.from('profiles').select('deal_value, amount_paid').eq('id', userId).single()
     ]);
 
     if (!messagesResult.error && messagesResult.data) {
       setMessages(messagesResult.data.map(rowToChatMessage));
     }
-    if (!profileResult.error && profileResult.data?.deal_value != null) {
-      setDealValue(String(profileResult.data.deal_value));
+    if (!profileResult.error && profileResult.data) {
+      if (profileResult.data.deal_value != null) setDealValue(String(profileResult.data.deal_value));
+      setAmountPaid(String(profileResult.data.amount_paid ?? 0));
     }
     setIsLoadingThread(false);
 
@@ -356,15 +359,24 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
     void loadAffiliates();
   };
 
+  const handleSaveDealCost = async () => {
+    if (!selectedId) return;
+    const value = dealValue.trim() === '' ? null : Number(dealValue);
+    if (value !== null && Number.isNaN(value)) return;
+    const { error } = await supabase.from('profiles').update({ deal_value: value }).eq('id', selectedId);
+    if (error) console.error('Failed to save deal cost:', error.message);
+    void loadAffiliates();
+  };
+
   const handleContributeToDeal = async () => {
     if (!selectedId) return;
     const amount = Number(dealContributionInput);
     if (!dealContributionInput.trim() || Number.isNaN(amount) || amount <= 0) return;
-    const current = dealValue.trim() === '' ? 0 : Number(dealValue);
+    const current = amountPaid.trim() === '' ? 0 : Number(amountPaid);
     const newValue = current + amount;
-    const { error } = await supabase.from('profiles').update({ deal_value: newValue }).eq('id', selectedId);
+    const { error } = await supabase.from('profiles').update({ amount_paid: newValue }).eq('id', selectedId);
     if (error) console.error('Failed to record payment:', error.message);
-    setDealValue(String(newValue));
+    setAmountPaid(String(newValue));
     setDealContributionInput('');
     void loadAffiliates();
   };
@@ -845,10 +857,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <div className="text-xs text-right" title="Used to calculate affiliate commission when this client is marked Paid">
+                <div className="flex items-center gap-1 text-xs">
+                  <span className="text-slate-400">$</span>
+                  <input
+                    value={dealValue}
+                    onChange={(e) => setDealValue(e.target.value)}
+                    onBlur={() => void handleSaveDealCost()}
+                    placeholder="Deal cost"
+                    inputMode="decimal"
+                    className="w-20 border border-slate-200 rounded-lg px-2 py-1.5 font-semibold"
+                    title="Total agreed deal cost — used to calculate affiliate commission when this client is marked Paid"
+                  />
+                </div>
+                <div className="text-xs text-right">
                   <span className="text-slate-400 block">Amount paid</span>
                   <span className="font-semibold text-slate-900">
-                    ${(dealValue.trim() === '' ? 0 : Number(dealValue)).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                    ${(amountPaid.trim() === '' ? 0 : Number(amountPaid)).toLocaleString(undefined, { maximumFractionDigits: 0 })}
                   </span>
                 </div>
                 <div className="flex items-center gap-1 text-xs">
