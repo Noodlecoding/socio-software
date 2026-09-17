@@ -537,15 +537,6 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
               <span className="font-semibold text-slate-800 truncate max-w-[200px]">{user.organization || '—'}</span>
             </div>
           </div>
-
-          <div className="pt-3 border-t border-slate-100">
-            <button
-              onClick={() => onNavigate('landing')}
-              className="w-full text-center text-xs font-semibold text-blue-600 hover:text-blue-700 py-1 cursor-pointer"
-            >
-              {t('workspace.profileCard.seeOtherExamples')}
-            </button>
-          </div>
         </div>
 
         {/* Project Specs & Files */}
