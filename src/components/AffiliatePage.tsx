@@ -153,7 +153,6 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
   const [leadsSlider, setLeadsSlider] = useState(3);
   const [showLeadGuide, setShowLeadGuide] = useState(false);
   const [showRecruitPrompt, setShowRecruitPrompt] = useState(false);
-  const [recruitLinkCopied, setRecruitLinkCopied] = useState(false);
 
   const [ageInput, setAgeInput] = useState('');
   const [countryInput, setCountryInput] = useState('');
@@ -488,14 +487,22 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
     setShowLeadGuide(true);
   };
 
-  const handleCopyRecruitLink = async () => {
+  const handleShareAndContinue = async () => {
+    const shareData = {
+      title: 'Socio Growth Partner',
+      text: t('affiliate.dashboard.recruitPromptShareText'),
+      url: AFFILIATE_SIGNUP_LINK
+    };
     try {
-      await navigator.clipboard.writeText(AFFILIATE_SIGNUP_LINK);
-      setRecruitLinkCopied(true);
-      setTimeout(() => setRecruitLinkCopied(false), 2000);
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(AFFILIATE_SIGNUP_LINK);
+      }
     } catch {
-      // clipboard unavailable — nothing we can do
+      // user cancelled the share sheet or clipboard unavailable — continue regardless
     }
+    handleContinueFromRecruitPrompt();
   };
 
   // Dashboard: logged in and already an affiliate
@@ -532,29 +539,31 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
                 {t('affiliate.dashboard.recruitPromptBody')}
               </p>
 
-              <div className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 mt-4 flex items-center gap-3">
-                <span className="flex-1 font-mono text-xs text-slate-600 truncate">{AFFILIATE_SIGNUP_LINK}</span>
-                <button
-                  type="button"
-                  onClick={handleCopyRecruitLink}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700 cursor-pointer shrink-0"
-                >
-                  {recruitLinkCopied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                  {recruitLinkCopied ? t('affiliate.dashboard.copied') : t('affiliate.dashboard.copyLink')}
-                </button>
+              <div className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 mt-4">
+                <span className="font-mono text-xs text-slate-600 truncate block">{AFFILIATE_SIGNUP_LINK}</span>
               </div>
 
               <p className="text-xs text-slate-400 mt-4 leading-relaxed">
                 {t('affiliate.dashboard.recruitPromptNote')}
               </p>
 
-              <button
-                type="button"
-                onClick={handleContinueFromRecruitPrompt}
-                className="w-full mt-6 inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-all shadow-sm text-sm cursor-pointer"
-              >
-                {t('affiliate.dashboard.recruitPromptContinue')}
-              </button>
+              <div className="flex flex-col gap-2.5 mt-6">
+                <button
+                  type="button"
+                  onClick={handleShareAndContinue}
+                  className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-all shadow-sm text-sm cursor-pointer"
+                >
+                  <Share2 className="w-4 h-4" />
+                  {t('affiliate.dashboard.recruitPromptShare')}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleContinueFromRecruitPrompt}
+                  className="w-full text-center text-sm font-semibold text-slate-500 hover:text-blue-600 transition-colors cursor-pointer py-1"
+                >
+                  {t('affiliate.dashboard.recruitPromptNoThanks')}
+                </button>
+              </div>
             </div>
           </div>
         )}
