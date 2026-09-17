@@ -70,7 +70,7 @@ const STEPS = [
   },
   {
     title: 'Earn 23% commission',
-    body: "Know a business that needs software built? Send them our way. When a deal you referred closes, you get 23% of what they pay in USD. No cap, no catch."
+    body: "Contact businesses that need software built. Send them our way. When a deal you referred closes, you get 23% of what they pay in USD. No cap, no catch."
   },
   {
     title: 'Get your own referral link',
@@ -83,6 +83,10 @@ const STEPS = [
   {
     title: 'Track it all in your dashboard',
     body: "See exactly how many leads you've sent, how many turned into paid deals and how much commission you've earned — updated in real time."
+  },
+  {
+    title: 'Get help finding leads',
+    body: "Your dashboard has a full playbook of proven ways to find high-quality leads. On average, growth partners land between 0 and 3 confirmed clients per month — the playbook is there to help you push toward the higher end of that."
   }
 ];
 
@@ -551,7 +555,7 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
               </div>
               <div>
                 <h3 className="font-display text-sm font-bold text-slate-900">Contact Admin or request a payout</h3>
-                <p className="text-[11px] text-slate-500">Send a message about your referrals, commission, or anything else</p>
+                <p className="text-[11px] text-slate-500">Send a message about your referrals, commission or anything else</p>
               </div>
             </div>
 
@@ -720,7 +724,7 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
   }
 
   // Not logged in: 5-step onboarding, last step is the login/signup form
-  const isLastStep = step === 5;
+  const isLastStep = step === 6;
 
   return (
     <main className="w-full pt-32 pb-20 px-6 lg:px-12 min-h-screen bg-[#f8f9fd] flex items-center justify-center">
@@ -728,7 +732,7 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
       <div className="max-w-md w-full">
         {/* Step progress */}
         <div className="flex items-center gap-1.5 mb-8">
-          {[0, 1, 2, 3, 4, 5].map((i) => (
+          {[0, 1, 2, 3, 4, 5, 6].map((i) => (
             <div key={i} className={`h-1.5 flex-1 rounded-full ${i <= step ? 'bg-blue-600' : 'bg-slate-200'}`} />
           ))}
         </div>
@@ -744,7 +748,7 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
               transition={{ duration: 0.2, ease: 'easeOut' }}
             >
               <span className="text-xs font-bold uppercase tracking-wider text-blue-600 mb-2 block">
-                Step {step + 1} of 6
+                Step {step + 1} of 7
               </span>
               <h1 className="font-display text-2xl font-extrabold text-slate-900 tracking-tight">
                 {STEPS[step].title}
@@ -761,7 +765,7 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
                     <span className="font-display text-3xl font-extrabold text-slate-900">
                       {leadsSlider}{leadsSlider === 5 ? '+' : ''}
                     </span>
-                    <span className="text-sm text-slate-500"> confirmed {leadsSlider === 1 ? 'lead' : 'leads'}</span>
+                    <span className="text-sm text-slate-500"> confirmed {leadsSlider === 1 ? 'lead' : 'leads'}/month</span>
                   </div>
                   <input
                     type="range"
@@ -783,7 +787,7 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
                     <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block">You could earn</span>
                     <span className="font-display text-3xl font-extrabold text-blue-600">
                       ${projectedEarnings.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                      {leadsSlider === 5 ? '+' : ''} USD
+                      {leadsSlider === 5 ? '+' : ''} USD/month
                     </span>
                   </div>
                 </div>
@@ -799,7 +803,7 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
                   Back
                 </button>
                 <button
-                  onClick={() => setStep((s) => Math.min(5, s + 1))}
+                  onClick={() => setStep((s) => Math.min(6, s + 1))}
                   className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-all cursor-pointer"
                 >
                   Continue
@@ -815,7 +819,7 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
               exit={{ opacity: 0, x: -16 }}
               transition={{ duration: 0.2, ease: 'easeOut' }}
             >
-              <span className="text-xs font-bold uppercase tracking-wider text-blue-600 mb-2 block">Step 6 of 6</span>
+              <span className="text-xs font-bold uppercase tracking-wider text-blue-600 mb-2 block">Step 7 of 7</span>
               <h1 className="font-display text-2xl font-extrabold text-slate-900 tracking-tight">
                 {mode === 'signup' ? 'Create your growth partner account' : 'Sign in'}
               </h1>
@@ -900,7 +904,7 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
 
               <div className="flex items-center justify-between mt-4">
                 <button
-                  onClick={() => setStep(4)}
+                  onClick={() => setStep(5)}
                   className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 hover:text-slate-700 cursor-pointer"
                 >
                   <ArrowLeft className="w-4 h-4" />
