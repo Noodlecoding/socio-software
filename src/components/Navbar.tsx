@@ -33,9 +33,14 @@ interface NavbarProps {
   onSignOut: () => void;
   onSignInClick: () => void;
   isAdmin?: boolean;
+  hasNewMessage?: boolean;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, user, onSignOut, onSignInClick, isAdmin }) => {
+const NewMessageDot: React.FC = () => (
+  <span className="w-2 h-2 rounded-full bg-red-500 shrink-0" aria-label="New message" />
+);
+
+export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, user, onSignOut, onSignInClick, isAdmin, hasNewMessage }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { t } = useLanguage();
 
@@ -131,14 +136,16 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, user, o
           >
             <MessageSquare className="w-4 h-4" />
             <span>{user ? (isAdmin ? t('nav.clientInbox') : t('nav.discussionDesk')) : t('nav.signIn')}</span>
+            {user && user.accountType !== 'affiliate' && hasNewMessage && <NewMessageDot />}
           </button>
           <button
             onClick={() => onNavigate('affiliate')}
-            className={`text-sm font-medium transition-colors cursor-pointer ${
+            className={`inline-flex items-center gap-1.5 text-sm font-medium transition-colors cursor-pointer ${
               currentView === 'affiliate' ? 'text-blue-600' : 'text-slate-600 hover:text-blue-600'
             }`}
           >
-            {t('nav.growthPartner')}
+            <span>{t('nav.growthPartner')}</span>
+            {user && user.accountType === 'affiliate' && hasNewMessage && <NewMessageDot />}
           </button>
         </nav>
 
@@ -209,15 +216,17 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, user, o
           >
             <MessageSquare className="w-4 h-4" />
             <span>{user ? (isAdmin ? t('nav.clientInbox') : t('nav.discussionDesk')) : t('nav.signIn')}</span>
+            {user && user.accountType !== 'affiliate' && hasNewMessage && <NewMessageDot />}
           </button>
           <button
             onClick={() => {
               setIsMobileMenuOpen(false);
               onNavigate('affiliate');
             }}
-            className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors cursor-pointer py-1.5 text-left"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors cursor-pointer py-1.5 text-left"
           >
-            {t('nav.growthPartner')}
+            <span>{t('nav.growthPartner')}</span>
+            {user && user.accountType === 'affiliate' && hasNewMessage && <NewMessageDot />}
           </button>
 
           <div className="pt-3 border-t border-slate-100">

@@ -55,6 +55,11 @@ export default function App() {
   const [currentView, setCurrentView] = useState<AppView>('landing');
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
+  // True whenever the last message in this user's chat wasn't sent by them
+  // (i.e. the architect/admin replied and they haven't responded yet).
+  // Drives the red-dot nav indicator — cleared only by the user actually
+  // sending a message, never by just opening the chat.
+  const [hasNewMessage, setHasNewMessage] = useState(false);
   // Bumped whenever the navbar's "Sign in" is clicked, so LandingPage's
   // effect can pop the existing login modal open in signin mode instead of
   // scrolling to the signup section.
@@ -161,6 +166,48 @@ export default function App() {
     };
   }, []);
 
+  const isAdmin = user?.email === ADMIN_EMAIL;
+
+  // Track whether the admin has the last word in this user's chat, for the
+  // red-dot nav indicator. Not relevant for the admin's own account.
+  useEffect(() => {
+    if (!user || isAdmin) {
+      setHasNewMessage(false);
+      return;
+    }
+
+    let isMounted = true;
+
+    supabase
+      .from('messages')
+      .select('sender')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (isMounted) {
+          setHasNewMessage(!!data && data.sender === 'architect');
+        }
+      });
+
+    const channel = supabase
+      .channel(`unread-indicator-${user.id}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'messages', filter: `user_id=eq.${user.id}` },
+        (payload) => {
+          setHasNewMessage(payload.new.sender === 'architect');
+        }
+      )
+      .subscribe();
+
+    return () => {
+      isMounted = false;
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, isAdmin]);
+
   const handleUpdateUser = (updated: Partial<UserProfile>) => {
     setUser((prev) => {
       if (!prev) return prev;
@@ -216,13 +263,12 @@ export default function App() {
     );
   }
 
-  const isAdmin = user?.email === ADMIN_EMAIL;
-
   return (
     <div className="min-h-screen bg-[#f8f9fd] text-slate-800 flex flex-col selection:bg-blue-100 selection:text-blue-900 font-sans">
       <Navbar
         currentView={currentView === 'affiliate' || currentView === 'legal' ? currentView : user ? currentView : 'landing'}
         onNavigate={handleNavigate}
+        hasNewMessage={hasNewMessage}
         user={user}
         onSignOut={handleSignOut}
         onSignInClick={handleSignInClick}
