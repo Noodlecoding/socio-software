@@ -66,7 +66,7 @@ const MIN_AFFILIATE_AGE = 18;
 const STEPS = [
   {
     title: 'Earn money remotely',
-    body: "This is **fully remote** — no office, no set hours.\nIf you know business owners who might need custom software, send us their name or connect us.\n**You don't need any sales or tech experience.**"
+    body: "This is **fully remote**, no office, no set hours.\nIf you know business owners who might need custom software, send us their name or connect us.\n**You don't need any sales or tech experience.**"
   },
   {
     title: 'Earn 23% commission',
@@ -74,19 +74,19 @@ const STEPS = [
   },
   {
     title: 'Get your own referral link',
-    body: "Once you sign up, you get a **unique referral link**.\nShare it anywhere — anyone who signs up through it is automatically tracked as your referral."
+    body: "Once you sign up, you get a **unique referral link**.\nShare it anywhere. Anyone who signs up through it is automatically tracked as your referral."
   },
   {
     title: 'We handle the rest',
-    body: "**You don't need to sell anything.**\nOnce someone signs up through your link, our team takes the conversation from there — scoping, pricing and building."
+    body: "**You don't need to sell anything.**\nOnce someone signs up through your link, our team takes the conversation from there: scoping, pricing and building."
   },
   {
     title: 'Track it all in your dashboard',
-    body: "See exactly how many **leads you've sent**, how many turned into **paid deals** and how much **commission you've earned** — updated in real time."
+    body: "See exactly how many **leads you've sent**, how many turned into **paid deals** and how much **commission you've earned**, updated in real time."
   },
   {
     title: 'Get help finding leads',
-    body: "Your dashboard has a full playbook of proven ways to find high-quality leads.\nOn average, growth partners land between **0 and 3 confirmed clients per month** — the playbook is there to help you push toward the higher end of that."
+    body: "Your dashboard has a full playbook of proven ways to find high-quality leads.\nOn average, growth partners land between **0 and 3 confirmed clients per month**. The playbook is there to help you push toward the higher end of that."
   }
 ];
 
