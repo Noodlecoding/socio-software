@@ -374,7 +374,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <div className="flex flex-wrap items-center gap-4 mt-10">
                 <button
                   type="button"
-                  onClick={() => (user ? onStartAudit() : setIsLoginModalOpen(true))}
+                  onClick={() => {
+                    if (user) {
+                      onStartAudit();
+                      return;
+                    }
+                    setAuthError(null);
+                    setMode('signup');
+                    setIsEmailFormOpen(false);
+                    setIsLoginModalOpen(true);
+                  }}
                   className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-all shadow-sm hover:shadow-md text-sm cursor-pointer"
                 >
                   <span>{t('hero.cta')}</span>
