@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { SOCIO_LOGO_URL } from '../data/initialData';
 import { UserProfile } from '../types';
 import type { AppView } from '../App';
-import { ArrowRight, MessageSquare, LayoutTemplate, LogOut } from 'lucide-react';
+import { ArrowRight, MessageSquare, LayoutTemplate, LogOut, Menu, X } from 'lucide-react';
 
 interface NavbarProps {
   currentView: AppView;
@@ -13,6 +13,8 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, user, onSignOut, isAdmin }) => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   if (currentView === 'workspace' && user) {
     return (
       <header className="h-16 border-b border-[#e5e9f5] bg-white sticky top-0 z-50 flex items-center px-4 sm:px-6 lg:px-10 justify-between shrink-0 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
@@ -117,8 +119,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, user, o
           </button>
         </nav>
 
-        {/* Header CTAs */}
-        <div className="flex items-center gap-3">
+        {/* Header CTAs (desktop) */}
+        <div className="hidden md:flex items-center gap-3">
           {user ? (
             <button
               onClick={onSignOut}
@@ -137,7 +139,70 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, user, o
             </a>
           )}
         </div>
+
+        {/* Mobile menu toggle */}
+        <button
+          onClick={() => setIsMobileMenuOpen((v) => !v)}
+          className="md:hidden w-9 h-9 flex items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+          aria-label="Toggle menu"
+        >
+          {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        </button>
       </div>
+
+      {/* Mobile menu panel */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden border-t border-slate-100 bg-white px-6 py-4 flex flex-col gap-3">
+          <a
+            className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors py-1.5"
+            href="#how-it-works"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            How It Works
+          </a>
+          <a
+            className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors py-1.5"
+            href="#models"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            Our Work
+          </a>
+          <button
+            onClick={() => {
+              setIsMobileMenuOpen(false);
+              onNavigate('workspace');
+            }}
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors cursor-pointer py-1.5"
+          >
+            <MessageSquare className="w-4 h-4" />
+            <span>{user ? (isAdmin ? 'Client Inbox' : 'Discussion Desk') : 'Sign in'}</span>
+          </button>
+
+          <div className="pt-3 border-t border-slate-100">
+            {user ? (
+              <button
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  onSignOut();
+                }}
+                className="w-full inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-lg text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 transition-all cursor-pointer"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Sign out</span>
+              </button>
+            ) : (
+              <a
+                className="w-full inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-lg text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-all shadow-sm hover:shadow-md"
+                href="#get-started"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <span>Get started</span>
+                <ArrowRight className="w-4 h-4" />
+              </a>
+            )}
+          </div>
+        </div>
+      )}
     </header>
   );
 };

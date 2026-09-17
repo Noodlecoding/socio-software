@@ -844,7 +844,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
           </div>
         ) : (
           <>
-            <div className="p-4 border-b border-[#e5e9f5] flex items-center justify-between gap-3">
+            <div className="p-4 border-b border-[#e5e9f5] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
                 <h3 className="font-display text-sm font-bold text-slate-900">{selectedConversation.fullName}</h3>
                 <p className="text-xs text-slate-500">{selectedConversation.organization || 'No organization given'}</p>
@@ -856,7 +856,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
                   )}
                 </p>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3">
                 <div className="text-xs">
                   <span className="text-slate-400 block mb-1">Cost for the project</span>
                   <div className="flex items-center gap-1" title="Only changes when you edit it — used to calculate affiliate commission when this client is marked Paid">
