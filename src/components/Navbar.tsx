@@ -117,6 +117,14 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, user, o
             <MessageSquare className="w-4 h-4" />
             <span>{user ? (isAdmin ? 'Client Inbox' : 'Discussion Desk') : 'Sign in'}</span>
           </button>
+          <button
+            onClick={() => onNavigate('affiliate')}
+            className={`text-sm font-medium transition-colors cursor-pointer ${
+              currentView === 'affiliate' ? 'text-blue-600' : 'text-slate-600 hover:text-blue-600'
+            }`}
+          >
+            Growth Partner
+          </button>
         </nav>
 
         {/* Header CTAs (desktop) */}
@@ -176,6 +184,15 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, user, o
           >
             <MessageSquare className="w-4 h-4" />
             <span>{user ? (isAdmin ? 'Client Inbox' : 'Discussion Desk') : 'Sign in'}</span>
+          </button>
+          <button
+            onClick={() => {
+              setIsMobileMenuOpen(false);
+              onNavigate('affiliate');
+            }}
+            className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors cursor-pointer py-1.5 text-left"
+          >
+            Growth Partner
           </button>
 
           <div className="pt-3 border-t border-slate-100">

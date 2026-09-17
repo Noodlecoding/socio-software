@@ -87,7 +87,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ onNavigate }) => {
                 role === 'affiliate' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
               }`}
             >
-              I'm an Affiliate
+              I'm a Growth Partner
             </button>
           </div>
         </div>
@@ -106,7 +106,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ onNavigate }) => {
                 Socio ("Socio," "we," "us") is a custom software studio. This policy explains what
                 information we collect through socio&apos;s website and workspace, why we collect it,
                 and how you can control it. It applies to everyone who uses Socio, including clients and
-                affiliates.
+                growth partners.
               </p>
             </Section>
 
@@ -124,12 +124,12 @@ export const LegalPage: React.FC<LegalPageProps> = ({ onNavigate }) => {
                 <li>Messages you send us in the Discussion Desk, describing your project</li>
                 <li>Metadata about files you reference (file name, type, and size only — we do not currently store the contents of uploaded files)</li>
                 <li>Your selected engagement model, and internal pipeline status we use to track your project (e.g. new, in discussion, contracted)</li>
-                <li>Which affiliate, if any, referred you</li>
+                <li>Which growth partner, if any, referred you</li>
               </ul>
             </RoleSection>
 
-            <RoleSection role="affiliate" activeRole={role} label="For Affiliates">
-              <p>As an affiliate, we additionally collect:</p>
+            <RoleSection role="affiliate" activeRole={role} label="For Growth Partners">
+              <p>As a growth partner, we additionally collect:</p>
               <ul className="list-disc pl-5 space-y-1">
                 <li>Your self-reported age and country (used only to confirm eligibility — we do not verify this with an ID)</li>
                 <li>Your unique referral code and the clients it refers</li>
@@ -141,7 +141,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ onNavigate }) => {
               <ul className="list-disc pl-5 space-y-1">
                 <li>To create and secure your account, and authenticate you when you sign in</li>
                 <li>To operate the Discussion Desk and respond to your project</li>
-                <li>To calculate and pay affiliate commissions</li>
+                <li>To calculate and pay growth partner commissions</li>
                 <li>To detect and prevent abuse, including automated rate-limiting on login and signup attempts</li>
                 <li>To communicate with you about your account or project</li>
               </ul>
@@ -169,7 +169,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ onNavigate }) => {
                 <li>Vercel — website hosting</li>
               </ul>
               <p>
-                Affiliates can only see aggregate stats (lead count, deals closed, commission owed) and
+                Growth partners can only see aggregate stats (lead count, deals closed, commission owed) and
                 the profiles of clients they personally referred — never any other client&apos;s data.
               </p>
             </Section>
@@ -187,14 +187,14 @@ export const LegalPage: React.FC<LegalPageProps> = ({ onNavigate }) => {
               <p>
                 Data is encrypted in transit (HTTPS). Access to your data is restricted at the database
                 level by row-level security policies, so you can only ever read your own data (or, for
-                admins/affiliates, the specific data your role is entitled to). No security measure is
+                admins/growth partners, the specific data your role is entitled to). No security measure is
                 perfect, and we can&apos;t guarantee absolute security.
               </p>
             </Section>
 
             <Section title="8. Children's privacy">
               <p>
-                Socio is not directed at children. Affiliates must self-certify they are 18 or older; we
+                Socio is not directed at children. Growth partners must self-certify they are 18 or older; we
                 do not knowingly collect information from anyone under 18.
               </p>
             </Section>
@@ -235,7 +235,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ onNavigate }) => {
               <p>
                 Socio is a custom software studio. Prospective clients discuss project scope, budget,
                 and timeframe directly with us through the Discussion Desk before any engagement begins.
-                Socio also runs an affiliate program that pays a referral commission on closed deals.
+                Socio also runs a growth partner program that pays a referral commission on closed deals.
               </p>
             </Section>
 
@@ -243,7 +243,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ onNavigate }) => {
               <ul className="list-disc pl-5 space-y-1">
                 <li>You must provide accurate information when creating an account</li>
                 <li>You're responsible for keeping your login credentials secure and for activity under your account</li>
-                <li>Affiliate accounts require you to be 18 or older, confirmed by your own self-certification</li>
+                <li>Growth partner accounts require you to be 18 or older, confirmed by your own self-certification</li>
               </ul>
             </Section>
 
@@ -255,9 +255,9 @@ export const LegalPage: React.FC<LegalPageProps> = ({ onNavigate }) => {
               </ul>
             </RoleSection>
 
-            <RoleSection role="affiliate" activeRole={role} label="For Affiliates">
+            <RoleSection role="affiliate" activeRole={role} label="For Growth Partners">
               <ul className="list-disc pl-5 space-y-1">
-                <li>You earn a 23% commission on the value of any deal that closes from a client you referred, as tracked in your affiliate dashboard</li>
+                <li>You earn a 23% commission on the value of any deal that closes from a client you referred, as tracked in your growth partner dashboard</li>
                 <li>Commission is calculated once a referred client's deal is marked closed in our system; payout timing and method will be confirmed with you directly — this isn't yet a fixed, published schedule</li>
                 <li>Self-referrals, fraudulent referrals, or misrepresenting Socio to prospective clients are prohibited and may result in forfeiting commission and/or account termination</li>
                 <li>We don't guarantee any minimum number of referrals, conversions, or earnings</li>
@@ -291,7 +291,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ onNavigate }) => {
 
             <Section title="7. Termination">
               <p>
-                We may suspend or terminate your account for violating these Terms, including affiliate
+                We may suspend or terminate your account for violating these Terms, including growth partner
                 fraud or abuse. You may stop using Socio and request account deletion at any time by
                 emailing{' '}
                 <a href={`mailto:${CONTACT_EMAIL}`} className="text-blue-600 hover:underline">{CONTACT_EMAIL}</a>.

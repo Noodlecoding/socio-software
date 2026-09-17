@@ -90,7 +90,7 @@ export const AffiliateLeadGuide: React.FC<AffiliateLeadGuideProps> = ({ referral
           Back to dashboard
         </button>
 
-        <span className="text-xs font-bold uppercase tracking-wider text-blue-600 mb-2 block">Affiliate Playbook</span>
+        <span className="text-xs font-bold uppercase tracking-wider text-blue-600 mb-2 block">Growth Partner Playbook</span>
         <h1 className="font-display text-3xl font-extrabold text-slate-900 tracking-tight">
           5 top high-ticket lead generation techniques
         </h1>

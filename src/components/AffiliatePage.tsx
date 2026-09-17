@@ -303,7 +303,7 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
       return;
     }
     if (age < MIN_AFFILIATE_AGE) {
-      setBecomeAffiliateError('You must be at least 18 years old to join the affiliate program.');
+      setBecomeAffiliateError('You must be at least 18 years old to join the growth partner program.');
       return;
     }
     if (!countryInput.trim()) {
@@ -412,7 +412,7 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
         <div className="max-w-4xl mx-auto">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-blue-600 mb-2 block">Affiliate Dashboard</span>
+              <span className="text-xs font-bold uppercase tracking-wider text-blue-600 mb-2 block">Growth Partner Dashboard</span>
               <h1 className="font-display text-3xl font-extrabold text-slate-900 tracking-tight">Welcome back, {user.name}</h1>
             </div>
             <button
@@ -639,10 +639,10 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
     return (
       <main className="w-full pt-32 pb-20 px-6 lg:px-12 min-h-screen bg-[#f8f9fd] flex items-center justify-center">
         <div className="max-w-md w-full bg-white border border-slate-200 rounded-2xl p-8 text-center shadow-sm">
-          <span className="text-xs font-bold uppercase tracking-wider text-blue-600 mb-2 block">Affiliate Program</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-blue-600 mb-2 block">Growth Partner Program</span>
           <h1 className="font-display text-xl font-bold text-slate-900">This account is already a client account</h1>
           <p className="text-sm text-slate-600 mt-2">
-            {user.name} is signed in with a client account, so it can't also register as an affiliate. Sign up for the affiliate program with a different email instead.
+            {user.name} is signed in with a client account, so it can't also register as a growth partner. Sign up for the growth partner program with a different email instead.
           </p>
           <button
             onClick={onSignOut}
@@ -661,10 +661,10 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
     return (
       <main className="w-full pt-32 pb-20 px-6 lg:px-12 min-h-screen bg-[#f8f9fd] flex items-center justify-center">
         <div className="max-w-md w-full bg-white border border-slate-200 rounded-2xl p-8 text-center shadow-sm">
-          <span className="text-xs font-bold uppercase tracking-wider text-blue-600 mb-2 block">Affiliate Program</span>
-          <h1 className="font-display text-xl font-bold text-slate-900">Become an affiliate as {user.name}?</h1>
+          <span className="text-xs font-bold uppercase tracking-wider text-blue-600 mb-2 block">Growth Partner Program</span>
+          <h1 className="font-display text-xl font-bold text-slate-900">Become a growth partner as {user.name}?</h1>
           <p className="text-sm text-slate-600 mt-2">
-            You're already signed in. Just confirm a couple details to register this account as an affiliate and get your referral link.
+            You're already signed in. Just confirm a couple details to register this account as a growth partner and get your referral link.
           </p>
 
           {becomeAffiliateError && (
@@ -705,7 +705,7 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
             disabled={isBecoming}
             className="w-full mt-5 inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-all disabled:opacity-60 cursor-pointer"
           >
-            {isBecoming ? 'Setting up...' : 'Become an Affiliate'}
+            {isBecoming ? 'Setting up...' : 'Become a Growth Partner'}
           </button>
           <button
             onClick={onSignOut}
@@ -817,12 +817,12 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
             >
               <span className="text-xs font-bold uppercase tracking-wider text-blue-600 mb-2 block">Step 6 of 6</span>
               <h1 className="font-display text-2xl font-extrabold text-slate-900 tracking-tight">
-                {mode === 'signup' ? 'Create your affiliate account' : 'Sign in'}
+                {mode === 'signup' ? 'Create your growth partner account' : 'Sign in'}
               </h1>
               <p className="text-sm text-slate-600 mt-2">
                 {mode === 'signup'
                   ? "Last step — create an account and we'll generate your referral link."
-                  : 'Already an affiliate? Sign in to see your link and stats.'}
+                  : 'Already a growth partner? Sign in to see your link and stats.'}
               </p>
 
               {authError && (
@@ -913,7 +913,7 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
                   }}
                   className="text-xs font-semibold text-blue-600 hover:text-blue-700 cursor-pointer"
                 >
-                  {mode === 'signup' ? 'Already an affiliate? Sign in' : 'Need an account? Sign up'}
+                  {mode === 'signup' ? 'Already a growth partner? Sign in' : 'Need an account? Sign up'}
                 </button>
               </div>
             </motion.div>

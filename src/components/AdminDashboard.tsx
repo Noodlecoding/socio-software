@@ -40,7 +40,7 @@ function rowToConversation(row: any): AdminConversation {
 function rowToAffiliate(row: any): AdminAffiliate {
   return {
     affiliateId: row.affiliate_id,
-    fullName: row.full_name || 'Unnamed affiliate',
+    fullName: row.full_name || 'Unnamed growth partner',
     email: row.email || '',
     age: row.age ?? null,
     country: row.country ?? null,
@@ -59,7 +59,7 @@ function rowToAffiliate(row: any): AdminAffiliate {
 function rowToAffiliateConversation(row: any): AdminAffiliateConversation {
   return {
     affiliateId: row.affiliate_id,
-    fullName: row.full_name || 'Unnamed affiliate',
+    fullName: row.full_name || 'Unnamed growth partner',
     email: row.email || '',
     referralCode: row.referral_code,
     affiliateSince: row.affiliate_since,
@@ -451,7 +451,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
             dashboardTab === 'affiliates' ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-slate-100'
           }`}
         >
-          Affiliates
+          Growth Partners
         </button>
         <button
           onClick={() => setDashboardTab('affiliate-chats')}
@@ -459,7 +459,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
             dashboardTab === 'affiliate-chats' ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-slate-100'
           }`}
         >
-          Affiliate Chats
+          Growth Partner Chats
           {totalAffiliateUnread > 0 && (
             <span
               className={`min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold flex items-center justify-center ${
@@ -477,7 +477,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
           {/* Affiliate conversation list */}
           <aside className="w-full lg:w-[340px] shrink-0 bg-white border border-[#e5e9f5] rounded-2xl shadow-sm flex flex-col overflow-hidden">
             <div className="p-4 border-b border-[#e5e9f5]">
-              <h2 className="font-display text-lg font-bold text-slate-900">Affiliate Chats</h2>
+              <h2 className="font-display text-lg font-bold text-slate-900">Growth Partner Chats</h2>
               <p className="text-xs text-slate-500 mt-0.5">
                 {totalAffiliateUnread > 0 ? `${totalAffiliateUnread} unread message${totalAffiliateUnread === 1 ? '' : 's'}` : 'All caught up'}
               </p>
@@ -500,7 +500,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
               {isLoadingAffiliateChatList ? (
                 <div className="p-4 text-xs text-slate-400">Loading...</div>
               ) : filteredAffiliateConversations.length === 0 ? (
-                <div className="p-4 text-xs text-slate-400">No affiliates here yet.</div>
+                <div className="p-4 text-xs text-slate-400">No growth partners here yet.</div>
               ) : (
                 filteredAffiliateConversations.map((c) => (
                   <button
@@ -530,7 +530,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
           <main className="flex-1 flex flex-col min-w-0 bg-white border border-[#e5e9f5] rounded-2xl shadow-sm overflow-hidden min-h-[640px]">
             {!selectedAffiliateConversation ? (
               <div className="flex-1 flex items-center justify-center text-sm text-slate-400">
-                Pick an affiliate on the left to start replying.
+                Pick a growth partner on the left to start replying.
               </div>
             ) : (
               <>
@@ -576,7 +576,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
                         void handleSendAffiliateReply();
                       }
                     }}
-                    placeholder="Reply to this affiliate..."
+                    placeholder="Reply to this growth partner..."
                     rows={2}
                     className="flex-1 text-sm border border-slate-200 rounded-xl p-2.5 focus:outline-none focus:border-blue-600 resize-none"
                   />
@@ -596,16 +596,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
       ) : dashboardTab === 'affiliates' ? (
         <div className="bg-white border border-[#e5e9f5] rounded-2xl shadow-sm overflow-hidden">
           <div className="p-4 border-b border-[#e5e9f5]">
-            <h2 className="font-display text-lg font-bold text-slate-900">Affiliates</h2>
+            <h2 className="font-display text-lg font-bold text-slate-900">Growth Partners</h2>
             <p className="text-xs text-slate-500 mt-0.5">
-              {affiliates.length} affiliate{affiliates.length === 1 ? '' : 's'} registered
+              {affiliates.length} growth partner{affiliates.length === 1 ? '' : 's'} registered
             </p>
             <div className="relative mt-3 max-w-sm">
               <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 value={affiliatesSearchQuery}
                 onChange={(e) => setAffiliatesSearchQuery(e.target.value)}
-                placeholder="Search by affiliate or client name..."
+                placeholder="Search by growth partner or client name..."
                 className="w-full text-xs border border-slate-200 rounded-lg pl-8 pr-3 py-2 focus:outline-none focus:border-blue-600"
               />
             </div>
@@ -628,7 +628,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
             {isLoadingAffiliates ? (
               <div className="p-4 text-xs text-slate-400">Loading...</div>
             ) : filteredAffiliates.length === 0 ? (
-              <div className="p-4 text-xs text-slate-400">No affiliates match this filter.</div>
+              <div className="p-4 text-xs text-slate-400">No growth partners match this filter.</div>
             ) : (
               <table className="w-full text-sm">
                 <thead>
@@ -822,7 +822,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
                 <div className="mt-1">
                   {c.affiliateEmail ? (
                     <span className="text-[10px] font-semibold text-blue-600 truncate block">
-                      via affiliate: {c.affiliateEmail}
+                      via growth partner: {c.affiliateEmail}
                     </span>
                   ) : (
                     <span className="text-[10px] text-slate-400">Direct signup</span>
@@ -859,7 +859,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
               <div className="flex flex-wrap items-center gap-3">
                 <div className="text-xs">
                   <span className="text-slate-400 block mb-1">Cost for the project</span>
-                  <div className="flex items-center gap-1" title="Only changes when you edit it — used to calculate affiliate commission when this client is marked Paid">
+                  <div className="flex items-center gap-1" title="Only changes when you edit it — used to calculate growth partner commission when this client is marked Paid">
                     <span className="text-slate-400">$</span>
                     <input
                       value={dealValue}

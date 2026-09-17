@@ -750,12 +750,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 Engagement Models
               </a>
               <button
-                onClick={() => onNavigate('affiliate')}
-                className="hover:text-white transition-colors cursor-pointer"
-              >
-                Affiliates
-              </button>
-              <button
                 onClick={() => onStartAudit()}
                 className="text-blue-400 hover:text-blue-300 transition-colors cursor-pointer"
               >
