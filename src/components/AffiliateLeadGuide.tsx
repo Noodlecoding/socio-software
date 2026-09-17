@@ -549,12 +549,13 @@ export const AffiliateLeadGuide: React.FC<AffiliateLeadGuideProps> = ({ referral
           {t('affiliateGuide.backToDashboard')}
         </button>
 
-        <span className="text-xs font-bold uppercase tracking-wider text-blue-600 mb-2 block">{t('affiliateGuide.eyebrow')}</span>
-        <h1 className="font-display text-3xl font-extrabold text-slate-900 tracking-tight">
+        <h1 className="font-display text-3xl font-extrabold text-blue-600 tracking-tight">
           {t('affiliateGuide.title')}
         </h1>
         <p className="text-slate-600 mt-3 leading-relaxed">
-          {t('affiliateGuide.subtitle')}
+          {t('affiliateGuide.subtitlePrefix')}
+          <strong className="font-semibold text-slate-900">{t('affiliateGuide.subtitleBold')}</strong>
+          {t('affiliateGuide.subtitleSuffix')}
         </p>
 
         {referralLink && (
