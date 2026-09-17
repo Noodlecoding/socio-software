@@ -70,7 +70,10 @@ const translations = {
     signupCard: {
       title: 'Create your account',
       subtitle: 'Start discussing your project in minutes.',
+      signInTitle: 'Welcome back',
+      signInSubtitle: 'Sign in to continue your conversation.',
       google: 'Continue with Google',
+      emailToggle: 'Log in with email',
       orEmail: 'or with email',
       workEmail: 'Work Email',
       createPassword: 'Create Password',
@@ -307,7 +310,10 @@ const translations = {
     signupCard: {
       title: 'Crea tu cuenta',
       subtitle: 'Empieza a discutir tu proyecto en minutos.',
+      signInTitle: 'Bienvenido de nuevo',
+      signInSubtitle: 'Inicia sesión para continuar tu conversación.',
       google: 'Continuar con Google',
+      emailToggle: 'Iniciar sesión con correo',
       orEmail: 'o con correo',
       workEmail: 'Correo de trabajo',
       createPassword: 'Crear contraseña',
