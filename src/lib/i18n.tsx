@@ -184,9 +184,10 @@ const translations = {
     affiliateGuide: {
       backToDashboard: 'Back to dashboard',
       eyebrow: 'Growth Partner Playbook',
-      title: 'Growth Partner Lead Generation Playbook',
-      subtitle: 'Find high-quality software leads without spending hours researching one business.',
+      title: '5 top high-ticket lead generation techniques',
+      subtitle: "Your commission is 23% of the deal value, so the size of the client you refer matters as much as the number of referrals. These five approaches are built around your referral link and are aimed at landing fewer, bigger clients instead of chasing volume.",
       yourReferralLink: 'Your referral link',
+      techniquePrefix: 'Technique',
       howItWorks: 'How it works',
       whyItWorks: 'Why it works',
       yourAdvantage: 'Your advantage'
@@ -424,9 +425,10 @@ const translations = {
     affiliateGuide: {
       backToDashboard: 'Volver al panel',
       eyebrow: 'Manual del Socio de Crecimiento',
-      title: 'Manual de Generación de Leads para Socios de Crecimiento',
-      subtitle: 'Encuentra leads de software de alta calidad sin pasar horas investigando cada negocio.',
+      title: '5 técnicas principales para generar prospectos de alto valor',
+      subtitle: 'Tu comisión es el 23% del valor del acuerdo, así que el tamaño del cliente que refieres importa tanto como el número de referidos. Estos cinco enfoques están construidos alrededor de tu enlace de referido y buscan conseguir menos clientes, pero más grandes, en lugar de perseguir volumen.',
       yourReferralLink: 'Tu enlace de referido',
+      techniquePrefix: 'Técnica',
       howItWorks: 'Cómo funciona',
       whyItWorks: 'Por qué funciona',
       yourAdvantage: 'Tu ventaja'

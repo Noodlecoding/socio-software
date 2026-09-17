@@ -1,20 +1,5 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import {
-  ArrowLeft,
-  ChevronDown,
-  DollarSign,
-  Clock,
-  MapPin,
-  Briefcase,
-  BookOpen,
-  MessagesSquare,
-  Mail,
-  Target,
-  Rocket,
-  Sparkles,
-  LucideIcon
-} from 'lucide-react';
+import React from 'react';
+import { ArrowLeft, Linkedin, MessagesSquare, Users2, Handshake, Twitter } from 'lucide-react';
 import { useLanguage } from '../lib/i18n';
 
 interface AffiliateLeadGuideProps {
@@ -22,456 +7,153 @@ interface AffiliateLeadGuideProps {
   onBack: () => void;
 }
 
-type Block =
-  | { type: 'p'; text: string }
-  | { type: 'strong'; text: string }
-  | { type: 'list'; items: string[] }
-  | { type: 'quote'; text: string }
-  | { type: 'flow'; items: string[] }
-  | { type: 'headline'; text: string }
-  | { type: 'breakdown'; items: { count: string; label: string }[] }
-  | { type: 'commission'; rows: { value: string; commission: string }[] }
-  | { type: 'workflow'; steps: { label: string; desc: string }[] };
-
-interface GuideSection {
-  icon: LucideIcon;
-  title: string;
-  blocks: Block[];
-}
-
-const SECTIONS_EN: GuideSection[] = [
+const TECHNIQUES_EN = [
   {
-    icon: DollarSign,
-    title: 'Your role & commission potential',
-    blocks: [
-      { type: 'p', text: "As a Growth Partner, your job isn't to build software or close technical deals." },
-      { type: 'p', text: 'Your job is to:' },
-      { type: 'flow', items: ['Find businesses', 'Start conversations', 'Identify genuine interest', 'Make the referral'] },
-      { type: 'p', text: 'You earn 23% of the deal value, so the quality and size of the businesses you refer matter.' },
-      { type: 'p', text: 'Because your commission is based on the value of the deal, referring a business with a larger software project can earn you significantly more.' },
-      {
-        type: 'commission',
-        rows: [
-          { value: '$5,000 project', commission: '$1,150 commission' },
-          { value: '$10,000 project', commission: '$2,300 commission' },
-          { value: '$20,000 project', commission: '$4,600 commission' },
-          { value: '$50,000 project', commission: '$11,500 commission' }
-        ]
-      },
-      { type: 'p', text: 'These are examples, not guaranteed earnings. Actual commissions depend on the final deal value and successful conversion.' },
-      {
-        type: 'strong',
-        text: "You don't need to find hundreds of tiny clients. Focus on finding businesses that have real problems, enough resources to invest in a solution, and a genuine reason to consider custom software."
-      }
-    ]
-  },
-  {
-    icon: Clock,
-    title: 'Your daily quota',
-    blocks: [
-      { type: 'headline', text: '40–50 prospects per day' },
-      {
-        type: 'breakdown',
-        items: [
-          { count: '20–25', label: 'from Google Maps & business directories' },
-          { count: '10–15', label: 'from job boards and business listings' },
-          { count: '10', label: 'from social media, communities, or other prospecting sources' }
-        ]
-      },
-      { type: 'p', text: 'You should be spending minutes, not hours, evaluating each prospect.' },
-      { type: 'strong', text: 'Volume + basic qualification + quality conversations.' },
-      { type: 'p', text: "Don't spend 20 minutes researching one company when you could contact several other potential buyers." }
-    ]
-  },
-  {
-    icon: MapPin,
-    title: '1. Google Maps & business directories',
-    blocks: [
-      { type: 'p', text: 'Search for established businesses in industries that can benefit from custom software.' },
-      { type: 'list', items: ['Logistics', 'Construction', 'Manufacturing', 'Distribution', 'Retail', 'Hospitality', 'Clinics', 'Wholesalers', 'Automotive', 'Professional services'] },
-      { type: 'p', text: 'Look for simple signs that the business is established:' },
-      { type: 'list', items: ['Multiple locations', 'Large team', 'Lots of products or services', 'High customer volume', 'Complex operations', 'Growing business'] },
-      { type: 'p', text: "You don't need to figure out exactly what software they need." },
-      { type: 'flow', items: ['Find', 'Quick check', 'Contact', 'Move on'] }
-    ]
-  },
-  {
-    icon: Briefcase,
-    title: '2. Job board prospecting',
-    blocks: [
-      { type: 'p', text: 'Job postings can reveal that a company is spending money on repetitive operational work.' },
-      { type: 'p', text: 'Search for companies hiring for roles such as:' },
-      { type: 'list', items: ['Operations', 'Inventory', 'Data entry', 'Dispatch', 'Scheduling', 'Order processing', 'Administrative work', 'Customer support'] },
-      { type: 'p', text: 'Find the company behind the posting and contact them.' },
-      {
-        type: 'quote',
-        text: "Hey, I came across your company while researching businesses in [industry]. I work with a software team that builds custom systems for businesses. Are you currently using software to manage your [inventory/operations/scheduling]?"
-      },
-      { type: 'p', text: "You're not claiming they need software." },
-      { type: 'strong', text: "You're starting a conversation." }
-    ]
-  },
-  {
-    icon: BookOpen,
-    title: '3. Business directories & industry lists',
-    blocks: [
-      { type: 'p', text: 'Use online business directories, industry directories, trade associations, local business listings, and similar sources to find prospects quickly.' },
-      { type: 'p', text: 'Pick an industry and build a list of businesses that appear established enough to potentially invest in custom software.' },
-      { type: 'p', text: 'For each prospect, collect:' },
-      { type: 'flow', items: ['Business', 'Website', 'Contact', 'Decision-maker', 'Outreach'] },
-      { type: 'p', text: "Don't deeply research every company." },
-      { type: 'strong', text: 'The objective is to create a large, relevant prospect list and contact businesses efficiently.' }
-    ]
+    icon: Linkedin,
+    shortLabel: 'LinkedIn Outreach',
+    title: 'Cold LinkedIn outreach + discovery calls',
+    howItWorks: [
+      'Target 100 companies in your niche (find CTOs, founders, VP product on LinkedIn)',
+      'Send 10-15 personalized messages per day mentioning a specific insight about their company',
+      'Goal: get 5 coffee chats per week',
+      "On the call: ask about their tech challenges, understand their situation",
+      "If they're a fit, offer an intro and share your referral link"
+    ],
+    whyItWorks: "High-ticket buyers research before buying. They want a trusted person to introduce them, not a cold sales pitch.",
+    yourRole: "You're the trusted intro, not the seller: \"I've referred a few companies like yours to them. Let me intro you.\""
   },
   {
     icon: MessagesSquare,
-    title: '4. Social media & community intent',
-    blocks: [
-      { type: 'p', text: 'Search:' },
-      { type: 'list', items: ['Reddit', 'Facebook groups', 'LinkedIn', 'Business forums', 'Industry communities'] },
-      { type: 'p', text: 'Look for people already discussing problems such as:' },
-      {
-        type: 'list',
-        items: [
-          '"Looking for software..."',
-          '"Does anyone know a system for..."',
-          '"We need a better way to..."',
-          '"Our current software doesn\'t..."',
-          '"How can we automate..."',
-          '"We\'re using Excel for..."'
-        ]
-      },
-      { type: 'p', text: 'These are strong signals because the business is already talking about a potential problem.' },
-      { type: 'p', text: 'When appropriate, start a conversation and offer to connect them with the software team.' },
-      { type: 'strong', text: "Don't spam communities. Only reach out when the service is genuinely relevant." }
-    ]
+    shortLabel: 'Content',
+    title: 'LinkedIn content + thought leadership',
+    howItWorks: [
+      'Post 2-3x per week about problems your target industry faces ("Why legacy systems kill productivity," "Tech debt in logistics," etc.)',
+      'Build a small following (100-500 engaged people in your niche)',
+      'Get comments/DMs from people saying "This is exactly our problem"',
+      'Respond and offer to make an intro',
+      'Send them your referral link in DM with context'
+    ],
+    whyItWorks: "People find you because you're solving their problem. No cold outreach needed.",
+    yourRole: "As the referral partner, you're positioned as the expert who understands their industry and knows the right vendor."
   },
   {
-    icon: Mail,
-    title: '5. Cold email & direct messages',
-    blocks: [
-      { type: 'p', text: 'Build a targeted list of businesses and contact the relevant decision-maker.' },
-      { type: 'p', text: 'Keep the first message short.' },
-      {
-        type: 'quote',
-        text: "Hey [Name], I came across [Business] while researching companies in [industry]. I work with a software team that builds custom systems for businesses. Is custom software something your company has ever considered?"
-      },
-      { type: 'p', text: "If they're interested, explain that you can connect them with the team and provide your referral link." },
-      { type: 'p', text: "If they're not interested, move on." },
-      { type: 'strong', text: "Your goal isn't to convince everyone. It's to find the people who already have a reason to consider a solution." }
-    ]
+    icon: Users2,
+    shortLabel: 'Community',
+    title: 'Community engagement (Slack, Reddit, Discord)',
+    howItWorks: [
+      'Join 3-4 relevant communities (founder Slack groups, logistics tech Discord, SaaS Reddit)',
+      'Answer questions about tech/software decisions, genuinely helpful, no selling',
+      'Build a reputation as someone who knows the space',
+      'When someone asks where to find custom software, you answer',
+      'Share your referral link and be upfront that you earn commission on the referral'
+    ],
+    whyItWorks: "People trust community recommendations more than ads. They already know you're credible.",
+    yourRole: "You're the person who knows good vendors. You become the connector."
   },
   {
-    icon: Target,
-    title: 'What makes a good prospect?',
-    blocks: [
-      { type: 'strong', text: 'Established business + operational complexity + ability to invest + potential software need.' },
-      { type: 'p', text: "You don't need to know exactly what they need before contacting them." },
-      { type: 'p', text: 'The software team can handle the technical discovery.' },
-      { type: 'p', text: 'Your job is to find the opportunity and open the door.' }
-    ]
+    icon: Handshake,
+    shortLabel: 'Partnerships',
+    title: 'Referral partnerships (agencies, consultants, advisors)',
+    howItWorks: [
+      'Find digital marketing agencies, management consultants and business coaches who serve your target companies',
+      'They have clients with budget but no development capability',
+      'Pitch a mutual referral partnership: when their clients need dev work, they send them your way',
+      'Give them your referral link and a brief company overview',
+      'When they send a lead, they pass along your link'
+    ],
+    whyItWorks: 'These partners already have warm relationships with high-budget decision-makers.',
+    yourRole: 'A passive pipeline: partners do the heavy lifting, you get warm intros and your link sent along.'
   },
   {
-    icon: Rocket,
-    title: 'Your workflow',
-    blocks: [
-      {
-        type: 'workflow',
-        steps: [
-          { label: 'Find', desc: 'Identify a relevant business.' },
-          { label: 'Quick check', desc: "Spend a short amount of time confirming they're a reasonable prospect." },
-          { label: 'Contact', desc: 'Send a concise, relevant message.' },
-          { label: 'Qualify', desc: 'If they show genuine interest, continue the conversation.' },
-          { label: 'Refer', desc: 'Send your referral link or connect them with the software team.' },
-          { label: 'Earn', desc: 'If the referral becomes a successful deal, you earn your 23% commission.' }
-        ]
-      }
-    ]
-  },
-  {
-    icon: Sparkles,
-    title: 'The golden rule',
-    blocks: [
-      {
-        type: 'quote',
-        text: "Don't spend 20 minutes researching one prospect. Spend a couple of minutes finding out whether they're interested, then move on."
-      },
-      { type: 'p', text: "Your advantage isn't knowing everything about software." },
-      { type: 'p', text: 'Your advantage is being able to consistently find businesses, start conversations, and uncover opportunities.' },
-      { type: 'strong', text: 'More qualified conversations → more potential deals.' },
-      { type: 'p', text: 'And because your commission is based on deal value:' },
-      { type: 'strong', text: 'Higher-value opportunities can mean significantly higher commissions.' }
-    ]
+    icon: Twitter,
+    shortLabel: 'Warm DMs',
+    title: 'Twitter/LinkedIn engagement → warm outreach',
+    howItWorks: [
+      'Find 50+ people in your target industry on Twitter/LinkedIn (CTOs, founders, investors)',
+      'Reply to their posts thoughtfully for 2-3 weeks to build familiarity',
+      "Then send one DM asking if they're building in-house or considering outsourcing",
+      "If they're considering outsourcing, offer a quick intro and share your link"
+    ],
+    whyItWorks: 'Warm outreach converts better than pure cold — they recognize you and feel like they already know you.',
+    yourRole: "You're not a stranger pitching. You're someone who's been adding value, now offering a genuine solution."
   }
 ];
 
-const SECTIONS_ES: GuideSection[] = [
+const TECHNIQUES_ES = [
   {
-    icon: DollarSign,
-    title: 'Tu rol y el potencial de comisión',
-    blocks: [
-      { type: 'p', text: 'Como Socio de Crecimiento, tu trabajo no es construir software ni cerrar acuerdos técnicos.' },
-      { type: 'p', text: 'Tu trabajo es:' },
-      { type: 'flow', items: ['Encontrar negocios', 'Iniciar conversaciones', 'Identificar interés genuino', 'Hacer la referencia'] },
-      { type: 'p', text: 'Ganas el 23% del valor del acuerdo, así que la calidad y el tamaño de los negocios que refieres importan.' },
-      { type: 'p', text: 'Como tu comisión se basa en el valor del acuerdo, referir un negocio con un proyecto de software más grande puede generarte mucho más.' },
-      {
-        type: 'commission',
-        rows: [
-          { value: 'Proyecto de $5,000', commission: 'Comisión de $1,150' },
-          { value: 'Proyecto de $10,000', commission: 'Comisión de $2,300' },
-          { value: 'Proyecto de $20,000', commission: 'Comisión de $4,600' },
-          { value: 'Proyecto de $50,000', commission: 'Comisión de $11,500' }
-        ]
-      },
-      { type: 'p', text: 'Estos son ejemplos, no ganancias garantizadas. Las comisiones reales dependen del valor final del acuerdo y de que se concrete la conversión.' },
-      {
-        type: 'strong',
-        text: 'No necesitas encontrar cientos de clientes pequeños. Enfócate en encontrar negocios que tengan problemas reales, suficientes recursos para invertir en una solución y una razón genuina para considerar software a medida.'
-      }
-    ]
-  },
-  {
-    icon: Clock,
-    title: 'Tu cuota diaria',
-    blocks: [
-      { type: 'headline', text: '40–50 prospectos por día' },
-      {
-        type: 'breakdown',
-        items: [
-          { count: '20–25', label: 'de Google Maps y directorios de negocios' },
-          { count: '10–15', label: 'de bolsas de trabajo y listados de negocios' },
-          { count: '10', label: 'de redes sociales, comunidades u otras fuentes de prospección' }
-        ]
-      },
-      { type: 'p', text: 'Deberías dedicar minutos, no horas, a evaluar cada prospecto.' },
-      { type: 'strong', text: 'Volumen + calificación básica + conversaciones de calidad.' },
-      { type: 'p', text: 'No dediques 20 minutos a investigar una sola empresa cuando podrías contactar a varios otros compradores potenciales.' }
-    ]
-  },
-  {
-    icon: MapPin,
-    title: '1. Google Maps y directorios de negocios',
-    blocks: [
-      { type: 'p', text: 'Busca negocios establecidos en industrias que puedan beneficiarse de software a medida.' },
-      { type: 'list', items: ['Logística', 'Construcción', 'Manufactura', 'Distribución', 'Retail', 'Hospitalidad', 'Clínicas', 'Mayoristas', 'Automotriz', 'Servicios profesionales'] },
-      { type: 'p', text: 'Busca señales simples de que el negocio está establecido:' },
-      { type: 'list', items: ['Múltiples ubicaciones', 'Equipo grande', 'Muchos productos o servicios', 'Alto volumen de clientes', 'Operaciones complejas', 'Negocio en crecimiento'] },
-      { type: 'p', text: 'No necesitas saber exactamente qué software necesitan.' },
-      { type: 'flow', items: ['Encontrar', 'Revisión rápida', 'Contactar', 'Seguir adelante'] }
-    ]
-  },
-  {
-    icon: Briefcase,
-    title: '2. Prospección en bolsas de trabajo',
-    blocks: [
-      { type: 'p', text: 'Las publicaciones de empleo pueden revelar que una empresa está gastando dinero en trabajo operativo repetitivo.' },
-      { type: 'p', text: 'Busca empresas que contraten para roles como:' },
-      { type: 'list', items: ['Operaciones', 'Inventario', 'Captura de datos', 'Despacho', 'Programación', 'Procesamiento de pedidos', 'Trabajo administrativo', 'Atención al cliente'] },
-      { type: 'p', text: 'Encuentra la empresa detrás de la publicación y contáctala.' },
-      {
-        type: 'quote',
-        text: 'Hola, encontré tu empresa investigando negocios en [industria]. Trabajo con un equipo de software que construye sistemas a medida para empresas. ¿Actualmente usan software para gestionar su [inventario/operaciones/programación]?'
-      },
-      { type: 'p', text: 'No estás afirmando que necesitan software.' },
-      { type: 'strong', text: 'Estás iniciando una conversación.' }
-    ]
-  },
-  {
-    icon: BookOpen,
-    title: '3. Directorios de negocios y listas de industria',
-    blocks: [
-      { type: 'p', text: 'Usa directorios de negocios en línea, directorios de industria, asociaciones comerciales, listados de negocios locales y fuentes similares para encontrar prospectos rápidamente.' },
-      { type: 'p', text: 'Elige una industria y construye una lista de negocios que parezcan lo bastante establecidos como para invertir en software a medida.' },
-      { type: 'p', text: 'Para cada prospecto, recopila:' },
-      { type: 'flow', items: ['Negocio', 'Sitio web', 'Contacto', 'Tomador de decisiones', 'Contacto inicial'] },
-      { type: 'p', text: 'No investigues a fondo cada empresa.' },
-      { type: 'strong', text: 'El objetivo es crear una lista grande y relevante de prospectos y contactar negocios de forma eficiente.' }
-    ]
+    icon: Linkedin,
+    shortLabel: 'Alcance en LinkedIn',
+    title: 'Alcance en frío en LinkedIn + llamadas exploratorias',
+    howItWorks: [
+      'Elige 100 empresas en tu nicho (busca CTOs, fundadores, VP de producto en LinkedIn)',
+      'Envía 10-15 mensajes personalizados por día mencionando algo específico sobre su empresa',
+      'Meta: consigue 5 charlas informales por semana',
+      'En la llamada: pregunta sobre sus retos tecnológicos, entiende su situación',
+      'Si encajan, ofrece hacer una presentación y comparte tu enlace de referido'
+    ],
+    whyItWorks: 'Los compradores de alto valor investigan antes de comprar. Quieren que una persona de confianza los presente, no un discurso de ventas en frío.',
+    yourRole: 'Eres la presentación de confianza, no el vendedor: "He referido a algunas empresas como la tuya con ellos. Déjame presentarte."'
   },
   {
     icon: MessagesSquare,
-    title: '4. Redes sociales e intención en comunidades',
-    blocks: [
-      { type: 'p', text: 'Busca en:' },
-      { type: 'list', items: ['Reddit', 'Grupos de Facebook', 'LinkedIn', 'Foros de negocios', 'Comunidades de la industria'] },
-      { type: 'p', text: 'Busca personas que ya estén hablando de problemas como:' },
-      {
-        type: 'list',
-        items: [
-          '"Busco un software..."',
-          '"¿Alguien conoce un sistema para..."',
-          '"Necesitamos una mejor forma de..."',
-          '"Nuestro software actual no..."',
-          '"¿Cómo podemos automatizar..."',
-          '"Estamos usando Excel para..."'
-        ]
-      },
-      { type: 'p', text: 'Estas son señales fuertes porque el negocio ya está hablando de un problema potencial.' },
-      { type: 'p', text: 'Cuando sea apropiado, inicia una conversación y ofrece conectarlos con el equipo de software.' },
-      { type: 'strong', text: 'No hagas spam en las comunidades. Contacta solo cuando el servicio sea genuinamente relevante.' }
-    ]
+    shortLabel: 'Contenido',
+    title: 'Contenido en LinkedIn + liderazgo de pensamiento',
+    howItWorks: [
+      'Publica 2-3 veces por semana sobre problemas que enfrenta tu industria objetivo ("Por qué los sistemas heredados matan la productividad," "Deuda técnica en logística," etc.)',
+      'Construye una pequeña audiencia (100-500 personas comprometidas en tu nicho)',
+      'Recibe comentarios/mensajes de personas diciendo "Este es exactamente nuestro problema"',
+      'Responde y ofrece hacer una presentación',
+      'Envíales tu enlace de referido por mensaje directo con contexto'
+    ],
+    whyItWorks: 'La gente te encuentra porque resuelves su problema. No se necesita alcance en frío.',
+    yourRole: 'Como socio de referidos, te posicionas como el experto que entiende su industria y conoce al proveedor adecuado.'
   },
   {
-    icon: Mail,
-    title: '5. Correo frío y mensajes directos',
-    blocks: [
-      { type: 'p', text: 'Construye una lista de negocios objetivo y contacta al tomador de decisiones correspondiente.' },
-      { type: 'p', text: 'Mantén el primer mensaje corto.' },
-      {
-        type: 'quote',
-        text: 'Hola [Nombre], encontré [Negocio] investigando empresas en [industria]. Trabajo con un equipo de software que construye sistemas a medida para empresas. ¿El software a medida es algo que tu empresa haya considerado alguna vez?'
-      },
-      { type: 'p', text: 'Si están interesados, explícales que puedes conectarlos con el equipo y comparte tu enlace de referido.' },
-      { type: 'p', text: 'Si no están interesados, sigue adelante.' },
-      { type: 'strong', text: 'Tu meta no es convencer a todos. Es encontrar a las personas que ya tienen una razón para considerar una solución.' }
-    ]
+    icon: Users2,
+    shortLabel: 'Comunidad',
+    title: 'Participación en comunidades (Slack, Reddit, Discord)',
+    howItWorks: [
+      'Únete a 3-4 comunidades relevantes (grupos de Slack de fundadores, Discord de tecnología logística, Reddit de SaaS)',
+      'Responde preguntas sobre decisiones de tecnología/software, siendo genuinamente útil, sin vender',
+      'Construye una reputación como alguien que conoce el sector',
+      'Cuando alguien pregunte dónde encontrar software a medida, responde',
+      'Comparte tu enlace de referido y sé transparente sobre que ganas comisión por la referencia'
+    ],
+    whyItWorks: 'La gente confía más en las recomendaciones de la comunidad que en los anuncios. Ya saben que eres creíble.',
+    yourRole: 'Eres la persona que conoce buenos proveedores. Te conviertes en el conector.'
   },
   {
-    icon: Target,
-    title: '¿Qué hace a un buen prospecto?',
-    blocks: [
-      { type: 'strong', text: 'Negocio establecido + complejidad operativa + capacidad de inversión + necesidad potencial de software.' },
-      { type: 'p', text: 'No necesitas saber exactamente qué necesitan antes de contactarlos.' },
-      { type: 'p', text: 'El equipo de software puede encargarse del descubrimiento técnico.' },
-      { type: 'p', text: 'Tu trabajo es encontrar la oportunidad y abrir la puerta.' }
-    ]
+    icon: Handshake,
+    shortLabel: 'Alianzas',
+    title: 'Alianzas de referidos (agencias, consultores, asesores)',
+    howItWorks: [
+      'Encuentra agencias de marketing digital, consultores de gestión y coaches de negocios que atienden a tus empresas objetivo',
+      'Ellos tienen clientes con presupuesto pero sin capacidad de desarrollo',
+      'Propón una alianza de referidos mutua: cuando sus clientes necesiten desarrollo, te los envían',
+      'Dales tu enlace de referido y una breve descripción de la empresa',
+      'Cuando envíen un prospecto, pasan tu enlace'
+    ],
+    whyItWorks: 'Estos socios ya tienen relaciones cercanas con tomadores de decisiones de alto presupuesto.',
+    yourRole: 'Un canal pasivo: los socios hacen el trabajo pesado, tú recibes presentaciones cálidas y tu enlace se comparte.'
   },
   {
-    icon: Rocket,
-    title: 'Tu flujo de trabajo',
-    blocks: [
-      {
-        type: 'workflow',
-        steps: [
-          { label: 'Encontrar', desc: 'Identifica un negocio relevante.' },
-          { label: 'Revisión rápida', desc: 'Dedica un momento breve a confirmar que es un prospecto razonable.' },
-          { label: 'Contactar', desc: 'Envía un mensaje conciso y relevante.' },
-          { label: 'Calificar', desc: 'Si muestran interés genuino, continúa la conversación.' },
-          { label: 'Referir', desc: 'Envía tu enlace de referido o conéctalos con el equipo de software.' },
-          { label: 'Ganar', desc: 'Si la referencia se convierte en un acuerdo exitoso, ganas tu comisión del 23%.' }
-        ]
-      }
-    ]
-  },
-  {
-    icon: Sparkles,
-    title: 'La regla de oro',
-    blocks: [
-      {
-        type: 'quote',
-        text: 'No dediques 20 minutos a investigar un prospecto. Dedica un par de minutos a averiguar si están interesados y luego sigue adelante.'
-      },
-      { type: 'p', text: 'Tu ventaja no es saberlo todo sobre software.' },
-      { type: 'p', text: 'Tu ventaja es poder encontrar negocios, iniciar conversaciones y descubrir oportunidades de forma constante.' },
-      { type: 'strong', text: 'Más conversaciones calificadas → más acuerdos potenciales.' },
-      { type: 'p', text: 'Y como tu comisión se basa en el valor del acuerdo:' },
-      { type: 'strong', text: 'Las oportunidades de mayor valor pueden significar comisiones significativamente más altas.' }
-    ]
+    icon: Twitter,
+    shortLabel: 'Mensajes cálidos',
+    title: 'Interacción en Twitter/LinkedIn → contacto cálido',
+    howItWorks: [
+      'Encuentra 50+ personas en tu industria objetivo en Twitter/LinkedIn (CTOs, fundadores, inversores)',
+      'Responde a sus publicaciones de forma reflexiva durante 2-3 semanas para generar familiaridad',
+      'Luego envía un mensaje directo preguntando si están construyendo internamente o considerando externalizar',
+      'Si están considerando externalizar, ofrece una presentación rápida y comparte tu enlace'
+    ],
+    whyItWorks: 'El contacto cálido convierte mejor que el frío puro — te reconocen y sienten que ya te conocen.',
+    yourRole: 'No eres un extraño lanzando un discurso de ventas. Eres alguien que ha estado aportando valor, ahora ofreciendo una solución genuina.'
   }
 ];
-
-const BlockRenderer: React.FC<{ block: Block }> = ({ block }) => {
-  switch (block.type) {
-    case 'p':
-      return <p className="text-sm text-slate-700 leading-relaxed">{block.text}</p>;
-    case 'strong':
-      return (
-        <p className="text-sm font-semibold text-slate-900 leading-relaxed bg-blue-50/60 border border-blue-100 rounded-xl px-4 py-3">
-          {block.text}
-        </p>
-      );
-    case 'list':
-      return (
-        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          {block.items.map((item, i) => (
-            <li key={i} className="flex items-start gap-2 text-sm text-slate-700 leading-relaxed">
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-600 shrink-0 mt-2"></span>
-              <span>{item}</span>
-            </li>
-          ))}
-        </ul>
-      );
-    case 'quote':
-      return (
-        <blockquote className="border-l-2 border-blue-300 bg-slate-50 rounded-r-xl px-4 py-3 text-sm text-slate-600 italic leading-relaxed">
-          "{block.text}"
-        </blockquote>
-      );
-    case 'flow':
-      return (
-        <div className="flex flex-wrap items-center gap-2">
-          {block.items.map((item, i) => (
-            <React.Fragment key={i}>
-              <span className="text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 rounded-lg px-3 py-1.5">
-                {item}
-              </span>
-              {i < block.items.length - 1 && <span className="text-slate-400">→</span>}
-            </React.Fragment>
-          ))}
-        </div>
-      );
-    case 'headline':
-      return <p className="text-2xl font-extrabold text-slate-900 tracking-tight">{block.text}</p>;
-    case 'breakdown':
-      return (
-        <div className="flex flex-col gap-2">
-          {block.items.map((item, i) => (
-            <div key={i} className="flex items-center gap-3 bg-slate-50 border border-slate-100 rounded-xl px-4 py-2.5">
-              <span className="text-sm font-bold text-blue-600 shrink-0 w-14">{item.count}</span>
-              <span className="text-sm text-slate-700">{item.label}</span>
-            </div>
-          ))}
-        </div>
-      );
-    case 'commission':
-      return (
-        <div className="flex flex-col gap-2">
-          {block.rows.map((row, i) => (
-            <div key={i} className="flex items-center justify-between gap-3 bg-slate-50 border border-slate-100 rounded-xl px-4 py-2.5">
-              <span className="text-sm text-slate-600">{row.value}</span>
-              <span className="text-sm font-bold text-blue-600">{row.commission}</span>
-            </div>
-          ))}
-        </div>
-      );
-    case 'workflow':
-      return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {block.steps.map((step, i) => (
-            <div key={i} className="flex items-start gap-3 bg-slate-50 border border-slate-100 rounded-xl px-4 py-3">
-              <span className="w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center shrink-0">
-                {i + 1}
-              </span>
-              <div>
-                <div className="text-sm font-bold text-slate-900">{step.label}</div>
-                <div className="text-xs text-slate-500 mt-0.5 leading-relaxed">{step.desc}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      );
-    default:
-      return null;
-  }
-};
 
 export const AffiliateLeadGuide: React.FC<AffiliateLeadGuideProps> = ({ referralLink, onBack }) => {
   const { t, language } = useLanguage();
-  const SECTIONS = language === 'es' ? SECTIONS_ES : SECTIONS_EN;
-  const [openIndices, setOpenIndices] = useState<Set<number>>(new Set([0]));
-
-  const toggle = (i: number) => {
-    setOpenIndices((prev) => {
-      const next = new Set(prev);
-      if (next.has(i)) {
-        next.delete(i);
-      } else {
-        next.add(i);
-      }
-      return next;
-    });
-  };
+  const TECHNIQUES = language === 'es' ? TECHNIQUES_ES : TECHNIQUES_EN;
 
   return (
     <main className="w-full pt-28 pb-20 px-6 lg:px-12 min-h-screen bg-[#f8f9fd]">
@@ -499,46 +181,59 @@ export const AffiliateLeadGuide: React.FC<AffiliateLeadGuideProps> = ({ referral
           </div>
         )}
 
-        <div className="flex flex-col gap-3 mt-8">
-          {SECTIONS.map((section, i) => {
-            const Icon = section.icon;
-            const isOpen = openIndices.has(i);
+        {/* Section selector: jumps down to each technique */}
+        <div className="flex flex-wrap gap-2 mt-6">
+          {TECHNIQUES.map((technique, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => document.getElementById(`technique-${i}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:border-blue-400 text-xs font-semibold text-slate-600 hover:text-blue-600 transition-colors cursor-pointer"
+            >
+              <span className="w-4 h-4 rounded-full bg-blue-600/10 text-blue-600 text-[10px] font-bold flex items-center justify-center shrink-0">
+                {i + 1}
+              </span>
+              {technique.shortLabel}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex flex-col gap-5 mt-8">
+          {TECHNIQUES.map((technique, i) => {
+            const Icon = technique.icon;
             return (
-              <div key={i} className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
-                <button
-                  type="button"
-                  onClick={() => toggle(i)}
-                  className="w-full flex items-center gap-3.5 p-5 sm:p-6 text-left cursor-pointer"
-                  aria-expanded={isOpen}
-                >
+              <div key={i} id={`technique-${i}`} className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-7 scroll-mt-6">
+                <div className="flex items-start gap-3.5">
                   <div className="w-10 h-10 rounded-xl bg-blue-600/10 text-blue-600 flex items-center justify-center shrink-0">
                     <Icon className="w-5 h-5" />
                   </div>
-                  <h2 className="font-display text-base sm:text-lg font-bold text-slate-900 flex-1 min-w-0">
-                    {section.title}
-                  </h2>
-                  <ChevronDown
-                    className={`w-4.5 h-4.5 text-slate-400 shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`}
-                  />
-                </button>
+                  <div className="min-w-0">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600">{t('affiliateGuide.techniquePrefix')} {i + 1}</span>
+                    <h2 className="font-display text-lg font-bold text-slate-900 mt-0.5">{technique.title}</h2>
+                  </div>
+                </div>
 
-                <AnimatePresence initial={false}>
-                  {isOpen && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2, ease: 'easeOut' }}
-                      className="overflow-hidden"
-                    >
-                      <div className="px-5 sm:px-6 pb-6 flex flex-col gap-3.5">
-                        {section.blocks.map((block, j) => (
-                          <BlockRenderer key={j} block={block} />
-                        ))}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                <div className="mt-5">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">{t('affiliateGuide.howItWorks')}</h3>
+                  <ul className="flex flex-col gap-2">
+                    {technique.howItWorks.map((step, j) => (
+                      <li key={j} className="flex items-start gap-2.5 text-sm text-slate-700 leading-relaxed">
+                        <span className="w-1.5 h-1.5 rounded-full bg-blue-600 shrink-0 mt-2"></span>
+                        <span>{step}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="bg-slate-50 border border-slate-100 rounded-xl p-4 mt-5">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">{t('affiliateGuide.whyItWorks')}</h3>
+                  <p className="text-sm text-slate-700 leading-relaxed">{technique.whyItWorks}</p>
+                </div>
+
+                <div className="bg-blue-50/60 border border-blue-100 rounded-xl p-4 mt-3">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-blue-600 mb-1.5">{t('affiliateGuide.yourAdvantage')}</h3>
+                  <p className="text-sm text-slate-700 leading-relaxed">{technique.yourRole}</p>
+                </div>
               </div>
             );
           })}
