@@ -31,10 +31,11 @@ interface NavbarProps {
   onNavigate: (view: AppView) => void;
   user: UserProfile | null;
   onSignOut: () => void;
+  onSignInClick: () => void;
   isAdmin?: boolean;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, user, onSignOut, isAdmin }) => {
+export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, user, onSignOut, onSignInClick, isAdmin }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { t } = useLanguage();
 
@@ -148,7 +149,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, user, o
             {t('nav.ourWork')}
           </a>
           <button
-            onClick={() => onNavigate('workspace')}
+            onClick={() => (user ? onNavigate('workspace') : onSignInClick())}
             className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors cursor-pointer"
           >
             <MessageSquare className="w-4 h-4" />
@@ -225,7 +226,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, user, o
           <button
             onClick={() => {
               setIsMobileMenuOpen(false);
-              onNavigate('workspace');
+              user ? onNavigate('workspace') : onSignInClick();
             }}
             className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors cursor-pointer py-1.5"
           >

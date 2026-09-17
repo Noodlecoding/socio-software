@@ -55,6 +55,10 @@ export default function App() {
   const [currentView, setCurrentView] = useState<AppView>('landing');
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
+  // Bumped whenever the navbar's "Sign in" is clicked, so LandingPage's
+  // effect can pop the existing login modal open in signin mode instead of
+  // scrolling to the signup section.
+  const [signInRequestId, setSignInRequestId] = useState(0);
   const currentViewRef = useRef<AppView>('landing');
   // One-shot: true only when this page load is a real OAuth redirect back
   // from the affiliate page's "Continue with Google" button — not from
@@ -185,6 +189,11 @@ export default function App() {
     await supabase.auth.signOut();
   };
 
+  const handleSignInClick = () => {
+    setCurrentView('landing');
+    setSignInRequestId((id) => id + 1);
+  };
+
   const handleNavigate = (view: AppView) => {
     if (view === 'workspace' && !user) {
       handleStartAudit();
@@ -216,6 +225,7 @@ export default function App() {
         onNavigate={handleNavigate}
         user={user}
         onSignOut={handleSignOut}
+        onSignInClick={handleSignInClick}
         isAdmin={isAdmin}
       />
 
@@ -256,6 +266,7 @@ export default function App() {
               onUpdateUser={handleUpdateUser}
               onStartAudit={handleStartAudit}
               onNavigate={handleNavigate}
+              signInRequestId={signInRequestId}
             />
           </motion.div>
         ) : (

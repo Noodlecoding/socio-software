@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { EngagementModelId, UserProfile } from '../types';
 import type { AppView } from '../App';
@@ -37,13 +37,17 @@ interface LandingPageProps {
   onUpdateUser: (updated: Partial<UserProfile>) => void;
   onStartAudit: (modelId?: EngagementModelId) => void;
   onNavigate: (view: AppView) => void;
+  // Bumped by the navbar's "Sign in" button to pop the login modal open in
+  // signin mode from outside this component — see the effect below.
+  signInRequestId?: number;
 }
 
 export const LandingPage: React.FC<LandingPageProps> = ({
   user,
   onUpdateUser,
   onStartAudit,
-  onNavigate
+  onNavigate,
+  signInRequestId
 }) => {
   const [mode, setMode] = useState<'signup' | 'signin'>('signup');
   const [email, setEmail] = useState(user?.email ?? '');
@@ -56,6 +60,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   const [isEmailFormOpen, setIsEmailFormOpen] = useState(false);
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
   const { t } = useLanguage();
+
+  useEffect(() => {
+    if (!signInRequestId) return;
+    setAuthError(null);
+    setMode('signin');
+    setIsEmailFormOpen(false);
+    setIsLoginModalOpen(true);
+  }, [signInRequestId]);
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
