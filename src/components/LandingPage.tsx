@@ -230,7 +230,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     onClick={() => setIsEmailFormOpen(true)}
                     className="w-full text-center text-sm font-semibold text-slate-500 hover:text-blue-600 transition-colors cursor-pointer py-2"
                   >
-                    {t('signupCard.emailToggle')}
+                    {mode === 'signup' ? t('signupCard.emailToggleSignup') : t('signupCard.emailToggle')}
                   </button>
                   {mode === 'signup' && (
                     <div className="text-center pt-3 mt-1 border-t border-slate-200/80">
