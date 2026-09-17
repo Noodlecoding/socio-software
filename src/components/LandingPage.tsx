@@ -11,7 +11,6 @@ import {
   ArrowRight,
   Check,
   CheckCircle2,
-  ShieldCheck,
   Lock,
   Sparkles,
   ArrowUpRight,
@@ -618,19 +617,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <p className="text-center text-xs text-slate-400">
               {t('projects.anonymizedNote')}
             </p>
-
-            {/* Ownership Banner */}
-            <div className="bg-blue-50/70 border border-blue-100 rounded-xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4 text-slate-700 text-sm">
-              <div className="flex items-center gap-3">
-                <ShieldCheck className="w-6 h-6 text-blue-600 shrink-0" />
-                <span>
-                  <strong>{t('projects.ownershipTitle')}</strong> {t('projects.ownershipBanner')}
-                </span>
-              </div>
-              <span className="text-xs font-semibold text-blue-700 bg-white px-3 py-1.5 rounded-lg border border-blue-200 shrink-0">
-                {t('projects.ownershipBadge')}
-              </span>
-            </div>
           </div>
         </section>
 
