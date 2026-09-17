@@ -140,7 +140,14 @@ export default function App() {
         }
       } else {
         setUser(null);
-        setCurrentView('landing');
+        // Only force the landing page on an explicit sign-out. The initial
+        // listener fire (event: 'INITIAL_SESSION') also lands here for any
+        // signed-out visitor and has no session by definition — resetting
+        // the view here would stomp on ?view=affiliate links landed on
+        // before this listener ever fires.
+        if (event === 'SIGNED_OUT') {
+          setCurrentView('landing');
+        }
       }
     });
 
