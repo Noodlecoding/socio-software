@@ -15,6 +15,16 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, user, onSignOut, isAdmin }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  const handleSectionLink = (e: React.MouseEvent<HTMLAnchorElement>, sectionId: string) => {
+    if (currentView === 'landing') return;
+    e.preventDefault();
+    onNavigate('landing');
+    // Wait for the landing page to mount before scrolling to its section.
+    requestAnimationFrame(() => {
+      document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
+    });
+  };
+
   if (currentView === 'workspace' && user) {
     return (
       <header className="h-16 border-b border-[#e5e9f5] bg-white sticky top-0 z-50 flex items-center px-4 sm:px-6 lg:px-10 justify-between shrink-0 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
@@ -101,12 +111,14 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, user, o
           <a
             className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors"
             href="#how-it-works"
+            onClick={(e) => handleSectionLink(e, 'how-it-works')}
           >
             How It Works
           </a>
           <a
             className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors"
             href="#models"
+            onClick={(e) => handleSectionLink(e, 'models')}
           >
             Our Work
           </a>
@@ -164,14 +176,20 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, user, o
           <a
             className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors py-1.5"
             href="#how-it-works"
-            onClick={() => setIsMobileMenuOpen(false)}
+            onClick={(e) => {
+              setIsMobileMenuOpen(false);
+              handleSectionLink(e, 'how-it-works');
+            }}
           >
             How It Works
           </a>
           <a
             className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors py-1.5"
             href="#models"
-            onClick={() => setIsMobileMenuOpen(false)}
+            onClick={(e) => {
+              setIsMobileMenuOpen(false);
+              handleSectionLink(e, 'models');
+            }}
           >
             Our Work
           </a>
