@@ -548,7 +548,7 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
                 <MessageCircle className="w-4 h-4" />
               </div>
               <div>
-                <h3 className="font-display text-sm font-bold text-slate-900">Contact Alexis or request a payout</h3>
+                <h3 className="font-display text-sm font-bold text-slate-900">Contact Admin or request a payout</h3>
               </div>
             </div>
 
@@ -570,7 +570,7 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
                         {msg.text}
                       </div>
                       <span className="text-[10px] text-slate-400">
-                        {isMe ? 'You' : 'Alexis Cervantes'} · {msg.timestamp}
+                        {isMe ? 'You' : 'Admin'} · {msg.timestamp}
                       </span>
                     </div>
                   );
@@ -588,7 +588,7 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
                     void handleSendChatMessage();
                   }
                 }}
-                placeholder="Message Alexis..."
+                placeholder="Message Admin..."
                 rows={2}
                 className="flex-1 text-sm border border-slate-200 rounded-xl p-2.5 focus:outline-none focus:border-blue-600 resize-none"
               />
