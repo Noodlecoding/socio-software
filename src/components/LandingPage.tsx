@@ -5,6 +5,7 @@ import type { AppView } from '../App';
 import { SOCIO_LOGO_URL, PAST_PROJECTS } from '../data/initialData';
 import { supabase } from '../lib/supabaseClient';
 import { checkAuthRateLimit, RATE_LIMIT_MESSAGE } from '../lib/rateLimit';
+import { useLanguage } from '../lib/i18n';
 import {
   Zap,
   ArrowRight,
@@ -54,6 +55,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isEmailFormOpen, setIsEmailFormOpen] = useState(false);
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
+  const { t } = useLanguage();
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -186,10 +188,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
               <div className="text-center max-w-lg mx-auto mb-8">
                 <h2 className="font-display text-2xl font-extrabold text-slate-900 tracking-tight">
-                  Create your account
+                  {t('signupCard.title')}
                 </h2>
                 <p className="text-slate-600 text-sm mt-3 leading-relaxed">
-                  Start discussing your project in minutes.
+                  {t('signupCard.subtitle')}
                 </p>
               </div>
 
@@ -206,7 +208,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"></path>
                     <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"></path>
                   </svg>
-                  <span>Continue with Google</span>
+                  <span>{t('signupCard.google')}</span>
                 </button>
               </div>
 
@@ -216,7 +218,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   onClick={() => setIsEmailFormOpen(true)}
                   className="w-full text-center text-sm font-semibold text-slate-500 hover:text-blue-600 transition-colors cursor-pointer py-2"
                 >
-                  Log in with email
+                  {t('signupCard.orEmail')}
                 </button>
               ) : (
               <motion.div
@@ -227,7 +229,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <div className="relative flex items-center justify-center mb-6">
                 <div className="border-t border-slate-200 w-full"></div>
                 <span className="bg-white px-3 text-xs font-medium text-slate-400 uppercase tracking-wider absolute">
-                  or with email
+                  {t('signupCard.orEmail')}
                 </span>
               </div>
 
@@ -242,7 +244,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
                     <div>
                       <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider block mb-1.5" htmlFor="modal-client-email">
-                        Work Email
+                        {t('signupCard.workEmail')}
                       </label>
                       <input
                         className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 shadow-sm"
@@ -258,9 +260,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     <div>
                       <div className="flex items-center justify-between mb-1.5">
                         <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider block" htmlFor="modal-client-password">
-                          {mode === 'signup' ? 'Create Password' : 'Password'}
+                          {mode === 'signup' ? t('signupCard.createPassword') : t('signupCard.password')}
                         </label>
-                        {mode === 'signup' && <span className="text-[11px] text-slate-400 font-medium">Min 8 characters</span>}
+                        {mode === 'signup' && <span className="text-[11px] text-slate-400 font-medium">{t('signupCard.minChars')}</span>}
                       </div>
                       <input
                         className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 shadow-sm font-mono"
@@ -278,7 +280,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                           onClick={() => setIsForgotPasswordOpen(true)}
                           className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors cursor-pointer mt-1.5"
                         >
-                          Forgot password?
+                          {t('signupCard.forgotPassword')}
                         </button>
                       )}
                     </div>
@@ -291,10 +293,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                       >
                         <span>
                           {isSubmitting
-                            ? 'Setting up your workspace...'
+                            ? t('signupCard.submitting')
                             : mode === 'signup'
-                            ? 'Create Account & Get Started'
-                            : 'Sign In'}
+                            ? t('signupCard.createAccount')
+                            : t('signupCard.signIn')}
                         </span>
                         <ArrowRight className="w-4 h-4" />
                       </button>
@@ -302,7 +304,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
                     <div className="text-center pt-3 border-t border-slate-200/80 mt-1">
                       <span className="text-xs text-slate-500">
-                        {mode === 'signup' ? 'Already have an account? ' : "Don't have an account? "}
+                        {mode === 'signup' ? t('signupCard.alreadyHaveAccount') : t('signupCard.noAccount')}
                       </span>
                       <button
                         type="button"
@@ -312,7 +314,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                         }}
                         className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors cursor-pointer"
                       >
-                        {mode === 'signup' ? 'Sign in to Discussion Desk' : 'Create an account'}
+                        {mode === 'signup' ? t('signupCard.signInLink') : t('signupCard.createAccountLink')}
                       </button>
                     </div>
                   </div>
@@ -322,10 +324,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                       <CheckCircle2 className="w-7 h-7" />
                     </div>
                     <h4 className="font-display text-lg font-bold text-slate-900">
-                      {mode === 'signup' ? 'Account Created' : 'Welcome Back'}
+                      {mode === 'signup' ? t('signupCard.successCreatedTitle') : t('signupCard.successWelcomeTitle')}
                     </h4>
                     <p className="text-sm text-slate-600 mt-1">
-                      Setting up your workspace and connecting you with Alexis Cervantes...
+                      {t('signupCard.successSubtitle')}
                     </p>
                   </div>
                 )}
@@ -347,13 +349,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <div className="lg:col-span-7 flex flex-col items-start lg:pr-6">
               {/* Headline with elegant balance */}
               <h1 className="font-display text-3xl sm:text-4xl lg:text-[44px] font-extrabold text-slate-900 leading-[1.12] tracking-tight">
-                Custom software. <br className="hidden sm:inline" />
-                <span className="text-blue-600 font-bold">Built for your needs, budget and timeframe</span>
+                {t('hero.headlineLine1')} <br className="hidden sm:inline" />
+                <span className="text-blue-600 font-bold">{t('hero.headlineLine2')}</span>
               </h1>
 
               {/* Subheadline */}
               <p className="text-lg sm:text-xl font-medium text-slate-800 mt-6 leading-snug max-w-xl">
-                We scope first. You pay for what matters. No bloat, no surprises.
+                {t('hero.subheadline')}
               </p>
 
               {/* Refined CTA buttons */}
@@ -363,7 +365,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   onClick={() => (user ? onStartAudit() : setIsLoginModalOpen(true))}
                   className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-all shadow-sm hover:shadow-md text-sm cursor-pointer"
                 >
-                  <span>Contact us in minutes</span>
+                  <span>{t('hero.cta')}</span>
                   <Zap className="w-4 h-4" />
                 </button>
               </div>
@@ -371,16 +373,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               {/* Clean understated stats */}
               <div className="grid grid-cols-3 gap-8 pt-10 mt-10 border-t border-slate-100 w-full max-w-lg">
                 <div>
-                  <div className="text-2xl font-bold text-slate-900 tracking-tight">1-3 Days</div>
-                  <div className="text-xs text-slate-400 font-medium mt-1">Average diagnostic</div>
+                  <div className="text-2xl font-bold text-slate-900 tracking-tight">{t('hero.stat1Value')}</div>
+                  <div className="text-xs text-slate-400 font-medium mt-1">{t('hero.stat1Label')}</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-slate-900 tracking-tight">100%</div>
-                  <div className="text-xs text-slate-400 font-medium mt-1">Code &amp; IP retained</div>
+                  <div className="text-2xl font-bold text-slate-900 tracking-tight">{t('hero.stat2Value')}</div>
+                  <div className="text-xs text-slate-400 font-medium mt-1">{t('hero.stat2Label')}</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-blue-600 tracking-tight">Your Budget</div>
-                  <div className="text-xs text-slate-400 font-medium mt-1">We scope around it</div>
+                  <div className="text-2xl font-bold text-blue-600 tracking-tight">{t('hero.stat3Value')}</div>
+                  <div className="text-xs text-slate-400 font-medium mt-1">{t('hero.stat3Label')}</div>
                 </div>
               </div>
             </div>
@@ -391,10 +393,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 {/* Header */}
                 <div className="flex items-center justify-between pb-5 border-b border-slate-100">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-slate-900 uppercase tracking-wider">How It Works</span>
+                    <span className="text-xs font-bold text-slate-900 uppercase tracking-wider">{t('hero.cardTitle')}</span>
                   </div>
                   <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full">
-                    Simple 3-Step Process
+                    {t('hero.cardBadge')}
                   </span>
                 </div>
 
@@ -406,9 +408,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                       1
                     </div>
                     <div>
-                      <h4 className="text-sm font-semibold text-slate-900">Understand What You Need</h4>
+                      <h4 className="text-sm font-semibold text-slate-900">{t('hero.step1Title')}</h4>
                       <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                        We dig into your goals, workflow and pain points to figure out exactly what to build.
+                        {t('hero.step1Desc')}
                       </p>
                     </div>
                   </div>
@@ -419,9 +421,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                       2
                     </div>
                     <div>
-                      <h4 className="text-sm font-semibold text-slate-900">Get a Clear Plan &amp; Timeline</h4>
+                      <h4 className="text-sm font-semibold text-slate-900">{t('hero.step2Title')}</h4>
                       <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                        We map out the exact solution and adapt it to your budget, timeframe and project. No confusing tech jargon, no hidden fees.
+                        {t('hero.step2Desc')}
                       </p>
                     </div>
                   </div>
@@ -432,9 +434,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                       3
                     </div>
                     <div>
-                      <h4 className="text-sm font-semibold text-slate-900">We Build &amp; Hand It Over</h4>
+                      <h4 className="text-sm font-semibold text-slate-900">{t('hero.step3Title')}</h4>
                       <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                        Ready to use in weeks. You fully own 100% of your software.
+                        {t('hero.step3Desc')}
                       </p>
                     </div>
                   </div>
@@ -443,9 +445,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 {/* Outcome highlight */}
                 <div className="bg-slate-50 rounded-xl p-4 flex items-center justify-between border border-slate-100 mt-1">
                   <div>
-                    <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">The Result</div>
+                    <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">{t('hero.resultLabel')}</div>
                     <div className="text-sm font-semibold text-slate-800 mt-0.5">
-                      Software that saves your team real time and pays for itself.
+                      {t('hero.resultText')}
                     </div>
                   </div>
                   <CheckCircle2 className="w-5 h-5 text-blue-600 shrink-0" />
@@ -460,12 +462,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           <div className="max-w-7xl mx-auto flex flex-col gap-16">
             {/* Section Heading */}
             <div className="text-center max-w-3xl mx-auto" id="approach">
-              <span className="text-xs font-bold uppercase tracking-wider text-blue-600 mb-2 block">Our Methodology</span>
+              <span className="text-xs font-bold uppercase tracking-wider text-blue-600 mb-2 block">{t('methodology.eyebrow')}</span>
               <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-                A simple, predictable path to operating software.
+                {t('methodology.title')}
               </h2>
               <p className="text-base text-slate-600 mt-3">
-                Four clear steps from problem identification to full production handover.
+                {t('methodology.subtitle')}
               </p>
             </div>
 
@@ -475,14 +477,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-7 flex flex-col justify-between hover:border-blue-300 transition-colors">
                 <div>
                   <span className="text-3xl font-extrabold text-blue-600">01</span>
-                  <h3 className="font-display text-lg font-bold text-slate-900 mt-4">We map your workflow</h3>
+                  <h3 className="font-display text-lg font-bold text-slate-900 mt-4">{t('methodology.step1Title')}</h3>
                   <p className="text-sm text-slate-600 mt-2 leading-relaxed">
-                    Understand your daily workflow and shape the right solution based on your budget, timeframe and needs.
+                    {t('methodology.step1Desc')}
                   </p>
                 </div>
                 <div className="mt-8 pt-4 border-t border-slate-200/60 flex items-center gap-2 text-xs font-semibold text-blue-700">
                   <Check className="w-4 h-4 text-blue-600" />
-                  <span>Workflow &amp; gap review</span>
+                  <span>{t('methodology.step1Tag')}</span>
                 </div>
               </div>
 
@@ -490,14 +492,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-7 flex flex-col justify-between hover:border-blue-300 transition-colors">
                 <div>
                   <span className="text-3xl font-extrabold text-blue-600">02</span>
-                  <h3 className="font-display text-lg font-bold text-slate-900 mt-4">We propose a solution</h3>
+                  <h3 className="font-display text-lg font-bold text-slate-900 mt-4">{t('methodology.step2Title')}</h3>
                   <p className="text-sm text-slate-600 mt-2 leading-relaxed">
-                    Tell you what we'd build, how it works and delivery timeline.
+                    {t('methodology.step2Desc')}
                   </p>
                 </div>
                 <div className="mt-8 pt-4 border-t border-slate-200/60 flex items-center gap-2 text-xs font-semibold text-blue-700">
                   <Check className="w-4 h-4 text-blue-600" />
-                  <span>Solution roadmap &amp; spec</span>
+                  <span>{t('methodology.step2Tag')}</span>
                 </div>
               </div>
 
@@ -505,14 +507,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-7 flex flex-col justify-between hover:border-blue-300 transition-colors">
                 <div>
                   <span className="text-3xl font-extrabold text-blue-600">03</span>
-                  <h3 className="font-display text-lg font-bold text-slate-900 mt-4">We build it</h3>
+                  <h3 className="font-display text-lg font-bold text-slate-900 mt-4">{t('methodology.step3Title')}</h3>
                   <p className="text-sm text-slate-600 mt-2 leading-relaxed">
-                    Custom software, built for you.
+                    {t('methodology.step3Desc')}
                   </p>
                 </div>
                 <div className="mt-8 pt-4 border-t border-slate-200/60 flex items-center gap-2 text-xs font-semibold text-blue-700">
                   <Check className="w-4 h-4 text-blue-600" />
-                  <span>Shipped in 2–4 weeks</span>
+                  <span>{t('methodology.step3Tag')}</span>
                 </div>
               </div>
 
@@ -520,14 +522,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-7 flex flex-col justify-between hover:border-blue-300 transition-colors">
                 <div>
                   <span className="text-3xl font-extrabold text-blue-600">04</span>
-                  <h3 className="font-display text-lg font-bold text-slate-900 mt-4">You own it</h3>
+                  <h3 className="font-display text-lg font-bold text-slate-900 mt-4">{t('methodology.step4Title')}</h3>
                   <p className="text-sm text-slate-600 mt-2 leading-relaxed">
-                    Training, handoff, done.
+                    {t('methodology.step4Desc')}
                   </p>
                 </div>
                 <div className="mt-8 pt-4 border-t border-slate-200/60 flex items-center gap-2 text-xs font-semibold text-blue-700">
                   <Check className="w-4 h-4 text-blue-600" />
-                  <span>Full code repository &amp; keys</span>
+                  <span>{t('methodology.step4Tag')}</span>
                 </div>
               </div>
             </div>
@@ -538,12 +540,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         <section className="w-full py-24 px-6 lg:px-12 bg-slate-50 overflow-hidden" id="models">
           <div className="max-w-7xl mx-auto flex flex-col gap-12">
             <div className="text-center max-w-3xl mx-auto px-6">
-              <span className="text-xs font-bold uppercase tracking-wider text-blue-600 mb-2 block">Common Projects</span>
+              <span className="text-xs font-bold uppercase tracking-wider text-blue-600 mb-2 block">{t('projects.eyebrow')}</span>
               <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-                A few examples of what we've built.
+                {t('projects.title')}
               </h2>
               <p className="text-base sm:text-lg text-slate-600 mt-3">
-                Client names stay private, but here's the kind of work we do — and there's no fixed price list. Tell us what you're solving for and your budget and we'll shape a plan around it.
+                {t('projects.subtitle')}
               </p>
             </div>
           </div>
@@ -577,7 +579,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
           <div className="max-w-7xl mx-auto flex flex-col gap-12 mt-12">
             <p className="text-center text-xs text-slate-400">
-              Details anonymized to protect client privacy. Your project won't look exactly like these — every plan and cost comes out of a conversation with us.
+              {t('projects.anonymizedNote')}
             </p>
 
             {/* Ownership Banner */}
@@ -585,11 +587,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <div className="flex items-center gap-3">
                 <ShieldCheck className="w-6 h-6 text-blue-600 shrink-0" />
                 <span>
-                  <strong>100% Code Ownership:</strong> No recurring user licenses or vendor lock-in. You own everything we build.
+                  <strong>{t('projects.ownershipTitle')}</strong> {t('projects.ownershipBanner')}
                 </span>
               </div>
               <span className="text-xs font-semibold text-blue-700 bg-white px-3 py-1.5 rounded-lg border border-blue-200 shrink-0">
-                Complete IP &amp; Code Handover
+                {t('projects.ownershipBadge')}
               </span>
             </div>
           </div>
@@ -600,10 +602,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           <div className="max-w-xl mx-auto bg-slate-50 border border-slate-200 rounded-3xl p-8 sm:p-10 shadow-sm">
             <div className="text-center max-w-lg mx-auto mb-8">
               <h2 className="font-display text-3xl font-extrabold text-slate-900 tracking-tight">
-                Create your account
+                {t('signupCard.title')}
               </h2>
               <p className="text-slate-600 text-sm mt-3 leading-relaxed">
-                Start discussing your project in minutes.
+                {t('signupCard.subtitle')}
               </p>
             </div>
 
@@ -621,7 +623,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"></path>
                   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"></path>
                 </svg>
-                <span>Continue with Google</span>
+                <span>{t('signupCard.google')}</span>
               </button>
             </div>
 
@@ -629,7 +631,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <div className="relative flex items-center justify-center mb-6">
               <div className="border-t border-slate-200 w-full"></div>
               <span className="bg-slate-50 px-3 text-xs font-medium text-slate-400 uppercase tracking-wider absolute">
-                or with email
+                {t('signupCard.orEmail')}
               </span>
             </div>
 
@@ -645,7 +647,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
                   <div>
                     <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider block mb-1.5" htmlFor="client-email">
-                      Work Email
+                      {t('signupCard.workEmail')}
                     </label>
                     <input
                       className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 shadow-sm"
@@ -661,9 +663,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
                       <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider block" htmlFor="client-password">
-                        {mode === 'signup' ? 'Create Password' : 'Password'}
+                        {mode === 'signup' ? t('signupCard.createPassword') : t('signupCard.password')}
                       </label>
-                      {mode === 'signup' && <span className="text-[11px] text-slate-400 font-medium">Min 8 characters</span>}
+                      {mode === 'signup' && <span className="text-[11px] text-slate-400 font-medium">{t('signupCard.minChars')}</span>}
                     </div>
                     <input
                       className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 shadow-sm font-mono"
@@ -681,7 +683,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                         onClick={() => setIsForgotPasswordOpen(true)}
                         className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors cursor-pointer mt-1.5"
                       >
-                        Forgot password?
+                        {t('signupCard.forgotPassword')}
                       </button>
                     )}
                   </div>
@@ -694,10 +696,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     >
                       <span>
                         {isSubmitting
-                          ? 'Setting up your workspace...'
+                          ? t('signupCard.submitting')
                           : mode === 'signup'
-                          ? 'Create Account & Get Started'
-                          : 'Sign In'}
+                          ? t('signupCard.createAccount')
+                          : t('signupCard.signIn')}
                       </span>
                       <ArrowRight className="w-4 h-4" />
                     </button>
@@ -705,7 +707,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
                   <div className="text-center pt-3 border-t border-slate-200/80 mt-1">
                     <span className="text-xs text-slate-500">
-                      {mode === 'signup' ? 'Already have an account? ' : "Don't have an account? "}
+                      {mode === 'signup' ? t('signupCard.alreadyHaveAccount') : t('signupCard.noAccount')}
                     </span>
                     <button
                       type="button"
@@ -715,7 +717,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                       }}
                       className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors cursor-pointer"
                     >
-                      {mode === 'signup' ? 'Sign in to Discussion Desk' : 'Create an account'}
+                      {mode === 'signup' ? t('signupCard.signInLink') : t('signupCard.createAccountLink')}
                     </button>
                   </div>
                 </div>
@@ -726,10 +728,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     <CheckCircle2 className="w-7 h-7" />
                   </div>
                   <h4 className="font-display text-lg font-bold text-slate-900">
-                    {mode === 'signup' ? 'Account Created' : 'Welcome Back'}
+                    {mode === 'signup' ? t('signupCard.successCreatedTitle') : t('signupCard.successWelcomeTitle')}
                   </h4>
                   <p className="text-sm text-slate-600 mt-1">
-                    Setting up your workspace and connecting you with Alexis Cervantes...
+                    {t('signupCard.successSubtitle')}
                   </p>
                 </div>
               )}
@@ -747,41 +749,41 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 <img src={SOCIO_LOGO_URL} alt="Socio" className="w-7 h-7 rounded-lg shadow-sm" />
                 <span className="font-display text-xl font-bold text-white tracking-tight">Socio</span>
               </div>
-              <p className="text-sm text-slate-400 mt-1">Custom software. No fluff. Just results.</p>
+              <p className="text-sm text-slate-400 mt-1">{t('footer.tagline')}</p>
             </div>
             <div className="flex flex-wrap gap-8 text-sm font-medium text-slate-300">
               <a className="hover:text-white transition-colors" href="#how-it-works">
-                How It Works
+                {t('footer.howItWorks')}
               </a>
               <a className="hover:text-white transition-colors" href="#models">
-                Engagement Models
+                {t('footer.engagementModels')}
               </a>
               <button
                 onClick={() => onStartAudit()}
                 className="text-blue-400 hover:text-blue-300 transition-colors cursor-pointer"
               >
-                Get started
+                {t('footer.getStarted')}
               </button>
             </div>
           </div>
           <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-            <p>© 2025 Socio Software Inc. All rights reserved.</p>
+            <p>{t('footer.copyright')}</p>
             <div className="flex flex-wrap items-center justify-center gap-6">
-              <span>Budget-First Scoping</span>
+              <span>{t('footer.budgetFirst')}</span>
               <span>•</span>
-              <span>100% Client Code Ownership</span>
+              <span>{t('footer.codeOwnership')}</span>
               <span className="hidden sm:inline">•</span>
               <button
                 onClick={() => onNavigate('legal')}
                 className="hover:text-slate-300 transition-colors cursor-pointer"
               >
-                Privacy Policy
+                {t('footer.privacyPolicy')}
               </button>
               <button
                 onClick={() => onNavigate('legal')}
                 className="hover:text-slate-300 transition-colors cursor-pointer"
               >
-                Terms of Service
+                {t('footer.termsOfService')}
               </button>
             </div>
           </div>

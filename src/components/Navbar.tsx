@@ -2,7 +2,29 @@ import React, { useState } from 'react';
 import { SOCIO_LOGO_URL } from '../data/initialData';
 import { UserProfile } from '../types';
 import type { AppView } from '../App';
+import { useLanguage } from '../lib/i18n';
 import { ArrowRight, MessageSquare, LayoutTemplate, LogOut, Menu, X } from 'lucide-react';
+
+const LanguageSwitcher: React.FC<{ className?: string }> = ({ className }) => {
+  const { language, setLanguage } = useLanguage();
+  return (
+    <div className={`inline-flex items-center rounded-lg border border-slate-200 bg-slate-50 p-0.5 text-xs font-semibold ${className ?? ''}`}>
+      {(['en', 'es'] as const).map((lang) => (
+        <button
+          key={lang}
+          type="button"
+          onClick={() => setLanguage(lang)}
+          className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+            language === lang ? 'bg-blue-600 text-white' : 'text-slate-500 hover:text-slate-700'
+          }`}
+          aria-pressed={language === lang}
+        >
+          {lang.toUpperCase()}
+        </button>
+      ))}
+    </div>
+  );
+};
 
 interface NavbarProps {
   currentView: AppView;
@@ -14,6 +36,7 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, user, onSignOut, isAdmin }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { t } = useLanguage();
 
   const handleSectionLink = (e: React.MouseEvent<HTMLAnchorElement>, sectionId: string) => {
     if (currentView === 'landing') return;
@@ -42,22 +65,24 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, user, o
 
           <div className="flex items-center gap-1.5">
             <span className="text-xs sm:text-sm font-semibold text-slate-600">
-              {isAdmin ? 'Client Inbox' : 'Discussion Desk'}
+              {isAdmin ? t('nav.clientInbox') : t('nav.discussionDesk')}
             </span>
             <span className="hidden md:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              {isAdmin ? 'Live' : 'Live Chat'}
+              {isAdmin ? t('nav.live') : t('nav.liveChat')}
             </span>
           </div>
         </div>
 
         <div className="flex items-center gap-3 sm:gap-5">
+          <LanguageSwitcher />
+
           <button
             onClick={() => onNavigate('landing')}
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-blue-600 py-1.5 px-3 rounded-lg hover:bg-slate-100 transition-colors"
           >
             <LayoutTemplate className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Landing Overview</span>
+            <span className="hidden sm:inline">{t('nav.landingOverview')}</span>
           </button>
 
           <a
@@ -80,10 +105,10 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, user, o
           <button
             onClick={onSignOut}
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-red-600 py-1.5 px-3 rounded-lg hover:bg-red-50 transition-colors cursor-pointer"
-            title="Sign out"
+            title={t('nav.signOut')}
           >
             <LogOut className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Sign out</span>
+            <span className="hidden sm:inline">{t('nav.signOut')}</span>
           </button>
         </div>
       </header>
@@ -113,21 +138,21 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, user, o
             href="#how-it-works"
             onClick={(e) => handleSectionLink(e, 'how-it-works')}
           >
-            How It Works
+            {t('nav.howItWorks')}
           </a>
           <a
             className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors"
             href="#models"
             onClick={(e) => handleSectionLink(e, 'models')}
           >
-            Our Work
+            {t('nav.ourWork')}
           </a>
           <button
             onClick={() => onNavigate('workspace')}
             className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors cursor-pointer"
           >
             <MessageSquare className="w-4 h-4" />
-            <span>{user ? (isAdmin ? 'Client Inbox' : 'Discussion Desk') : 'Sign in'}</span>
+            <span>{user ? (isAdmin ? t('nav.clientInbox') : t('nav.discussionDesk')) : t('nav.signIn')}</span>
           </button>
           <button
             onClick={() => onNavigate('affiliate')}
@@ -135,26 +160,28 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, user, o
               currentView === 'affiliate' ? 'text-blue-600' : 'text-slate-600 hover:text-blue-600'
             }`}
           >
-            Growth Partner
+            {t('nav.growthPartner')}
           </button>
         </nav>
 
         {/* Header CTAs (desktop) */}
         <div className="hidden md:flex items-center gap-3">
+          <LanguageSwitcher />
+
           {user ? (
             <button
               onClick={onSignOut}
               className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-lg text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 transition-all cursor-pointer"
             >
               <LogOut className="w-4 h-4" />
-              <span>Sign out</span>
+              <span>{t('nav.signOut')}</span>
             </button>
           ) : (
             <a
               className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-lg text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-all shadow-sm hover:shadow-md"
               href="#get-started"
             >
-              <span>Get started</span>
+              <span>{t('nav.getStarted')}</span>
               <ArrowRight className="w-4 h-4" />
             </a>
           )}
@@ -173,6 +200,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, user, o
       {/* Mobile menu panel */}
       {isMobileMenuOpen && (
         <div className="md:hidden border-t border-slate-100 bg-white px-6 py-4 flex flex-col gap-3">
+          <LanguageSwitcher className="self-start" />
+
           <a
             className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors py-1.5"
             href="#how-it-works"
@@ -181,7 +210,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, user, o
               handleSectionLink(e, 'how-it-works');
             }}
           >
-            How It Works
+            {t('nav.howItWorks')}
           </a>
           <a
             className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors py-1.5"
@@ -191,7 +220,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, user, o
               handleSectionLink(e, 'models');
             }}
           >
-            Our Work
+            {t('nav.ourWork')}
           </a>
           <button
             onClick={() => {
@@ -201,7 +230,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, user, o
             className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors cursor-pointer py-1.5"
           >
             <MessageSquare className="w-4 h-4" />
-            <span>{user ? (isAdmin ? 'Client Inbox' : 'Discussion Desk') : 'Sign in'}</span>
+            <span>{user ? (isAdmin ? t('nav.clientInbox') : t('nav.discussionDesk')) : t('nav.signIn')}</span>
           </button>
           <button
             onClick={() => {
@@ -210,7 +239,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, user, o
             }}
             className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors cursor-pointer py-1.5 text-left"
           >
-            Growth Partner
+            {t('nav.growthPartner')}
           </button>
 
           <div className="pt-3 border-t border-slate-100">
@@ -223,7 +252,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, user, o
                 className="w-full inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-lg text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 transition-all cursor-pointer"
               >
                 <LogOut className="w-4 h-4" />
-                <span>Sign out</span>
+                <span>{t('nav.signOut')}</span>
               </button>
             ) : (
               <a
@@ -231,7 +260,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, user, o
                 href="#get-started"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                <span>Get started</span>
+                <span>{t('nav.getStarted')}</span>
                 <ArrowRight className="w-4 h-4" />
               </a>
             )}
