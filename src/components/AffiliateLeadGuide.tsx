@@ -10,8 +10,6 @@ import {
   BookOpen,
   MessagesSquare,
   Mail,
-  Target,
-  Rocket,
   Sparkles,
   LucideIcon
 } from 'lucide-react';
@@ -30,11 +28,17 @@ type Block =
   | { type: 'flow'; items: string[] }
   | { type: 'headline'; text: string }
   | { type: 'breakdown'; items: { count: string; label: string }[] }
-  | { type: 'commission'; rows: { value: string; commission: string }[] }
-  | { type: 'workflow'; steps: { label: string; desc: string }[] };
+  | { type: 'commission'; rows: { value: string; commission: string }[] };
 
 interface GuideSection {
   icon: LucideIcon;
+  title: string;
+  blocks: Block[];
+}
+
+interface Method {
+  icon: LucideIcon;
+  shortLabel: string;
   title: string;
   blocks: Block[];
 }
@@ -67,7 +71,7 @@ const SECTIONS_EN: GuideSection[] = [
   },
   {
     icon: Clock,
-    title: 'Your daily quota',
+    title: 'Your recommended daily quota',
     blocks: [
       { type: 'headline', text: '40–50 prospects per day' },
       {
@@ -82,9 +86,29 @@ const SECTIONS_EN: GuideSection[] = [
       { type: 'strong', text: 'Volume + basic qualification + quality conversations.' },
       { type: 'p', text: "Don't spend 20 minutes researching one company when you could contact several other potential buyers." }
     ]
-  },
+  }
+];
+
+const CLOSING_SECTION_EN: GuideSection = {
+  icon: Sparkles,
+  title: 'The golden rule',
+  blocks: [
+    {
+      type: 'quote',
+      text: "Don't spend 20 minutes researching one prospect. Spend a couple of minutes finding out whether they're interested, then move on."
+    },
+    { type: 'p', text: "Your advantage isn't knowing everything about software." },
+    { type: 'p', text: 'Your advantage is being able to consistently find businesses, start conversations, and uncover opportunities.' },
+    { type: 'strong', text: 'More qualified conversations → more potential deals.' },
+    { type: 'p', text: 'And because your commission is based on deal value:' },
+    { type: 'strong', text: 'Higher-value opportunities can mean significantly higher commissions.' }
+  ]
+};
+
+const METHODS_EN: Method[] = [
   {
     icon: MapPin,
+    shortLabel: 'Google Maps',
     title: '1. Google Maps & business directories',
     blocks: [
       { type: 'p', text: 'Search for established businesses in industries that can benefit from custom software.' },
@@ -97,6 +121,7 @@ const SECTIONS_EN: GuideSection[] = [
   },
   {
     icon: Briefcase,
+    shortLabel: 'Job Boards',
     title: '2. Job board prospecting',
     blocks: [
       { type: 'p', text: 'Job postings can reveal that a company is spending money on repetitive operational work.' },
@@ -113,6 +138,7 @@ const SECTIONS_EN: GuideSection[] = [
   },
   {
     icon: BookOpen,
+    shortLabel: 'Directories',
     title: '3. Business directories & industry lists',
     blocks: [
       { type: 'p', text: 'Use online business directories, industry directories, trade associations, local business listings, and similar sources to find prospects quickly.' },
@@ -125,6 +151,7 @@ const SECTIONS_EN: GuideSection[] = [
   },
   {
     icon: MessagesSquare,
+    shortLabel: 'Social Media',
     title: '4. Social media & community intent',
     blocks: [
       { type: 'p', text: 'Search:' },
@@ -148,6 +175,7 @@ const SECTIONS_EN: GuideSection[] = [
   },
   {
     icon: Mail,
+    shortLabel: 'Cold Email',
     title: '5. Cold email & direct messages',
     blocks: [
       { type: 'p', text: 'Build a targeted list of businesses and contact the relevant decision-maker.' },
@@ -159,48 +187,6 @@ const SECTIONS_EN: GuideSection[] = [
       { type: 'p', text: "If they're interested, explain that you can connect them with the team and provide your referral link." },
       { type: 'p', text: "If they're not interested, move on." },
       { type: 'strong', text: "Your goal isn't to convince everyone. It's to find the people who already have a reason to consider a solution." }
-    ]
-  },
-  {
-    icon: Target,
-    title: 'What makes a good prospect?',
-    blocks: [
-      { type: 'strong', text: 'Established business + operational complexity + ability to invest + potential software need.' },
-      { type: 'p', text: "You don't need to know exactly what they need before contacting them." },
-      { type: 'p', text: 'The software team can handle the technical discovery.' },
-      { type: 'p', text: 'Your job is to find the opportunity and open the door.' }
-    ]
-  },
-  {
-    icon: Rocket,
-    title: 'Your workflow',
-    blocks: [
-      {
-        type: 'workflow',
-        steps: [
-          { label: 'Find', desc: 'Identify a relevant business.' },
-          { label: 'Quick check', desc: "Spend a short amount of time confirming they're a reasonable prospect." },
-          { label: 'Contact', desc: 'Send a concise, relevant message.' },
-          { label: 'Qualify', desc: 'If they show genuine interest, continue the conversation.' },
-          { label: 'Refer', desc: 'Send your referral link or connect them with the software team.' },
-          { label: 'Earn', desc: 'If the referral becomes a successful deal, you earn your 23% commission.' }
-        ]
-      }
-    ]
-  },
-  {
-    icon: Sparkles,
-    title: 'The golden rule',
-    blocks: [
-      {
-        type: 'quote',
-        text: "Don't spend 20 minutes researching one prospect. Spend a couple of minutes finding out whether they're interested, then move on."
-      },
-      { type: 'p', text: "Your advantage isn't knowing everything about software." },
-      { type: 'p', text: 'Your advantage is being able to consistently find businesses, start conversations, and uncover opportunities.' },
-      { type: 'strong', text: 'More qualified conversations → more potential deals.' },
-      { type: 'p', text: 'And because your commission is based on deal value:' },
-      { type: 'strong', text: 'Higher-value opportunities can mean significantly higher commissions.' }
     ]
   }
 ];
@@ -233,7 +219,7 @@ const SECTIONS_ES: GuideSection[] = [
   },
   {
     icon: Clock,
-    title: 'Tu cuota diaria',
+    title: 'Tu cuota diaria recomendada',
     blocks: [
       { type: 'headline', text: '40–50 prospectos por día' },
       {
@@ -248,9 +234,29 @@ const SECTIONS_ES: GuideSection[] = [
       { type: 'strong', text: 'Volumen + calificación básica + conversaciones de calidad.' },
       { type: 'p', text: 'No dediques 20 minutos a investigar una sola empresa cuando podrías contactar a varios otros compradores potenciales.' }
     ]
-  },
+  }
+];
+
+const CLOSING_SECTION_ES: GuideSection = {
+  icon: Sparkles,
+  title: 'La regla de oro',
+  blocks: [
+    {
+      type: 'quote',
+      text: 'No dediques 20 minutos a investigar un prospecto. Dedica un par de minutos a averiguar si están interesados y luego sigue adelante.'
+    },
+    { type: 'p', text: 'Tu ventaja no es saberlo todo sobre software.' },
+    { type: 'p', text: 'Tu ventaja es poder encontrar negocios, iniciar conversaciones y descubrir oportunidades de forma constante.' },
+    { type: 'strong', text: 'Más conversaciones calificadas → más acuerdos potenciales.' },
+    { type: 'p', text: 'Y como tu comisión se basa en el valor del acuerdo:' },
+    { type: 'strong', text: 'Las oportunidades de mayor valor pueden significar comisiones significativamente más altas.' }
+  ]
+};
+
+const METHODS_ES: Method[] = [
   {
     icon: MapPin,
+    shortLabel: 'Google Maps',
     title: '1. Google Maps y directorios de negocios',
     blocks: [
       { type: 'p', text: 'Busca negocios establecidos en industrias que puedan beneficiarse de software a medida.' },
@@ -263,6 +269,7 @@ const SECTIONS_ES: GuideSection[] = [
   },
   {
     icon: Briefcase,
+    shortLabel: 'Bolsas de trabajo',
     title: '2. Prospección en bolsas de trabajo',
     blocks: [
       { type: 'p', text: 'Las publicaciones de empleo pueden revelar que una empresa está gastando dinero en trabajo operativo repetitivo.' },
@@ -279,6 +286,7 @@ const SECTIONS_ES: GuideSection[] = [
   },
   {
     icon: BookOpen,
+    shortLabel: 'Directorios',
     title: '3. Directorios de negocios y listas de industria',
     blocks: [
       { type: 'p', text: 'Usa directorios de negocios en línea, directorios de industria, asociaciones comerciales, listados de negocios locales y fuentes similares para encontrar prospectos rápidamente.' },
@@ -291,6 +299,7 @@ const SECTIONS_ES: GuideSection[] = [
   },
   {
     icon: MessagesSquare,
+    shortLabel: 'Redes sociales',
     title: '4. Redes sociales e intención en comunidades',
     blocks: [
       { type: 'p', text: 'Busca en:' },
@@ -314,6 +323,7 @@ const SECTIONS_ES: GuideSection[] = [
   },
   {
     icon: Mail,
+    shortLabel: 'Correo frío',
     title: '5. Correo frío y mensajes directos',
     blocks: [
       { type: 'p', text: 'Construye una lista de negocios objetivo y contacta al tomador de decisiones correspondiente.' },
@@ -325,48 +335,6 @@ const SECTIONS_ES: GuideSection[] = [
       { type: 'p', text: 'Si están interesados, explícales que puedes conectarlos con el equipo y comparte tu enlace de referido.' },
       { type: 'p', text: 'Si no están interesados, sigue adelante.' },
       { type: 'strong', text: 'Tu meta no es convencer a todos. Es encontrar a las personas que ya tienen una razón para considerar una solución.' }
-    ]
-  },
-  {
-    icon: Target,
-    title: '¿Qué hace a un buen prospecto?',
-    blocks: [
-      { type: 'strong', text: 'Negocio establecido + complejidad operativa + capacidad de inversión + necesidad potencial de software.' },
-      { type: 'p', text: 'No necesitas saber exactamente qué necesitan antes de contactarlos.' },
-      { type: 'p', text: 'El equipo de software puede encargarse del descubrimiento técnico.' },
-      { type: 'p', text: 'Tu trabajo es encontrar la oportunidad y abrir la puerta.' }
-    ]
-  },
-  {
-    icon: Rocket,
-    title: 'Tu flujo de trabajo',
-    blocks: [
-      {
-        type: 'workflow',
-        steps: [
-          { label: 'Encontrar', desc: 'Identifica un negocio relevante.' },
-          { label: 'Revisión rápida', desc: 'Dedica un momento breve a confirmar que es un prospecto razonable.' },
-          { label: 'Contactar', desc: 'Envía un mensaje conciso y relevante.' },
-          { label: 'Calificar', desc: 'Si muestran interés genuino, continúa la conversación.' },
-          { label: 'Referir', desc: 'Envía tu enlace de referido o conéctalos con el equipo de software.' },
-          { label: 'Ganar', desc: 'Si la referencia se convierte en un acuerdo exitoso, ganas tu comisión del 23%.' }
-        ]
-      }
-    ]
-  },
-  {
-    icon: Sparkles,
-    title: 'La regla de oro',
-    blocks: [
-      {
-        type: 'quote',
-        text: 'No dediques 20 minutos a investigar un prospecto. Dedica un par de minutos a averiguar si están interesados y luego sigue adelante.'
-      },
-      { type: 'p', text: 'Tu ventaja no es saberlo todo sobre software.' },
-      { type: 'p', text: 'Tu ventaja es poder encontrar negocios, iniciar conversaciones y descubrir oportunidades de forma constante.' },
-      { type: 'strong', text: 'Más conversaciones calificadas → más acuerdos potenciales.' },
-      { type: 'p', text: 'Y como tu comisión se basa en el valor del acuerdo:' },
-      { type: 'strong', text: 'Las oportunidades de mayor valor pueden significar comisiones significativamente más altas.' }
     ]
   }
 ];
@@ -435,30 +403,119 @@ const BlockRenderer: React.FC<{ block: Block }> = ({ block }) => {
           ))}
         </div>
       );
-    case 'workflow':
-      return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {block.steps.map((step, i) => (
-            <div key={i} className="flex items-start gap-3 bg-slate-50 border border-slate-100 rounded-xl px-4 py-3">
-              <span className="w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center shrink-0">
-                {i + 1}
-              </span>
-              <div>
-                <div className="text-sm font-bold text-slate-900">{step.label}</div>
-                <div className="text-xs text-slate-500 mt-0.5 leading-relaxed">{step.desc}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      );
     default:
       return null;
   }
 };
 
+const AccordionSection: React.FC<{ section: GuideSection; isOpen: boolean; onToggle: () => void }> = ({
+  section,
+  isOpen,
+  onToggle
+}) => {
+  const Icon = section.icon;
+  return (
+    <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="w-full flex items-center gap-3.5 p-5 sm:p-6 text-left cursor-pointer"
+        aria-expanded={isOpen}
+      >
+        <div className="w-10 h-10 rounded-xl bg-blue-600/10 text-blue-600 flex items-center justify-center shrink-0">
+          <Icon className="w-5 h-5" />
+        </div>
+        <h2 className="font-display text-base sm:text-lg font-bold text-slate-900 flex-1 min-w-0">{section.title}</h2>
+        <ChevronDown className={`w-4.5 h-4.5 text-slate-400 shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+
+      <AnimatePresence initial={false}>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            className="overflow-hidden"
+          >
+            <div className="px-5 sm:px-6 pb-6 flex flex-col gap-3.5">
+              {section.blocks.map((block, j) => (
+                <BlockRenderer key={j} block={block} />
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+const MethodsWidget: React.FC<{ methods: Method[]; title: string }> = ({ methods, title }) => {
+  const [active, setActive] = useState(0);
+  const method = methods[active];
+  const Icon = method.icon;
+
+  return (
+    <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6">
+      <h2 className="font-display text-base sm:text-lg font-bold text-slate-900">{title}</h2>
+
+      <div className="flex flex-wrap gap-2 mt-4">
+        {methods.map((m, i) => (
+          <button
+            key={i}
+            type="button"
+            onClick={() => setActive(i)}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-colors cursor-pointer ${
+              active === i
+                ? 'bg-blue-600 border-blue-600 text-white'
+                : 'bg-white border-slate-200 text-slate-600 hover:border-blue-300 hover:text-blue-600'
+            }`}
+          >
+            <span
+              className={`w-4 h-4 rounded-full text-[10px] font-bold flex items-center justify-center shrink-0 ${
+                active === i ? 'bg-white/20 text-white' : 'bg-blue-600/10 text-blue-600'
+              }`}
+            >
+              {i + 1}
+            </span>
+            {m.shortLabel}
+          </button>
+        ))}
+      </div>
+
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={active}
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -4 }}
+          transition={{ duration: 0.15, ease: 'easeOut' }}
+          className="mt-5"
+        >
+          <div className="flex items-center gap-2.5 mb-4">
+            <div className="w-8 h-8 rounded-lg bg-blue-600/10 text-blue-600 flex items-center justify-center shrink-0">
+              <Icon className="w-4 h-4" />
+            </div>
+            <h3 className="font-display text-sm font-bold text-slate-900">{method.title}</h3>
+          </div>
+          <div className="flex flex-col gap-3.5">
+            {method.blocks.map((block, j) => (
+              <BlockRenderer key={j} block={block} />
+            ))}
+          </div>
+        </motion.div>
+      </AnimatePresence>
+    </div>
+  );
+};
+
 export const AffiliateLeadGuide: React.FC<AffiliateLeadGuideProps> = ({ referralLink, onBack }) => {
   const { t, language } = useLanguage();
-  const SECTIONS = language === 'es' ? SECTIONS_ES : SECTIONS_EN;
+  const isEs = language === 'es';
+  const SECTIONS = isEs ? SECTIONS_ES : SECTIONS_EN;
+  const CLOSING_SECTION = isEs ? CLOSING_SECTION_ES : CLOSING_SECTION_EN;
+  const METHODS = isEs ? METHODS_ES : METHODS_EN;
+  const methodsWidgetTitle = isEs ? '5 métodos de generación de leads' : '5 lead generation methods';
   const [openIndices, setOpenIndices] = useState<Set<number>>(new Set([0]));
 
   const toggle = (i: number) => {
@@ -500,48 +557,17 @@ export const AffiliateLeadGuide: React.FC<AffiliateLeadGuideProps> = ({ referral
         )}
 
         <div className="flex flex-col gap-3 mt-8">
-          {SECTIONS.map((section, i) => {
-            const Icon = section.icon;
-            const isOpen = openIndices.has(i);
-            return (
-              <div key={i} className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
-                <button
-                  type="button"
-                  onClick={() => toggle(i)}
-                  className="w-full flex items-center gap-3.5 p-5 sm:p-6 text-left cursor-pointer"
-                  aria-expanded={isOpen}
-                >
-                  <div className="w-10 h-10 rounded-xl bg-blue-600/10 text-blue-600 flex items-center justify-center shrink-0">
-                    <Icon className="w-5 h-5" />
-                  </div>
-                  <h2 className="font-display text-base sm:text-lg font-bold text-slate-900 flex-1 min-w-0">
-                    {section.title}
-                  </h2>
-                  <ChevronDown
-                    className={`w-4.5 h-4.5 text-slate-400 shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`}
-                  />
-                </button>
+          {SECTIONS.map((section, i) => (
+            <AccordionSection key={i} section={section} isOpen={openIndices.has(i)} onToggle={() => toggle(i)} />
+          ))}
 
-                <AnimatePresence initial={false}>
-                  {isOpen && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2, ease: 'easeOut' }}
-                      className="overflow-hidden"
-                    >
-                      <div className="px-5 sm:px-6 pb-6 flex flex-col gap-3.5">
-                        {section.blocks.map((block, j) => (
-                          <BlockRenderer key={j} block={block} />
-                        ))}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            );
-          })}
+          <MethodsWidget methods={METHODS} title={methodsWidgetTitle} />
+
+          <AccordionSection
+            section={CLOSING_SECTION}
+            isOpen={openIndices.has(SECTIONS.length)}
+            onToggle={() => toggle(SECTIONS.length)}
+          />
         </div>
 
         <button
