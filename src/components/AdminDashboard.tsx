@@ -3,7 +3,7 @@ import { AdminAffiliate, AdminAffiliateConversation, AdminConversation, Affiliat
 import { supabase } from '../lib/supabaseClient';
 import { rowToChatMessage } from '../lib/chat';
 import { downloadSpecFile } from '../lib/files';
-import { Send, Users, DollarSign, Download, ChevronDown } from 'lucide-react';
+import { Send, Users, DollarSign, Download, ChevronDown, Search } from 'lucide-react';
 import { ProjectNotebook } from './ProjectNotebook';
 
 interface AdminDashboardProps {
@@ -110,6 +110,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
   const [affiliates, setAffiliates] = useState<AdminAffiliate[]>([]);
   const [isLoadingAffiliates, setIsLoadingAffiliates] = useState(true);
   const [affiliatesActivityFilter, setAffiliatesActivityFilter] = useState<AffiliateActivityFilter>('all');
+  const [affiliatesSearchQuery, setAffiliatesSearchQuery] = useState('');
   const [referredClients, setReferredClients] = useState<AffiliateReferredClient[]>([]);
   const [expandedAffiliateId, setExpandedAffiliateId] = useState<string | null>(null);
   const [paymentAmountInput, setPaymentAmountInput] = useState('');
@@ -380,9 +381,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
 
   const affiliateById = new Map<string, AdminAffiliate>(affiliates.map((a) => [a.affiliateId, a]));
 
-  const filteredAffiliates = affiliates.filter((a) =>
-    matchesAffiliateActivityFilter(affiliatesActivityFilter, a.leadsCount, a.commissionOwed)
-  );
+  const affiliatesSearchQueryLower = affiliatesSearchQuery.trim().toLowerCase();
+  const filteredAffiliates = affiliates.filter((a) => {
+    if (!matchesAffiliateActivityFilter(affiliatesActivityFilter, a.leadsCount, a.commissionOwed)) return false;
+    if (!affiliatesSearchQueryLower) return true;
+    const matchesAffiliate =
+      a.fullName.toLowerCase().includes(affiliatesSearchQueryLower) ||
+      a.email.toLowerCase().includes(affiliatesSearchQueryLower);
+    const matchesReferredClient = referredClients.some(
+      (c) =>
+        c.affiliateId === a.affiliateId &&
+        (c.fullName.toLowerCase().includes(affiliatesSearchQueryLower) ||
+          c.organization.toLowerCase().includes(affiliatesSearchQueryLower))
+    );
+    return matchesAffiliate || matchesReferredClient;
+  });
   const filteredAffiliateConversations = affiliateConversations.filter((c) => {
     const stats = affiliateById.get(c.affiliateId);
     return matchesAffiliateActivityFilter(affiliateChatsActivityFilter, stats?.leadsCount ?? 0, stats?.commissionOwed ?? 0);
@@ -569,6 +582,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
             <p className="text-xs text-slate-500 mt-0.5">
               {affiliates.length} affiliate{affiliates.length === 1 ? '' : 's'} registered
             </p>
+            <div className="relative mt-3 max-w-sm">
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                value={affiliatesSearchQuery}
+                onChange={(e) => setAffiliatesSearchQuery(e.target.value)}
+                placeholder="Search by affiliate or client name..."
+                className="w-full text-xs border border-slate-200 rounded-lg pl-8 pr-3 py-2 focus:outline-none focus:border-blue-600"
+              />
+            </div>
             <div className="flex flex-wrap gap-1.5 mt-3">
               {affiliateActivityFilterTabs.map((tab) => (
                 <button
