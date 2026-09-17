@@ -4,7 +4,28 @@ import { supabase } from '../lib/supabaseClient';
 import { checkAuthRateLimit, RATE_LIMIT_MESSAGE } from '../lib/rateLimit';
 import { rowToChatMessage } from '../lib/chat';
 import { UserProfile, AffiliateStats, AffiliateReferredClient, ClientStatus, ChatMessage } from '../types';
-import { ArrowRight, ArrowLeft, Copy, Check, Users, TrendingUp, DollarSign, LogOut, Target, ChevronRight, Send, MessageCircle, X, Share2 } from 'lucide-react';
+import {
+  ArrowRight,
+  ArrowLeft,
+  Copy,
+  Check,
+  Users,
+  TrendingUp,
+  DollarSign,
+  LogOut,
+  Target,
+  ChevronRight,
+  Send,
+  MessageCircle,
+  X,
+  Share2,
+  Laptop,
+  Link2,
+  CheckCircle2,
+  BarChart3,
+  Compass,
+  UserPlus
+} from 'lucide-react';
 import { AffiliateLeadGuide } from './AffiliateLeadGuide';
 import { ForgotPasswordModal } from './ForgotPasswordModal';
 import { useLanguage } from '../lib/i18n';
@@ -66,26 +87,32 @@ const MIN_AFFILIATE_AGE = 18;
 
 const STEPS_EN = [
   {
+    icon: Laptop,
     title: 'Earn money remotely',
     body: "This is **fully remote**, no office, no set hours.\nIf you know business owners who might need custom software, send us their name or connect us.\n**You don't need any sales or tech experience.**"
   },
   {
+    icon: DollarSign,
     title: 'Earn 23% commission',
     body: "Contact businesses that need software built. Send them our way.\nWhen a deal you referred closes, you get **23% of what they pay in USD**.\n**No cap, no catch.**"
   },
   {
+    icon: Link2,
     title: 'Get your own referral link',
     body: "Once you sign up, you get a **unique referral link**.\nShare it anywhere. Anyone who signs up through it is automatically tracked as your referral."
   },
   {
+    icon: CheckCircle2,
     title: 'We handle the rest',
     body: "**You don't need to sell anything.**\nOnce someone signs up through your link, our team takes the conversation from there: scoping, pricing and building."
   },
   {
+    icon: BarChart3,
     title: 'Track it all in your dashboard',
     body: "See exactly how many **leads you've sent**, how many turned into **paid deals** and how much **commission you've earned**, updated in real time."
   },
   {
+    icon: Compass,
     title: 'Get help finding leads',
     body: "Your dashboard has a full playbook of proven ways to find high-quality leads.\nOn average, growth partners land between **0 and 3 confirmed clients per month**. The playbook is there to help you push toward the higher end of that."
   }
@@ -93,26 +120,32 @@ const STEPS_EN = [
 
 const STEPS_ES = [
   {
+    icon: Laptop,
     title: 'Gana dinero de forma remota',
     body: "Esto es **totalmente remoto**, sin oficina, sin horarios fijos.\nSi conoces a dueños de negocios que podrían necesitar software a medida, envíanos su nombre o conéctanos.\n**No necesitas experiencia en ventas ni en tecnología.**"
   },
   {
+    icon: DollarSign,
     title: 'Gana 23% de comisión',
     body: "Contacta negocios que necesiten software a medida. Envíalos con nosotros.\nCuando un acuerdo que referiste se cierra, obtienes el **23% de lo que paguen en USD**.\n**Sin tope, sin trampa.**"
   },
   {
+    icon: Link2,
     title: 'Obtén tu propio enlace de referido',
     body: "Al registrarte, obtienes un **enlace de referido único**.\nCompártelo donde quieras. Cualquiera que se registre a través de él queda automáticamente registrado como tu referido."
   },
   {
+    icon: CheckCircle2,
     title: 'Nosotros nos encargamos del resto',
     body: "**No necesitas vender nada.**\nUna vez que alguien se registra con tu enlace, nuestro equipo toma la conversación desde ahí: alcance, precio y construcción."
   },
   {
+    icon: BarChart3,
     title: 'Rastrea todo en tu panel',
     body: "Mira exactamente cuántos **prospectos has enviado**, cuántos se convirtieron en **acuerdos pagados** y cuánta **comisión has ganado**, actualizado en tiempo real."
   },
   {
+    icon: Compass,
     title: 'Obtén ayuda para encontrar prospectos',
     body: "Tu panel tiene un manual completo de formas comprobadas para encontrar prospectos de alta calidad.\nEn promedio, los socios de crecimiento consiguen entre **0 y 3 clientes confirmados al mes**. El manual está ahí para ayudarte a llegar al extremo más alto de ese rango."
   }
@@ -908,6 +941,11 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
               exit={{ opacity: 0, x: -16 }}
               transition={{ duration: 0.2, ease: 'easeOut' }}
             >
+              {step !== 1 && (
+                <div className="w-11 h-11 rounded-xl bg-blue-600/10 text-blue-600 flex items-center justify-center mb-4">
+                  {React.createElement(STEPS[step].icon, { className: 'w-5 h-5' })}
+                </div>
+              )}
               <span className="text-xs font-bold uppercase tracking-wider text-blue-600 mb-2 block">
                 {t('affiliate.onboarding.stepOf7Prefix')} {step + 1} {t('affiliate.onboarding.stepOf7Suffix')}
               </span>
@@ -980,6 +1018,9 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
               exit={{ opacity: 0, x: -16 }}
               transition={{ duration: 0.2, ease: 'easeOut' }}
             >
+              <div className="w-11 h-11 rounded-xl bg-blue-600/10 text-blue-600 flex items-center justify-center mb-4">
+                <UserPlus className="w-5 h-5" />
+              </div>
               <span className="text-xs font-bold uppercase tracking-wider text-blue-600 mb-2 block">{t('affiliate.onboarding.stepOf7Prefix')} 7 {t('affiliate.onboarding.stepOf7Suffix')}</span>
               <h1 className="font-display text-2xl font-extrabold text-slate-900 tracking-tight">
                 {mode === 'signup' ? t('affiliate.onboarding.createAccountTitle') : t('affiliate.onboarding.signInTitle')}
