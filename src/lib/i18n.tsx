@@ -136,7 +136,11 @@ const translations = {
         send: 'Send',
         leadsTitle: 'Proven ways to find high-quality leads',
         leadsSubtitle: "Bigger clients pay you more — here's how to find them",
-        statsFooterNote: 'Stats update once our team records a closed deal. Questions about a payout? Reach us at'
+        statsFooterNote: 'Stats update once our team records a closed deal. Questions about a payout? Reach us at',
+        recruitPromptTitle: "Know someone who'd want a remote job?",
+        recruitPromptBody: 'Share Socio with them so they can apply as a Growth Partner too.',
+        recruitPromptNote: "You don't earn anything for recruiting other Growth Partners — this is completely optional, just a way to spread the word if you'd like to.",
+        recruitPromptContinue: 'Continue to playbook'
       },
       clientAccountBlock: {
         eyebrow: 'Growth Partner Program',
@@ -376,7 +380,11 @@ const translations = {
         send: 'Enviar',
         leadsTitle: 'Formas comprobadas de encontrar prospectos de alta calidad',
         leadsSubtitle: 'Los clientes más grandes te pagan más — así es como encontrarlos',
-        statsFooterNote: 'Las estadísticas se actualizan cuando nuestro equipo registra un acuerdo cerrado. ¿Preguntas sobre un pago? Escríbenos a'
+        statsFooterNote: 'Las estadísticas se actualizan cuando nuestro equipo registra un acuerdo cerrado. ¿Preguntas sobre un pago? Escríbenos a',
+        recruitPromptTitle: '¿Conoces a alguien que le interesaría un trabajo remoto?',
+        recruitPromptBody: 'Comparte Socio con esa persona para que también pueda aplicar como Socio de Crecimiento.',
+        recruitPromptNote: 'No ganas nada por reclutar a otros Socios de Crecimiento — esto es completamente opcional, solo una forma de compartir la voz si quieres.',
+        recruitPromptContinue: 'Continuar al manual'
       },
       clientAccountBlock: {
         eyebrow: 'Programa de Socio de Crecimiento',
