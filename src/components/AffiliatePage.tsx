@@ -345,7 +345,15 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
     setAuthError(null);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}${window.location.pathname}?view=affiliate` }
+      options: {
+        redirectTo: `${window.location.origin}${window.location.pathname}?view=affiliate`,
+        // Without this, Google silently reuses whatever Google account is
+        // already cached in the browser (e.g. the one used to sign up as a
+        // client) instead of letting the person pick which email to use —
+        // that's what was showing "already a client account" for people who
+        // never intended to reuse that email.
+        queryParams: { prompt: 'select_account' }
+      }
     });
     if (error) {
       setAuthError(error.message);
