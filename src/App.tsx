@@ -62,12 +62,10 @@ export default function App() {
   // account claim below to just that moment.
   const oauthAffiliateRedirectRef = useRef(false);
 
-  useEffect(() => {
-    currentViewRef.current = currentView;
-  }, [currentView]);
-
   // Capture ?ref=CODE from an affiliate link so signup can attribute it later,
-  // and restore ?view=affiliate after a full-page Google OAuth redirect
+  // and restore ?view=affiliate after a full-page Google OAuth redirect.
+  // Must run (and read window.location.search) before the URL-sync effect
+  // below ever touches the URL, or it'd wipe these params before they're read.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const ref = params.get('ref');
@@ -85,6 +83,26 @@ export default function App() {
       oauthAffiliateRedirectRef.current = true;
     }
   }, []);
+
+  useEffect(() => {
+    currentViewRef.current = currentView;
+
+    // Keep the address bar's ?view= in sync with the current page (the app
+    // has no client-side router — currentView is just React state — so
+    // without this, every page shows the same bare URL, and links people
+    // copy while on e.g. the Growth Partner page point at the homepage
+    // instead). Only touches the 'view' key, never the whole query string,
+    // so it can't clobber ?ref= from the effect above. replaceState, not
+    // pushState: there's no other history-based navigation here, so
+    // pushing would just make the back button confusing.
+    const url = new URL(window.location.href);
+    if (currentView === 'landing') {
+      url.searchParams.delete('view');
+    } else {
+      url.searchParams.set('view', currentView);
+    }
+    window.history.replaceState(null, '', url.toString());
+  }, [currentView]);
 
   useEffect(() => {
     let isMounted = true;
