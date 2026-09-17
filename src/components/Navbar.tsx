@@ -64,15 +64,9 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, user, o
 
           <div className="h-5 w-px bg-slate-200 hidden sm:block"></div>
 
-          <div className="flex items-center gap-1.5">
-            <span className="text-xs sm:text-sm font-semibold text-slate-600">
-              {isAdmin ? t('nav.clientInbox') : t('nav.discussionDesk')}
-            </span>
-            <span className="hidden md:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              {isAdmin ? t('nav.live') : t('nav.liveChat')}
-            </span>
-          </div>
+          <span className="text-xs sm:text-sm font-semibold text-slate-600">
+            {isAdmin ? t('nav.clientInbox') : t('nav.discussionDesk')}
+          </span>
         </div>
 
         <div className="flex items-center gap-3 sm:gap-5">
@@ -86,26 +80,9 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, user, o
             <span className="hidden sm:inline">{t('nav.landingOverview')}</span>
           </button>
 
-          <a
-            className="text-xs font-semibold text-slate-500 hover:text-blue-600 transition-colors hidden md:inline"
-            href="mailto:direct@socio.com"
-          >
-            direct@socio.com
-          </a>
-
-          <div className="flex items-center gap-2.5 pl-2 sm:pl-3 border-l border-slate-200">
-            <div className="w-8 h-8 rounded-full bg-blue-600/10 border border-blue-600/20 flex items-center justify-center text-xs font-bold text-blue-600 shadow-2xs">
-              {user.initials}
-            </div>
-            <div className="hidden sm:flex flex-col text-left">
-              <span className="text-xs font-semibold text-slate-800 leading-none">{user.name}</span>
-              <span className="text-[11px] text-slate-400 leading-tight mt-0.5">{user.organization}</span>
-            </div>
-          </div>
-
           <button
             onClick={onSignOut}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-red-600 py-1.5 px-3 rounded-lg hover:bg-red-50 transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-red-600 py-1.5 px-3 rounded-lg hover:bg-red-50 transition-colors cursor-pointer pl-3 border-l border-slate-200"
             title={t('nav.signOut')}
           >
             <LogOut className="w-3.5 h-3.5" />
