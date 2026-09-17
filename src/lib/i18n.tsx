@@ -61,7 +61,7 @@ const translations = {
     projects: {
       eyebrow: 'Common Projects',
       title: "A few examples of what we've built.",
-      subtitle: "Client names stay private, but here's the kind of work we do — and there's no fixed price list. Tell us what you're solving for and your budget and we'll shape a plan around it.",
+      subtitle: "Client names stay private but here's the kind of work we do — and there's no fixed price list. Tell us what you're solving for and your budget and we'll shape a plan around it.",
       anonymizedNote: "Details anonymized to protect client privacy. Your project won't look exactly like these — every plan and cost comes out of a conversation with us.",
       ownershipBanner: 'No recurring user licenses or vendor lock-in. You own everything we build.',
       ownershipTitle: '100% Code Ownership:',
@@ -302,7 +302,7 @@ const translations = {
     projects: {
       eyebrow: 'Proyectos Comunes',
       title: 'Algunos ejemplos de lo que hemos construido.',
-      subtitle: 'Los nombres de los clientes se mantienen privados, pero así es el tipo de trabajo que hacemos — y no hay una lista de precios fija. Cuéntanos qué problema quieres resolver y tu presupuesto, y armaremos un plan a tu medida.',
+      subtitle: 'Los nombres de los clientes se mantienen privados pero así es el tipo de trabajo que hacemos — y no hay una lista de precios fija. Cuéntanos qué problema quieres resolver y tu presupuesto, y armaremos un plan a tu medida.',
       anonymizedNote: 'Los detalles se anonimizaron para proteger la privacidad del cliente. Tu proyecto no se verá exactamente igual a estos — cada plan y costo surge de una conversación con nosotros.',
       ownershipBanner: 'Sin licencias de usuario recurrentes ni dependencia de proveedor. Eres dueño de todo lo que construimos.',
       ownershipTitle: 'Propiedad del 100% del Código:',
