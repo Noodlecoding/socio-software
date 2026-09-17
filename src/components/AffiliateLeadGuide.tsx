@@ -52,6 +52,10 @@ const SECTIONS_EN: GuideSection[] = [
       { type: 'p', text: 'Your job is to:' },
       { type: 'flow', items: ['Find businesses', 'Start conversations', 'Identify genuine interest', 'Make the referral'] },
       { type: 'p', text: 'You earn 23% of the deal value, so the quality and size of the businesses you refer matter.' },
+      {
+        type: 'strong',
+        text: "You're not paid for link clicks or signups. You only get paid once someone you referred actually becomes a client — that is, the deal closes."
+      },
       { type: 'p', text: 'Because your commission is based on the value of the deal, referring a business with a larger software project can earn you significantly more.' },
       {
         type: 'commission',
@@ -200,6 +204,10 @@ const SECTIONS_ES: GuideSection[] = [
       { type: 'p', text: 'Tu trabajo es:' },
       { type: 'flow', items: ['Encontrar negocios', 'Iniciar conversaciones', 'Identificar interés genuino', 'Hacer la referencia'] },
       { type: 'p', text: 'Ganas el 23% del valor del acuerdo, así que la calidad y el tamaño de los negocios que refieres importan.' },
+      {
+        type: 'strong',
+        text: 'No te pagan por clics en el enlace ni por registros. Solo cobras cuando alguien que refieres se convierte realmente en cliente, es decir, cuando el acuerdo se cierra.'
+      },
       { type: 'p', text: 'Como tu comisión se basa en el valor del acuerdo, referir un negocio con un proyecto de software más grande puede generarte mucho más.' },
       {
         type: 'commission',
