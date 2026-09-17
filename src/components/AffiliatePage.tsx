@@ -548,8 +548,7 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
                 <MessageCircle className="w-4 h-4" />
               </div>
               <div>
-                <h3 className="font-display text-sm font-bold text-slate-900">Contact Alexis</h3>
-                <p className="text-[11px] text-slate-500">Contact Alexis or request a payout</p>
+                <h3 className="font-display text-sm font-bold text-slate-900">Contact Alexis or request a payout</h3>
               </div>
             </div>
 
