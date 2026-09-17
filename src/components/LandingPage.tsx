@@ -133,7 +133,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
     setAuthError(null);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: window.location.origin }
+      options: {
+        redirectTo: window.location.origin,
+        // Without this, Google silently reuses whatever Google account is
+        // already cached in the browser instead of letting the person pick
+        // which email to sign in with — see AffiliatePage's handleGoogleAuth
+        // for the growth partner side of the same fix.
+        queryParams: { prompt: 'select_account' }
+      }
     });
     if (error) {
       setAuthError(error.message);
