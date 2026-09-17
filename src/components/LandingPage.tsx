@@ -16,6 +16,7 @@ import {
   ArrowUpRight,
   X
 } from 'lucide-react';
+import { ForgotPasswordModal } from './ForgotPasswordModal';
 
 // Skips the "check your inbox" confirmation link for client signups, same as
 // affiliate signups — reuses the same edge function (its logic isn't
@@ -52,6 +53,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   const [authError, setAuthError] = useState<string | null>(null);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isEmailFormOpen, setIsEmailFormOpen] = useState(false);
+  const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -145,6 +147,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
   return (
     <div className="w-full">
+      <ForgotPasswordModal isOpen={isForgotPasswordOpen} onClose={() => setIsForgotPasswordOpen(false)} />
+
       {/* Login / Signup Popup */}
       <AnimatePresence>
         {isLoginModalOpen && (
@@ -261,6 +265,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                         minLength={8}
                         type="password"
                       />
+                      {mode === 'signin' && (
+                        <button
+                          type="button"
+                          onClick={() => setIsForgotPasswordOpen(true)}
+                          className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors cursor-pointer mt-1.5"
+                        >
+                          Forgot password?
+                        </button>
+                      )}
                     </div>
 
                     <div className="pt-2">
@@ -655,6 +668,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                       minLength={8}
                       type="password"
                     />
+                    {mode === 'signin' && (
+                      <button
+                        type="button"
+                        onClick={() => setIsForgotPasswordOpen(true)}
+                        className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors cursor-pointer mt-1.5"
+                      >
+                        Forgot password?
+                      </button>
+                    )}
                   </div>
 
                   <div className="pt-2">

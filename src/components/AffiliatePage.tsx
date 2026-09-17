@@ -6,6 +6,7 @@ import { rowToChatMessage } from '../lib/chat';
 import { UserProfile, AffiliateStats, AffiliateReferredClient, ClientStatus, ChatMessage } from '../types';
 import { ArrowRight, ArrowLeft, Copy, Check, Users, TrendingUp, DollarSign, LogOut, Target, ChevronRight, Send, MessageCircle } from 'lucide-react';
 import { AffiliateLeadGuide } from './AffiliateLeadGuide';
+import { ForgotPasswordModal } from './ForgotPasswordModal';
 
 interface AffiliatePageProps {
   user: UserProfile | null;
@@ -92,6 +93,7 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
 
   const [isCheckingAffiliate, setIsCheckingAffiliate] = useState(false);
@@ -722,6 +724,7 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
 
   return (
     <main className="w-full pt-32 pb-20 px-6 lg:px-12 min-h-screen bg-[#f8f9fd] flex items-center justify-center">
+      <ForgotPasswordModal isOpen={isForgotPasswordOpen} onClose={() => setIsForgotPasswordOpen(false)} />
       <div className="max-w-md w-full">
         {/* Step progress */}
         <div className="flex items-center gap-1.5 mb-8">
@@ -877,6 +880,15 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
                   minLength={8}
                   type="password"
                 />
+                {mode === 'signin' && (
+                  <button
+                    type="button"
+                    onClick={() => setIsForgotPasswordOpen(true)}
+                    className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors cursor-pointer -mt-2 self-start"
+                  >
+                    Forgot password?
+                  </button>
+                )}
                 <button
                   type="submit"
                   disabled={isSubmitting}

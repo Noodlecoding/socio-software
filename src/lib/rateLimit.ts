@@ -1,6 +1,6 @@
 import { supabase } from './supabaseClient';
 
-export type AuthAction = 'signup' | 'signin';
+export type AuthAction = 'signup' | 'signin' | 'password_reset';
 
 export const RATE_LIMIT_MESSAGE = 'Too many attempts. Please wait 10 minutes and try again.';
 
