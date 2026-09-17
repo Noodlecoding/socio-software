@@ -87,6 +87,7 @@ const translations = {
       noAccount: "Don't have an account? ",
       signInLink: 'Sign in to Discussion Desk',
       createAccountLink: 'Create an account',
+      alreadyHaveAccountShort: 'I already have an account',
       successCreatedTitle: 'Account Created',
       successWelcomeTitle: 'Welcome Back',
       successSubtitle: 'Setting up your workspace and connecting you with Alexis Cervantes...'
@@ -327,6 +328,7 @@ const translations = {
       noAccount: '¿No tienes una cuenta? ',
       signInLink: 'Iniciar sesión en la Mesa de Discusión',
       createAccountLink: 'Crear una cuenta',
+      alreadyHaveAccountShort: 'Ya tengo cuenta',
       successCreatedTitle: 'Cuenta Creada',
       successWelcomeTitle: 'Bienvenido de Nuevo',
       successSubtitle: 'Configurando tu espacio de trabajo y conectándote con Alexis Cervantes...'

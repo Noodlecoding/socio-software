@@ -225,13 +225,27 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               </div>
 
               {!isEmailFormOpen ? (
-                <button
-                  type="button"
-                  onClick={() => setIsEmailFormOpen(true)}
-                  className="w-full text-center text-sm font-semibold text-slate-500 hover:text-blue-600 transition-colors cursor-pointer py-2"
-                >
-                  {t('signupCard.emailToggle')}
-                </button>
+                <div className="flex flex-col">
+                  <button
+                    type="button"
+                    onClick={() => setIsEmailFormOpen(true)}
+                    className="w-full text-center text-sm font-semibold text-slate-500 hover:text-blue-600 transition-colors cursor-pointer py-2"
+                  >
+                    {t('signupCard.emailToggle')}
+                  </button>
+                  {mode === 'signup' && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthError(null);
+                        setMode('signin');
+                      }}
+                      className="w-full text-center text-xs font-semibold text-slate-400 hover:text-blue-600 transition-colors cursor-pointer pb-1"
+                    >
+                      {t('signupCard.alreadyHaveAccountShort')}
+                    </button>
+                  )}
+                </div>
               ) : (
               <motion.div
                 initial={{ opacity: 0, y: -6 }}
