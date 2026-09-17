@@ -495,6 +495,24 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
             </button>
           </div>
 
+          {/* Higher-ticket clients = higher commission */}
+          <button
+            type="button"
+            onClick={() => setShowLeadGuide(true)}
+            className="w-full bg-white border border-slate-200 rounded-2xl p-6 mt-6 flex items-center justify-between gap-4 text-left cursor-pointer hover:border-blue-300 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-blue-600/10 text-blue-600 flex items-center justify-center shrink-0">
+                <Target className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="font-display text-sm font-bold text-slate-900">{t('affiliate.dashboard.leadsTitle')}</h3>
+                <p className="text-xs text-slate-500 mt-0.5">{t('affiliate.dashboard.leadsSubtitle')}</p>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />
+          </button>
+
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mt-8">
             <div className="bg-white border border-slate-200 rounded-2xl p-6">
               <Users className="w-5 h-5 text-blue-600 mb-3" />
@@ -668,24 +686,6 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
               </button>
             </div>
           </div>
-
-          {/* Higher-ticket clients = higher commission */}
-          <button
-            type="button"
-            onClick={() => setShowLeadGuide(true)}
-            className="w-full bg-white border border-slate-200 rounded-2xl p-6 mt-6 flex items-center justify-between gap-4 text-left cursor-pointer hover:border-blue-300 transition-colors"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-600/10 text-blue-600 flex items-center justify-center shrink-0">
-                <Target className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="font-display text-sm font-bold text-slate-900">{t('affiliate.dashboard.leadsTitle')}</h3>
-                <p className="text-xs text-slate-500 mt-0.5">{t('affiliate.dashboard.leadsSubtitle')}</p>
-              </div>
-            </div>
-            <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />
-          </button>
 
           <p className="text-xs text-slate-400 mt-6">
             {t('affiliate.dashboard.statsFooterNote')}{' '}
