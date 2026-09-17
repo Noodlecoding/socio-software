@@ -95,7 +95,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ onNavigate }) => {
         <div className="rounded-xl border border-amber-200 bg-amber-50 text-amber-900 text-xs leading-relaxed p-4 mb-10">
           This is a general template describing how Socio actually collects and uses data today. It
           is not a substitute for advice from a licensed attorney, and it does not yet specify a
-          governing jurisdiction, payout schedule, or refund terms — have a lawyer review and complete
+          governing jurisdiction, payout schedule or refund terms — have a lawyer review and complete
           it before relying on it as your binding legal agreement.
         </div>
 
@@ -113,7 +113,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ onNavigate }) => {
             <Section title="2. Information we collect">
               <p>When you create an account, we collect the information you provide directly:</p>
               <ul className="list-disc pl-5 space-y-1">
-                <li>Name, email address, and organization (or Google account details, if you sign in with Google)</li>
+                <li>Name, email address and organization (or Google account details, if you sign in with Google)</li>
                 <li>Your password, handled entirely by our authentication provider — we never see or store it in plain text</li>
               </ul>
             </Section>
@@ -122,7 +122,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ onNavigate }) => {
               <p>As a client, we additionally collect:</p>
               <ul className="list-disc pl-5 space-y-1">
                 <li>Messages you send us in the Discussion Desk, describing your project</li>
-                <li>Metadata about files you reference (file name, type, and size only — we do not currently store the contents of uploaded files)</li>
+                <li>Metadata about files you reference (file name, type and size only — we do not currently store the contents of uploaded files)</li>
                 <li>Your selected engagement model, and internal pipeline status we use to track your project (e.g. new, in discussion, contracted)</li>
                 <li>Which growth partner, if any, referred you</li>
               </ul>
@@ -164,7 +164,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ onNavigate }) => {
             <Section title="5. Who we share information with">
               <p>We use a small number of service providers to run Socio, who only process data on our behalf:</p>
               <ul className="list-disc pl-5 space-y-1">
-                <li>Supabase — our database, authentication, and backend infrastructure provider</li>
+                <li>Supabase — our database, authentication and backend infrastructure provider</li>
                 <li>Google — optional "Sign in with Google," and font hosting</li>
                 <li>Vercel — website hosting</li>
               </ul>
@@ -177,7 +177,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ onNavigate }) => {
             <Section title="6. Data retention and deletion">
               <p>
                 We keep your information for as long as your account is active. To request access,
-                correction, or deletion of your data, email us at{' '}
+                correction or deletion of your data, email us at{' '}
                 <a href={`mailto:${CONTACT_EMAIL}`} className="text-blue-600 hover:underline">{CONTACT_EMAIL}</a>
                 {' '}— we currently handle these requests manually and will confirm once it&apos;s done.
               </p>
@@ -201,7 +201,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ onNavigate }) => {
 
             <Section title="9. Your rights">
               <p>
-                Depending on where you live, you may have rights to access, correct, delete, or export
+                Depending on where you live, you may have rights to access, correct, delete or export
                 your personal information, or to object to certain processing. Contact us at{' '}
                 <a href={`mailto:${CONTACT_EMAIL}`} className="text-blue-600 hover:underline">{CONTACT_EMAIL}</a>
                 {' '}to exercise any of these rights.
@@ -250,7 +250,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ onNavigate }) => {
             <RoleSection role="client" activeRole={role} label="For Clients">
               <ul className="list-disc pl-5 space-y-1">
                 <li>Messages sent through the Discussion Desk are a discussion of your project needs, not a binding contract by themselves</li>
-                <li>Pricing, scope, timeline, and code-ownership terms for actual engagements are agreed to separately and directly with us before any paid work begins</li>
+                <li>Pricing, scope, timeline and code-ownership terms for actual engagements are agreed to separately and directly with us before any paid work begins</li>
                 <li>We may decline to take on a project at our discretion</li>
               </ul>
             </RoleSection>
@@ -259,8 +259,8 @@ export const LegalPage: React.FC<LegalPageProps> = ({ onNavigate }) => {
               <ul className="list-disc pl-5 space-y-1">
                 <li>You earn a 23% commission on the value of any deal that closes from a client you referred, as tracked in your growth partner dashboard</li>
                 <li>Commission is calculated once a referred client's deal is marked closed in our system; payout timing and method will be confirmed with you directly — this isn't yet a fixed, published schedule</li>
-                <li>Self-referrals, fraudulent referrals, or misrepresenting Socio to prospective clients are prohibited and may result in forfeiting commission and/or account termination</li>
-                <li>We don't guarantee any minimum number of referrals, conversions, or earnings</li>
+                <li>Self-referrals, fraudulent referrals or misrepresenting Socio to prospective clients are prohibited and may result in forfeiting commission and/or account termination</li>
+                <li>We don't guarantee any minimum number of referrals, conversions or earnings</li>
               </ul>
             </RoleSection>
 
@@ -275,7 +275,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ onNavigate }) => {
 
             <Section title="5. Intellectual property">
               <p>
-                Socio's branding, website, and platform are our property. Ownership of code and
+                Socio's branding, website and platform are our property. Ownership of code and
                 deliverables produced for a specific client engagement is governed by that
                 engagement&apos;s separate agreement, not by these Terms.
               </p>
@@ -284,7 +284,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ onNavigate }) => {
             <Section title="6. Disclaimers and limitation of liability">
               <p>
                 Socio is provided "as is." To the fullest extent permitted by law, Socio is not liable
-                for indirect, incidental, or consequential damages arising from your use of the site or
+                for indirect, incidental or consequential damages arising from your use of the site or
                 platform.
               </p>
             </Section>
