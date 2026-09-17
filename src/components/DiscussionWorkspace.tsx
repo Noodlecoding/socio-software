@@ -6,6 +6,7 @@ import { formatTimestamp, rowToChatMessage } from '../lib/chat';
 import { SchemaModal } from './SchemaModal';
 import { ProjectNotebook } from './ProjectNotebook';
 import { ACCEPTED_FILE_EXTENSIONS, downloadSpecFile, removeSpecFile, uploadSpecFile, validateFile } from '../lib/files';
+import { useLanguage } from '../lib/i18n';
 import {
   Paperclip,
   Network,
@@ -47,6 +48,7 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
   user,
   onNavigate
 }) => {
+  const { t } = useLanguage();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState('');
   const [specFiles, setSpecFiles] = useState<SpecFile[]>([]);
@@ -220,7 +222,7 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
       sender: 'user',
       senderName: user.name,
       senderInitials: user.initials,
-      text: `Shared file(s): ${uploaded.map(f => f.name).join(', ')}`,
+      text: `${t('workspace.fileSharedNoticePrefix')} ${uploaded.map(f => f.name).join(', ')}`,
       timestamp: 'Just now',
       attachments: uploaded.map(f => ({ name: f.name, type: f.type, size: f.size, path: f.path }))
     };
@@ -231,8 +233,10 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
       const receipt: ChatMessage = {
         id: crypto.randomUUID(),
         sender: 'system',
-        senderName: 'System Notice',
-        text: `Alexis received your ${uploaded.length === 1 ? 'file' : `${uploaded.length} files`} and will take a look.`,
+        senderName: t('workspace.systemNoticeSenderName'),
+        text: uploaded.length === 1
+          ? t('workspace.fileReceivedNoticeSingle')
+          : t('workspace.fileReceivedNoticeMultiple').replace('{n}', String(uploaded.length)),
         timestamp: 'Just now',
         architectReviewNotice: true
       };
@@ -266,7 +270,7 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
   if (isLoadingWorkspace) {
     return (
       <div className="flex-1 w-full max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-10 py-6 flex items-center justify-center text-slate-400 text-sm">
-        Loading your workspace...
+        {t('workspace.loading')}
       </div>
     );
   }
@@ -309,23 +313,23 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
                 <div className="flex flex-col min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-bold text-slate-900">Alexis Cervantes</span>
-                    <span className="text-[11px] text-slate-500">Lead Systems Architect</span>
+                    <span className="text-[11px] text-slate-500">{t('workspace.briefing.role')}</span>
                   </div>
-                  <span className="text-[11px] text-slate-400">Message from Alexis</span>
+                  <span className="text-[11px] text-slate-400">{t('workspace.briefing.messageFrom')}</span>
                 </div>
               </div>
               <span className="text-[11px] font-semibold text-blue-700 bg-blue-50 px-2 py-1 rounded-full border border-blue-100 shrink-0 whitespace-nowrap">
-                Avg response: 1–5h
+                {t('workspace.briefing.avgResponse')}
               </span>
             </div>
 
             <p className="text-sm text-slate-800 leading-relaxed mb-3">
-              Hi, I'm Alexis. I personally read every message that comes in here. Tell me what's slowing your team down or what you'd like us to build, in plain terms, no need to know any technical jargon. I'll ask follow-up questions and let you know what we can do and roughly what it would cost.
+              {t('workspace.briefing.intro')}
             </p>
 
             <div className="flex flex-col gap-2 pt-2 border-t border-slate-200/60">
               <span className="text-[11px] text-slate-500 uppercase tracking-wider font-semibold">
-                Suggested starting points:
+                {t('workspace.briefing.suggestedStarters')}
               </span>
               <div className="flex flex-wrap gap-2" id="starter-chips">
                 {STARTER_CHIPS.map((chip, idx) => (
@@ -410,7 +414,7 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
                     )}
                   </div>
                   <div className="flex items-center gap-1.5 text-slate-400 text-[11px] mr-1">
-                    <span>You</span> · <span>{msg.timestamp}</span>
+                    <span>{t('workspace.you')}</span> · <span>{msg.timestamp}</span>
                   </div>
                 </div>
               );
@@ -429,7 +433,7 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
                   <div className="bg-white border border-[#e5e9f5] rounded-2xl rounded-tl-xs p-4 sm:p-5 shadow-xs text-sm text-slate-800 leading-relaxed">
                     <div className="flex items-center gap-2 pb-2 mb-2 border-b border-slate-100">
                       <span className="font-bold text-xs text-slate-900">Alexis Cervantes</span>
-                      <span className="text-[10px] text-slate-400">Reply</span>
+                      <span className="text-[10px] text-slate-400">{t('workspace.architectReplyLabel')}</span>
                     </div>
                     <div className="whitespace-pre-line">{msg.text}</div>
                   </div>
@@ -453,7 +457,7 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Explain your ideas, workflow bottlenecks or questions for Alexis..."
+              placeholder={t('workspace.messageInput.placeholder')}
               rows={2}
             ></textarea>
 
@@ -463,7 +467,7 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   className="w-8 h-8 flex items-center justify-center rounded-lg hover:text-blue-600 hover:bg-slate-100 transition-colors cursor-pointer"
-                  title="Attach file, spec mockup or export"
+                  title={t('workspace.attachTooltip')}
                   type="button"
                 >
                   <Paperclip className="w-4 h-4" />
@@ -471,20 +475,20 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
                 <button
                   onClick={() => setIsSchemaModalOpen(true)}
                   className="w-8 h-8 flex items-center justify-center rounded-lg hover:text-blue-600 hover:bg-slate-100 transition-colors cursor-pointer"
-                  title="Insert system flow diagram or schema sketch"
+                  title={t('workspace.schemaTooltip')}
                   type="button"
                 >
                   <Network className="w-4 h-4" />
                 </button>
                 <span className="text-[11px] text-slate-400 ml-2 hidden sm:inline">
-                  Markdown supported
+                  {t('workspace.messageInput.markdownSupported')}
                 </span>
               </div>
 
               {/* Action button with keyboard shortcut */}
               <div className="flex items-center gap-2.5">
                 <span className="hidden md:inline text-[11px] text-slate-400 font-medium">
-                  Cmd + Enter to send
+                  {t('workspace.messageInput.cmdEnterToSend')}
                 </span>
                 <button
                   className="px-4 py-2 rounded-lg bg-[#4361ee] hover:bg-blue-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm hover:shadow transition-all duration-150 cursor-pointer disabled:opacity-50"
@@ -493,7 +497,7 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
                   disabled={!inputText.trim()}
                   type="button"
                 >
-                  <span>Send Idea</span>
+                  <span>{t('workspace.messageInput.sendIdea')}</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </div>
@@ -525,11 +529,11 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
 
           <div className="py-3 flex flex-col gap-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-500">Email</span>
+              <span className="text-slate-500">{t('workspace.profileCard.email')}</span>
               <span className="font-semibold text-slate-800 truncate max-w-[200px]">{user.email}</span>
             </div>
             <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-500">Company</span>
+              <span className="text-slate-500">{t('workspace.profileCard.company')}</span>
               <span className="font-semibold text-slate-800 truncate max-w-[200px]">{user.organization || '—'}</span>
             </div>
           </div>
@@ -539,7 +543,7 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
               onClick={() => onNavigate('landing')}
               className="w-full text-center text-xs font-semibold text-blue-600 hover:text-blue-700 py-1 cursor-pointer"
             >
-              See other project examples →
+              {t('workspace.profileCard.seeOtherExamples')}
             </button>
           </div>
         </div>
@@ -548,14 +552,14 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
         <div className="bg-white border border-[#e5e9f5] rounded-2xl p-5 shadow-sm flex flex-col">
           <div className="flex items-center justify-between mb-2">
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-              Files You've Shared ({specFiles.length})
+              {t('workspace.filesCard.filesSharedTitle')} ({specFiles.length})
             </span>
             <button
               onClick={() => fileInputRef.current?.click()}
               className="text-xs text-blue-600 font-semibold hover:underline cursor-pointer"
               type="button"
             >
-              + Upload
+              {t('workspace.filesCard.upload')}
             </button>
           </div>
 
@@ -566,10 +570,10 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
           >
             <UploadCloud className="w-6 h-6 mx-auto text-blue-600/70 group-hover:scale-110 transition-transform" />
             <p className="text-xs font-semibold text-slate-900 mt-1">
-              {isUploadingFiles ? 'Uploading...' : 'Drag & drop files here'}
+              {isUploadingFiles ? t('workspace.filesCard.uploading') : t('workspace.filesCard.dragDrop')}
             </p>
             <p className="text-[11px] text-slate-400 mt-0.5">
-              PDF, CSV, Excel, JSON, YAML, PNG or JPG — up to 20MB each
+              {t('workspace.filesCard.fileTypesHint')}
             </p>
           </div>
 
@@ -598,7 +602,7 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
                     <button
                       onClick={() => void downloadSpecFile(file.path, file.name)}
                       className="text-slate-400 hover:text-blue-600 p-1 cursor-pointer"
-                      title="Download file"
+                      title={t('workspace.filesCard.downloadTitle')}
                     >
                       <Download className="w-3.5 h-3.5" />
                     </button>
@@ -606,7 +610,7 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
                   <button
                     onClick={() => void handleRemoveFile(file.id, file.path)}
                     className="text-slate-400 hover:text-red-500 p-1 cursor-pointer"
-                    title="Remove file"
+                    title={t('workspace.filesCard.removeTitle')}
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
@@ -620,21 +624,21 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
         <div className="bg-white border border-[#e5e9f5] rounded-2xl p-5 shadow-sm space-y-3">
           <div>
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block mb-2">
-              How We Handle Your Info
+              {t('workspace.privacyCard.title')}
             </span>
             <div className="flex flex-wrap gap-1.5">
               <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded bg-slate-100 text-slate-700">
-                <Shield className="w-3 h-3 text-blue-600" /> We'll sign an NDA if you'd like one
+                <Shield className="w-3 h-3 text-blue-600" /> {t('workspace.privacyCard.ndaBadge')}
               </span>
               <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded bg-slate-100 text-slate-700">
-                <Shield className="w-3 h-3 text-blue-600" /> We don't sell or share your data
+                <Shield className="w-3 h-3 text-blue-600" /> {t('workspace.privacyCard.noSellBadge')}
               </span>
             </div>
           </div>
 
           <div className="pt-3 border-t border-slate-100">
             <span className="text-[11px] text-slate-500 block mb-1">
-              Questions? Reach us directly:
+              {t('workspace.privacyCard.questionsLabel')}
             </span>
             <div className="flex items-center justify-between text-xs bg-slate-50 px-3 py-2 rounded-lg border border-slate-200/60">
               <a
@@ -651,7 +655,7 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
         {/* How This Works tracker */}
         <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-5 shadow-2xs">
           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-3">
-            How This Works
+            {t('workspace.howThisWorks.title')}
           </span>
           <div className="flex flex-col gap-3">
             <div className="flex items-start gap-2.5">
@@ -659,8 +663,8 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
                 1
               </div>
               <div>
-                <span className="text-xs font-bold text-slate-900 block">We learn about your business</span>
-                <span className="text-[11px] text-slate-500">Alexis figures out what's slowing you down (in progress)</span>
+                <span className="text-xs font-bold text-slate-900 block">{t('workspace.howThisWorks.step1Title')}</span>
+                <span className="text-[11px] text-slate-500">{t('workspace.howThisWorks.step1Desc')}</span>
               </div>
             </div>
 
@@ -669,8 +673,8 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
                 2
               </div>
               <div>
-                <span className="text-xs font-bold text-slate-800 block">We show you the plan and price</span>
-                <span className="text-[11px] text-slate-500">You see exactly what we'll build and what it costs before anything starts</span>
+                <span className="text-xs font-bold text-slate-800 block">{t('workspace.howThisWorks.step2Title')}</span>
+                <span className="text-[11px] text-slate-500">{t('workspace.howThisWorks.step2Desc')}</span>
               </div>
             </div>
 
@@ -679,8 +683,8 @@ export const DiscussionWorkspace: React.FC<DiscussionWorkspaceProps> = ({
                 3
               </div>
               <div>
-                <span className="text-xs font-bold text-slate-800 block">We hand everything over</span>
-                <span className="text-[11px] text-slate-500">All the code and access, fully yours</span>
+                <span className="text-xs font-bold text-slate-800 block">{t('workspace.howThisWorks.step3Title')}</span>
+                <span className="text-[11px] text-slate-500">{t('workspace.howThisWorks.step3Desc')}</span>
               </div>
             </div>
           </div>

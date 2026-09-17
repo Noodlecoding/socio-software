@@ -7,6 +7,7 @@ import { UserProfile, AffiliateStats, AffiliateReferredClient, ClientStatus, Cha
 import { ArrowRight, ArrowLeft, Copy, Check, Users, TrendingUp, DollarSign, LogOut, Target, ChevronRight, Send, MessageCircle } from 'lucide-react';
 import { AffiliateLeadGuide } from './AffiliateLeadGuide';
 import { ForgotPasswordModal } from './ForgotPasswordModal';
+import { useLanguage } from '../lib/i18n';
 
 interface AffiliatePageProps {
   user: UserProfile | null;
@@ -63,7 +64,7 @@ async function confirmAffiliateEmail(userId: string, email: string): Promise<boo
 
 const MIN_AFFILIATE_AGE = 18;
 
-const STEPS = [
+const STEPS_EN = [
   {
     title: 'Earn money remotely',
     body: "This is **fully remote**, no office, no set hours.\nIf you know business owners who might need custom software, send us their name or connect us.\n**You don't need any sales or tech experience.**"
@@ -90,6 +91,33 @@ const STEPS = [
   }
 ];
 
+const STEPS_ES = [
+  {
+    title: 'Gana dinero de forma remota',
+    body: "Esto es **totalmente remoto**, sin oficina, sin horarios fijos.\nSi conoces a dueños de negocios que podrían necesitar software a medida, envíanos su nombre o conéctanos.\n**No necesitas experiencia en ventas ni en tecnología.**"
+  },
+  {
+    title: 'Gana 23% de comisión',
+    body: "Contacta negocios que necesiten software a medida. Envíalos con nosotros.\nCuando un acuerdo que referiste se cierra, obtienes el **23% de lo que paguen en USD**.\n**Sin tope, sin trampa.**"
+  },
+  {
+    title: 'Obtén tu propio enlace de referido',
+    body: "Al registrarte, obtienes un **enlace de referido único**.\nCompártelo donde quieras. Cualquiera que se registre a través de él queda automáticamente registrado como tu referido."
+  },
+  {
+    title: 'Nosotros nos encargamos del resto',
+    body: "**No necesitas vender nada.**\nUna vez que alguien se registra con tu enlace, nuestro equipo toma la conversación desde ahí: alcance, precio y construcción."
+  },
+  {
+    title: 'Rastrea todo en tu panel',
+    body: "Mira exactamente cuántos **prospectos has enviado**, cuántos se convirtieron en **acuerdos pagados** y cuánta **comisión has ganado**, actualizado en tiempo real."
+  },
+  {
+    title: 'Obtén ayuda para encontrar prospectos',
+    body: "Tu panel tiene un manual completo de formas comprobadas para encontrar prospectos de alta calidad.\nEn promedio, los socios de crecimiento consiguen entre **0 y 3 clientes confirmados al mes**. El manual está ahí para ayudarte a llegar al extremo más alto de ese rango."
+  }
+];
+
 const renderStepBody = (text: string) =>
   text.split('\n').map((line, i) => (
     <p key={i} className={i === 0 ? '' : 'mt-2'}>
@@ -106,6 +134,8 @@ const renderStepBody = (text: string) =>
   ));
 
 export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut }) => {
+  const { t, language } = useLanguage();
+  const STEPS = language === 'es' ? STEPS_ES : STEPS_EN;
   const [step, setStep] = useState(0);
   const [mode, setMode] = useState<'signup' | 'signin'>('signup');
   const [fullName, setFullName] = useState('');
@@ -318,15 +348,15 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
 
     const age = Number(ageInput);
     if (!ageInput.trim() || !Number.isInteger(age) || age <= 0) {
-      setBecomeAffiliateError('Enter your age.');
+      setBecomeAffiliateError(t('affiliate.becomeAffiliate.errorEnterAge'));
       return;
     }
     if (age < MIN_AFFILIATE_AGE) {
-      setBecomeAffiliateError('You must be at least 18 years old to join the growth partner program.');
+      setBecomeAffiliateError(t('affiliate.becomeAffiliate.errorMinAge'));
       return;
     }
     if (!countryInput.trim()) {
-      setBecomeAffiliateError('Enter your country.');
+      setBecomeAffiliateError(t('affiliate.becomeAffiliate.errorEnterCountry'));
       return;
     }
 
@@ -334,7 +364,7 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
     const code = await ensureAffiliateRow(user, { age, country: countryInput.trim() });
     setIsBecoming(false);
     if (code) setReferralCode(code);
-    else setBecomeAffiliateError('Something went wrong. Please try again.');
+    else setBecomeAffiliateError(t('affiliate.becomeAffiliate.errorGeneric'));
   };
 
   // Google can't be tagged account_type='affiliate' at signup like the
@@ -439,18 +469,18 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
         <div className="max-w-4xl mx-auto">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-blue-600 mb-2 block">Growth Partner Dashboard</span>
-              <h1 className="font-display text-3xl font-extrabold text-slate-900 tracking-tight">Welcome back, {user.name}</h1>
+              <span className="text-xs font-bold uppercase tracking-wider text-blue-600 mb-2 block">{t('affiliate.dashboard.eyebrow')}</span>
+              <h1 className="font-display text-3xl font-extrabold text-slate-900 tracking-tight">{t('affiliate.dashboard.welcomeBack')}, {user.name}</h1>
             </div>
             <button
               onClick={onSignOut}
               className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-red-600 py-1.5 px-3 rounded-lg hover:bg-red-50 transition-colors cursor-pointer shrink-0"
             >
               <LogOut className="w-3.5 h-3.5" />
-              Sign out
+              {t('nav.signOut')}
             </button>
           </div>
-          <p className="text-slate-600 mt-2">Share your link below. You earn 23% of the value of any deal that closes from it.</p>
+          <p className="text-slate-600 mt-2">{t('affiliate.dashboard.shareLinkDesc')}</p>
 
           <div className="bg-white border border-slate-200 rounded-2xl p-5 mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             <div className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-mono text-sm text-slate-700 truncate">
@@ -461,7 +491,7 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
               className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors cursor-pointer shrink-0"
             >
               {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-              {copied ? 'Copied' : 'Copy link'}
+              {copied ? t('affiliate.dashboard.copied') : t('affiliate.dashboard.copyLink')}
             </button>
           </div>
 
@@ -469,44 +499,46 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
             <div className="bg-white border border-slate-200 rounded-2xl p-6">
               <Users className="w-5 h-5 text-blue-600 mb-3" />
               <div className="text-2xl font-extrabold text-slate-900">{stats?.leadsCount ?? 0}</div>
-              <div className="text-xs text-slate-500 mt-1">Leads referred</div>
+              <div className="text-xs text-slate-500 mt-1">{t('affiliate.dashboard.statLeads')}</div>
             </div>
             <div className="bg-white border border-slate-200 rounded-2xl p-6">
               <TrendingUp className="w-5 h-5 text-blue-600 mb-3" />
               <div className="text-2xl font-extrabold text-slate-900">{stats?.dealsClosed ?? 0}</div>
-              <div className="text-xs text-slate-500 mt-1">Deals closed</div>
+              <div className="text-xs text-slate-500 mt-1">{t('affiliate.dashboard.statDeals')}</div>
             </div>
             <div className="bg-white border border-slate-200 rounded-2xl p-6">
               <DollarSign className="w-5 h-5 text-blue-600 mb-3" />
               <div className="text-2xl font-extrabold text-slate-900">
                 ${(stats?.paidOut ?? 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}
               </div>
-              <div className="text-xs text-slate-500 mt-1">Total payouts</div>
+              <div className="text-xs text-slate-500 mt-1">{t('affiliate.dashboard.statPayouts')}</div>
             </div>
           </div>
 
           {/* Per-client breakdown — each referred client contributes separately, not one combined total */}
           <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden mt-8">
             <div className="p-4 border-b border-slate-100">
-              <h3 className="font-display text-sm font-bold text-slate-900">Your Referred Clients</h3>
+              <h3 className="font-display text-sm font-bold text-slate-900">{t('affiliate.dashboard.referredClientsTitle')}</h3>
               <p className="text-[11px] text-slate-500 mt-0.5">
                 {referredClients.length === 0
-                  ? 'No referrals yet'
-                  : `${referredClients.length} client${referredClients.length === 1 ? '' : 's'} referred`}
+                  ? t('affiliate.dashboard.noReferralsYet')
+                  : referredClients.length === 1
+                  ? t('affiliate.dashboard.clientsReferredOne')
+                  : t('affiliate.dashboard.clientsReferredOther').replace('{n}', String(referredClients.length))}
               </p>
             </div>
             {referredClients.length === 0 ? (
-              <div className="p-4 text-xs text-slate-400">Share your link to start referring clients.</div>
+              <div className="p-4 text-xs text-slate-400">{t('affiliate.dashboard.shareLinkPrompt')}</div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-100">
-                      <th className="px-4 py-2.5">Client</th>
-                      <th className="px-4 py-2.5">Status</th>
-                      <th className="px-4 py-2.5 text-right">Deal Value</th>
-                      <th className="px-4 py-2.5 text-right">Your Commission</th>
-                      <th className="px-4 py-2.5 text-right">Amount Paid</th>
+                      <th className="px-4 py-2.5">{t('affiliate.dashboard.tableClient')}</th>
+                      <th className="px-4 py-2.5">{t('affiliate.dashboard.tableStatus')}</th>
+                      <th className="px-4 py-2.5 text-right">{t('affiliate.dashboard.tableDealValue')}</th>
+                      <th className="px-4 py-2.5 text-right">{t('affiliate.dashboard.tableCommission')}</th>
+                      <th className="px-4 py-2.5 text-right">{t('affiliate.dashboard.tableAmountPaid')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -544,7 +576,11 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
                                     : 'bg-slate-100 text-slate-700 border-slate-200'
                                 }`}
                               >
-                                {c.status === 'paid' ? 'Paid' : c.status === 'interested' ? 'Interested' : 'New Client'}
+                                {c.status === 'paid'
+                                  ? t('affiliate.dashboard.statusPaid')
+                                  : c.status === 'interested'
+                                  ? t('affiliate.dashboard.statusInterested')
+                                  : t('affiliate.dashboard.statusNew')}
                               </span>
                             </td>
                             <td className="px-4 py-2.5 text-right text-slate-700">
@@ -577,16 +613,16 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
                 <MessageCircle className="w-4 h-4" />
               </div>
               <div>
-                <h3 className="font-display text-sm font-bold text-slate-900">Contact Admin or request a payout</h3>
-                <p className="text-[11px] text-slate-500">Send a message about your referrals, commission or anything else</p>
+                <h3 className="font-display text-sm font-bold text-slate-900">{t('affiliate.dashboard.contactTitle')}</h3>
+                <p className="text-[11px] text-slate-500">{t('affiliate.dashboard.contactSubtitle')}</p>
               </div>
             </div>
 
             <div ref={chatStreamRef} className="max-h-80 overflow-y-auto custom-scroll flex flex-col gap-3 p-4 bg-[#fbfcfe]">
               {isLoadingChat ? (
-                <div className="text-xs text-slate-400">Loading conversation...</div>
+                <div className="text-xs text-slate-400">{t('affiliate.dashboard.loadingConversation')}</div>
               ) : chatMessages.length === 0 ? (
-                <div className="text-xs text-slate-400">No messages yet — say hello.</div>
+                <div className="text-xs text-slate-400">{t('affiliate.dashboard.noMessagesYet')}</div>
               ) : (
                 chatMessages.map((msg) => {
                   const isMe = msg.sender === 'user';
@@ -600,7 +636,7 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
                         {msg.text}
                       </div>
                       <span className="text-[10px] text-slate-400">
-                        {isMe ? 'You' : 'Admin'} · {msg.timestamp}
+                        {isMe ? t('affiliate.dashboard.youLabel') : t('affiliate.dashboard.adminLabel')} · {msg.timestamp}
                       </span>
                     </div>
                   );
@@ -618,7 +654,7 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
                     void handleSendChatMessage();
                   }
                 }}
-                placeholder="Message Admin..."
+                placeholder={t('affiliate.dashboard.messagePlaceholder')}
                 rows={2}
                 className="flex-1 text-sm border border-slate-200 rounded-xl p-2.5 focus:outline-none focus:border-blue-600 resize-none"
               />
@@ -628,7 +664,7 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
                 className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold flex items-center gap-1.5 disabled:opacity-50 cursor-pointer shrink-0"
               >
                 <Send className="w-3.5 h-3.5" />
-                Send
+                {t('affiliate.dashboard.send')}
               </button>
             </div>
           </div>
@@ -644,15 +680,15 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
                 <Target className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="font-display text-sm font-bold text-slate-900">Proven ways to find high-quality leads</h3>
-                <p className="text-xs text-slate-500 mt-0.5">Bigger clients pay you more — here's how to find them</p>
+                <h3 className="font-display text-sm font-bold text-slate-900">{t('affiliate.dashboard.leadsTitle')}</h3>
+                <p className="text-xs text-slate-500 mt-0.5">{t('affiliate.dashboard.leadsSubtitle')}</p>
               </div>
             </div>
             <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />
           </button>
 
           <p className="text-xs text-slate-400 mt-6">
-            Stats update once our team records a closed deal. Questions about a payout? Reach us at{' '}
+            {t('affiliate.dashboard.statsFooterNote')}{' '}
             <a href="mailto:direct@socio.com" className="text-blue-600 hover:underline">direct@socio.com</a>.
           </p>
         </div>
@@ -666,17 +702,17 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
     return (
       <main className="w-full pt-32 pb-20 px-6 lg:px-12 min-h-screen bg-[#f8f9fd] flex items-center justify-center">
         <div className="max-w-md w-full bg-white border border-slate-200 rounded-2xl p-8 text-center shadow-sm">
-          <span className="text-xs font-bold uppercase tracking-wider text-blue-600 mb-2 block">Growth Partner Program</span>
-          <h1 className="font-display text-xl font-bold text-slate-900">This account is already a client account</h1>
+          <span className="text-xs font-bold uppercase tracking-wider text-blue-600 mb-2 block">{t('affiliate.clientAccountBlock.eyebrow')}</span>
+          <h1 className="font-display text-xl font-bold text-slate-900">{t('affiliate.clientAccountBlock.title')}</h1>
           <p className="text-sm text-slate-600 mt-2">
-            {user.name} is signed in with a client account, so it can't also register as a growth partner. Sign up for the growth partner program with a different email instead.
+            {user.name} {t('affiliate.clientAccountBlock.desc')}
           </p>
           <button
             onClick={onSignOut}
             className="w-full mt-5 inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-red-600 py-2 cursor-pointer"
           >
             <LogOut className="w-3.5 h-3.5" />
-            Sign out
+            {t('nav.signOut')}
           </button>
         </div>
       </main>
@@ -688,10 +724,10 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
     return (
       <main className="w-full pt-32 pb-20 px-6 lg:px-12 min-h-screen bg-[#f8f9fd] flex items-center justify-center">
         <div className="max-w-md w-full bg-white border border-slate-200 rounded-2xl p-8 text-center shadow-sm">
-          <span className="text-xs font-bold uppercase tracking-wider text-blue-600 mb-2 block">Growth Partner Program</span>
-          <h1 className="font-display text-xl font-bold text-slate-900">Become a growth partner as {user.name}?</h1>
+          <span className="text-xs font-bold uppercase tracking-wider text-blue-600 mb-2 block">{t('affiliate.becomeAffiliate.eyebrow')}</span>
+          <h1 className="font-display text-xl font-bold text-slate-900">{t('affiliate.becomeAffiliate.titlePrefix')} {user.name}?</h1>
           <p className="text-sm text-slate-600 mt-2">
-            You're already signed in. Just confirm a couple details to register this account as a growth partner and get your referral link.
+            {t('affiliate.becomeAffiliate.desc')}
           </p>
 
           {becomeAffiliateError && (
@@ -703,7 +739,7 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
           <div className="flex flex-col gap-3 mt-5 text-left">
             <div>
               <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider block mb-1.5">
-                Age <span className="normal-case text-slate-400 font-medium">(must be 18+)</span>
+                {t('affiliate.becomeAffiliate.ageLabel')} <span className="normal-case text-slate-400 font-medium">{t('affiliate.becomeAffiliate.ageHint')}</span>
               </label>
               <input
                 className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 shadow-sm"
@@ -716,12 +752,12 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
               />
             </div>
             <div>
-              <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider block mb-1.5">Country</label>
+              <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider block mb-1.5">{t('affiliate.becomeAffiliate.countryLabel')}</label>
               <input
                 className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 shadow-sm"
                 value={countryInput}
                 onChange={(e) => setCountryInput(e.target.value)}
-                placeholder="United States"
+                placeholder={t('affiliate.becomeAffiliate.countryPlaceholder')}
                 type="text"
               />
             </div>
@@ -732,14 +768,14 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
             disabled={isBecoming}
             className="w-full mt-5 inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-all disabled:opacity-60 cursor-pointer"
           >
-            {isBecoming ? 'Setting up...' : 'Become a Growth Partner'}
+            {isBecoming ? t('affiliate.becomeAffiliate.settingUp') : t('affiliate.becomeAffiliate.becomeButton')}
           </button>
           <button
             onClick={onSignOut}
             className="w-full mt-3 inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-red-600 py-2 cursor-pointer"
           >
             <LogOut className="w-3.5 h-3.5" />
-            Sign out
+            {t('nav.signOut')}
           </button>
         </div>
       </main>
@@ -771,7 +807,7 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
               transition={{ duration: 0.2, ease: 'easeOut' }}
             >
               <span className="text-xs font-bold uppercase tracking-wider text-blue-600 mb-2 block">
-                Step {step + 1} of 7
+                {t('affiliate.onboarding.stepOf7Prefix')} {step + 1} {t('affiliate.onboarding.stepOf7Suffix')}
               </span>
               <h1 className="font-display text-2xl font-extrabold text-slate-900 tracking-tight">
                 {STEPS[step].title}
@@ -781,14 +817,14 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
               {step === 1 && (
                 <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 mt-5">
                   <div className="flex items-baseline justify-between">
-                    <span className="text-xs font-semibold text-slate-500">If you send us</span>
-                    <span className="text-xs font-semibold text-slate-500">avg. $2,500 USD per client</span>
+                    <span className="text-xs font-semibold text-slate-500">{t('affiliate.onboarding.leadsPrompt')}</span>
+                    <span className="text-xs font-semibold text-slate-500">{t('affiliate.onboarding.avgDealValue')}</span>
                   </div>
                   <div className="text-center mt-2">
                     <span className="font-display text-3xl font-extrabold text-slate-900">
                       {leadsSlider}{leadsSlider === 5 ? '+' : ''}
                     </span>
-                    <span className="text-sm text-slate-500"> confirmed {leadsSlider === 1 ? 'lead' : 'leads'}/month</span>
+                    <span className="text-sm text-slate-500"> {leadsSlider === 1 ? t('affiliate.onboarding.confirmedLeadSingular') : t('affiliate.onboarding.confirmedLeadPlural')}</span>
                   </div>
                   <input
                     type="range"
@@ -807,7 +843,7 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
                     <span>5+</span>
                   </div>
                   <div className="text-center mt-4 pt-4 border-t border-slate-200">
-                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block">You could earn</span>
+                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block">{t('affiliate.onboarding.youCouldEarn')}</span>
                     <span className="font-display text-3xl font-extrabold text-blue-600">
                       ${projectedEarnings.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                       {leadsSlider === 5 ? '+' : ''} USD/month
@@ -823,13 +859,13 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
                   className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 hover:text-slate-700 disabled:opacity-0 cursor-pointer"
                 >
                   <ArrowLeft className="w-4 h-4" />
-                  Back
+                  {t('affiliate.onboarding.back')}
                 </button>
                 <button
                   onClick={() => setStep((s) => Math.min(6, s + 1))}
                   className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-all cursor-pointer"
                 >
-                  Continue
+                  {t('affiliate.onboarding.continue')}
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
@@ -842,14 +878,14 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
               exit={{ opacity: 0, x: -16 }}
               transition={{ duration: 0.2, ease: 'easeOut' }}
             >
-              <span className="text-xs font-bold uppercase tracking-wider text-blue-600 mb-2 block">Step 7 of 7</span>
+              <span className="text-xs font-bold uppercase tracking-wider text-blue-600 mb-2 block">{t('affiliate.onboarding.stepOf7Prefix')} 7 {t('affiliate.onboarding.stepOf7Suffix')}</span>
               <h1 className="font-display text-2xl font-extrabold text-slate-900 tracking-tight">
-                {mode === 'signup' ? 'Create your growth partner account' : 'Sign in'}
+                {mode === 'signup' ? t('affiliate.onboarding.createAccountTitle') : t('affiliate.onboarding.signInTitle')}
               </h1>
               <p className="text-sm text-slate-600 mt-2">
                 {mode === 'signup'
-                  ? "Last step — create an account and we'll generate your referral link."
-                  : 'Already a growth partner? Sign in to see your link and stats.'}
+                  ? t('affiliate.onboarding.createAccountSubtitle')
+                  : t('affiliate.onboarding.signInSubtitle')}
               </p>
 
               {authError && (
@@ -869,13 +905,13 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
                   <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"></path>
                   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"></path>
                 </svg>
-                <span>Continue with Google</span>
+                <span>{t('signupCard.google')}</span>
               </button>
 
               <div className="relative flex items-center justify-center my-4">
                 <div className="border-t border-slate-200 w-full"></div>
                 <span className="bg-white px-3 text-[11px] font-medium text-slate-400 uppercase tracking-wider absolute">
-                  or with email
+                  {t('signupCard.orEmail')}
                 </span>
               </div>
 
@@ -885,7 +921,7 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
                     className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 shadow-sm"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    placeholder="Full name"
+                    placeholder={t('affiliate.onboarding.fullNamePlaceholder')}
                     required
                     type="text"
                   />
@@ -894,7 +930,7 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
                   className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 shadow-sm"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Email"
+                  placeholder={t('affiliate.onboarding.emailPlaceholder')}
                   required
                   type="email"
                 />
@@ -902,7 +938,7 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
                   className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 shadow-sm font-mono"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Password"
+                  placeholder={t('affiliate.onboarding.passwordPlaceholder')}
                   required
                   minLength={8}
                   type="password"
@@ -913,7 +949,7 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
                     onClick={() => setIsForgotPasswordOpen(true)}
                     className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors cursor-pointer -mt-2 self-start"
                   >
-                    Forgot password?
+                    {t('signupCard.forgotPassword')}
                   </button>
                 )}
                 <button
@@ -921,7 +957,7 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
                   disabled={isSubmitting}
                   className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-all disabled:opacity-60 cursor-pointer mt-1"
                 >
-                  {isSubmitting ? 'Please wait...' : mode === 'signup' ? 'Create Account' : 'Sign In'}
+                  {isSubmitting ? t('affiliate.onboarding.pleaseWait') : mode === 'signup' ? t('affiliate.onboarding.createAccountButton') : t('signupCard.signIn')}
                 </button>
               </form>
 
@@ -931,7 +967,7 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
                   className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 hover:text-slate-700 cursor-pointer"
                 >
                   <ArrowLeft className="w-4 h-4" />
-                  Back
+                  {t('affiliate.onboarding.back')}
                 </button>
                 <button
                   onClick={() => {
@@ -940,7 +976,7 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
                   }}
                   className="text-xs font-semibold text-blue-600 hover:text-blue-700 cursor-pointer"
                 >
-                  {mode === 'signup' ? 'Already a growth partner? Sign in' : 'Need an account? Sign up'}
+                  {mode === 'signup' ? t('affiliate.onboarding.alreadyPartnerSignIn') : t('affiliate.onboarding.needAccountSignUp')}
                 </button>
               </div>
             </motion.div>
