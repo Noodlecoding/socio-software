@@ -856,21 +856,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
                   )}
                 </p>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1 text-xs">
-                  <span className="text-slate-400">$</span>
-                  <input
-                    value={dealValue}
-                    onChange={(e) => setDealValue(e.target.value)}
-                    onBlur={() => void handleSaveDealCost()}
-                    placeholder="Deal cost"
-                    inputMode="decimal"
-                    className="w-20 border border-slate-200 rounded-lg px-2 py-1.5 font-semibold"
-                    title="Total agreed deal cost — used to calculate affiliate commission when this client is marked Paid"
-                  />
+              <div className="flex items-center gap-3">
+                <div className="text-xs">
+                  <span className="text-slate-400 block mb-1">Cost for the project</span>
+                  <div className="flex items-center gap-1" title="Only changes when you edit it — used to calculate affiliate commission when this client is marked Paid">
+                    <span className="text-slate-400">$</span>
+                    <input
+                      value={dealValue}
+                      onChange={(e) => setDealValue(e.target.value)}
+                      onBlur={() => void handleSaveDealCost()}
+                      placeholder="0"
+                      inputMode="decimal"
+                      className="w-20 border border-slate-200 rounded-lg px-2 py-1.5 font-semibold"
+                    />
+                  </div>
                 </div>
                 <div className="text-xs text-right">
-                  <span className="text-slate-400 block">Amount paid</span>
+                  <span className="text-slate-400 block mb-1">Amount paid</span>
                   <span className="font-semibold text-slate-900">
                     ${(amountPaid.trim() === '' ? 0 : Number(amountPaid)).toLocaleString(undefined, { maximumFractionDigits: 0 })}
                   </span>
@@ -890,7 +892,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
                   disabled={!dealContributionInput.trim()}
                   className="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 text-xs font-semibold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Contribute
+                  Contribute to Amount Paid
                 </button>
                 <select
                   value={selectedConversation.status}
