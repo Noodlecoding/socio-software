@@ -234,16 +234,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     {t('signupCard.emailToggle')}
                   </button>
                   {mode === 'signup' && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setAuthError(null);
-                        setMode('signin');
-                      }}
-                      className="w-full text-center text-xs font-semibold text-slate-400 hover:text-blue-600 transition-colors cursor-pointer pb-1"
-                    >
-                      {t('signupCard.alreadyHaveAccountShort')}
-                    </button>
+                    <div className="text-center pt-3 mt-1 border-t border-slate-200/80">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAuthError(null);
+                          setMode('signin');
+                        }}
+                        className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors cursor-pointer"
+                      >
+                        {t('signupCard.alreadyHaveAccountShort')}
+                      </button>
+                    </div>
                   )}
                 </div>
               ) : (
