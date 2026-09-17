@@ -549,6 +549,7 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
               </div>
               <div>
                 <h3 className="font-display text-sm font-bold text-slate-900">Contact Admin or request a payout</h3>
+                <p className="text-[11px] text-slate-500">Send a message about your referrals, commission, or anything else</p>
               </div>
             </div>
 
