@@ -796,18 +796,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <span>•</span>
               <span>{t('footer.codeOwnership')}</span>
               <span className="hidden sm:inline">•</span>
-              <button
-                onClick={() => onNavigate('legal')}
+              <a
+                href="/privacy.html"
                 className="hover:text-slate-300 transition-colors cursor-pointer"
               >
                 {t('footer.privacyPolicy')}
-              </button>
-              <button
-                onClick={() => onNavigate('legal')}
+              </a>
+              <a
+                href="/terms.html"
                 className="hover:text-slate-300 transition-colors cursor-pointer"
               >
                 {t('footer.termsOfService')}
-              </button>
+              </a>
             </div>
           </div>
         </div>
