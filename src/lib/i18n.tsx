@@ -148,7 +148,11 @@ const translations = {
         recruitPromptShareText: "Do you know anyone who'd benefit from a remote job? Check out Socio's Growth Partner program.",
         recruitPromptNote: "You don't earn anything for recruiting other Growth Partners — this is completely optional, just a way to spread the word if you'd like to.",
         recruitPromptShare: 'Share',
-        recruitPromptNoThanks: 'No thanks, continue to playbook'
+        recruitPromptNoThanks: 'No thanks, continue to playbook',
+        shareCardTitle: 'Know someone who could use this?',
+        shareCardBody: "Help out friends or family who could benefit from US income — sharing this program with others won't affect your own opportunities.",
+        shareCardButton: 'Share the program',
+        shareCardCopied: 'Link copied'
       },
       clientAccountBlock: {
         eyebrow: 'Growth Partner Program',
@@ -397,7 +401,11 @@ const translations = {
         recruitPromptShareText: '¿Conoces a alguien a quien le vendría bien un trabajo remoto? Conoce el programa de Socios de Crecimiento de Socio.',
         recruitPromptNote: 'No ganas nada por reclutar a otros Socios de Crecimiento — esto es completamente opcional, solo una forma de compartir la voz si quieres.',
         recruitPromptShare: 'Compartir',
-        recruitPromptNoThanks: 'No, gracias, continuar al manual'
+        recruitPromptNoThanks: 'No, gracias, continuar al manual',
+        shareCardTitle: '¿Conoces a alguien a quien esto le podría servir?',
+        shareCardBody: 'Ayuda a amigos o familiares que podrían beneficiarse de ingresos en dólares — compartir este programa con otros no afecta tus propias oportunidades.',
+        shareCardButton: 'Compartir el programa',
+        shareCardCopied: 'Enlace copiado'
       },
       clientAccountBlock: {
         eyebrow: 'Programa de Socio de Crecimiento',
