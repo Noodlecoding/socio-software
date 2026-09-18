@@ -34,13 +34,14 @@ interface NavbarProps {
   onSignInClick: () => void;
   isAdmin?: boolean;
   hasNewMessage?: boolean;
+  hideLanguageSwitcher?: boolean;
 }
 
 const NewMessageDot: React.FC = () => (
   <span className="w-2 h-2 rounded-full bg-red-500 shrink-0" aria-label="New message" />
 );
 
-export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, user, onSignOut, onSignInClick, isAdmin, hasNewMessage }) => {
+export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, user, onSignOut, onSignInClick, isAdmin, hasNewMessage, hideLanguageSwitcher }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { t } = useLanguage();
 
@@ -151,7 +152,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, user, o
 
         {/* Header CTAs (desktop) */}
         <div className="hidden md:flex items-center gap-3">
-          <LanguageSwitcher />
+          {!hideLanguageSwitcher && <LanguageSwitcher />}
 
           {user ? (
             <button
@@ -185,7 +186,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, user, o
       {/* Mobile menu panel */}
       {isMobileMenuOpen && (
         <div className="md:hidden border-t border-slate-100 bg-white px-6 py-4 flex flex-col gap-3">
-          <LanguageSwitcher className="self-start" />
+          {!hideLanguageSwitcher && <LanguageSwitcher className="self-start" />}
 
           <a
             className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors py-1.5"

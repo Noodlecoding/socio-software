@@ -34,6 +34,7 @@ import { useLanguage } from '../lib/i18n';
 interface AffiliatePageProps {
   user: UserProfile | null;
   onSignOut: () => void;
+  onOnboardingStepChange?: (step: number | null) => void;
 }
 
 const generateReferralCode = () => crypto.randomUUID().replace(/-/g, '').slice(0, 8).toUpperCase();
@@ -167,7 +168,7 @@ const renderStepBody = (text: string) =>
     </p>
   ));
 
-export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut }) => {
+export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut, onOnboardingStepChange }) => {
   const { t, language } = useLanguage();
   const STEPS = language === 'es' ? STEPS_ES : STEPS_EN;
   const [step, setStep] = useState(0);
@@ -178,6 +179,11 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
+
+  useEffect(() => {
+    onOnboardingStepChange?.(user ? null : step);
+    return () => onOnboardingStepChange?.(null);
+  }, [user, step, onOnboardingStepChange]);
 
   const [isCheckingAffiliate, setIsCheckingAffiliate] = useState(false);
   const [referralCode, setReferralCode] = useState<string | null>(null);

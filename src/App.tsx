@@ -53,6 +53,7 @@ async function loadUserProfile(session: Session): Promise<UserProfile> {
 
 export default function App() {
   const [currentView, setCurrentView] = useState<AppView>('landing');
+  const [affiliateOnboardingStep, setAffiliateOnboardingStep] = useState<number | null>(null);
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
   // True whenever the last message in this user's chat wasn't sent by them
@@ -274,6 +275,7 @@ export default function App() {
         onSignOut={handleSignOut}
         onSignInClick={handleSignInClick}
         isAdmin={isAdmin}
+        hideLanguageSwitcher={currentView === 'affiliate' && affiliateOnboardingStep === 0}
       />
 
       <AnimatePresence mode="wait">
@@ -297,7 +299,7 @@ export default function App() {
             transition={{ duration: 0.18, ease: 'easeOut' }}
             className="flex-1 flex flex-col"
           >
-            <AffiliatePage user={user} onSignOut={handleSignOut} />
+            <AffiliatePage user={user} onSignOut={handleSignOut} onOnboardingStepChange={setAffiliateOnboardingStep} />
           </motion.div>
         ) : currentView === 'landing' || !user ? (
           <motion.div
