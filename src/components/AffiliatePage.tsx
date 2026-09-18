@@ -410,7 +410,7 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}${window.location.pathname}?view=affiliate`,
+        redirectTo: `${window.location.origin}${window.location.pathname}?view=growth-partner`,
         // Without this, Google silently reuses whatever Google account is
         // already cached in the browser (e.g. the one used to sign up as a
         // client) instead of letting the person pick which email to use —
@@ -493,7 +493,7 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
     }
   };
 
-  const AFFILIATE_SIGNUP_LINK = 'https://www.softwaresocio.com/?view=affiliate';
+  const AFFILIATE_SIGNUP_LINK = 'https://www.softwaresocio.com/?view=growth-partner';
   const RECRUIT_PROMPT_SEEN_KEY = 'seenGrowthPartnerRecruitPrompt';
 
   const handleOpenLeadGuide = () => {

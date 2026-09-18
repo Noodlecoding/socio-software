@@ -4,6 +4,11 @@ export type Language = 'en' | 'es';
 
 const STORAGE_KEY = 'preferredLanguage';
 
+const LATAM_COUNTRY_CODES = new Set([
+  'AR', 'BO', 'BR', 'CL', 'CO', 'CR', 'CU', 'DO', 'EC', 'SV',
+  'GT', 'HN', 'MX', 'NI', 'PA', 'PY', 'PE', 'PR', 'UY', 'VE'
+]);
+
 const translations = {
   en: {
     nav: {
@@ -519,13 +524,19 @@ interface LanguageContextValue {
 
 const LanguageContext = createContext<LanguageContextValue | undefined>(undefined);
 
-function detectInitialLanguage(): Language {
+function getStoredLanguage(): Language | undefined {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored === 'en' || stored === 'es') return stored;
   } catch {
-    // localStorage unavailable — fall through to browser detection
+    // localStorage unavailable
   }
+  return undefined;
+}
+
+function detectInitialLanguage(): Language {
+  const stored = getStoredLanguage();
+  if (stored) return stored;
   if (typeof navigator !== 'undefined' && navigator.language?.toLowerCase().startsWith('es')) {
     return 'es';
   }
@@ -542,6 +553,23 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       // localStorage unavailable — language choice just won't persist
     }
   }, [language]);
+
+  useEffect(() => {
+    if (getStoredLanguage()) return;
+    let cancelled = false;
+    fetch('/api/geo')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: { country?: string } | null) => {
+        if (cancelled || !data?.country || getStoredLanguage()) return;
+        setLanguageState(LATAM_COUNTRY_CODES.has(data.country) ? 'es' : 'en');
+      })
+      .catch(() => {
+        // geo lookup unavailable — keep the browser-language default
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const setLanguage = (lang: Language) => setLanguageState(lang);
 

@@ -87,7 +87,8 @@ export default function App() {
       }
     }
 
-    if (params.get('view') === 'affiliate') {
+    const viewParam = params.get('view');
+    if (viewParam === 'affiliate' || viewParam === 'growth-partner') {
       setCurrentView('affiliate');
       oauthAffiliateRedirectRef.current = true;
     }
@@ -108,7 +109,7 @@ export default function App() {
     if (currentView === 'landing') {
       url.searchParams.delete('view');
     } else {
-      url.searchParams.set('view', currentView);
+      url.searchParams.set('view', currentView === 'affiliate' ? 'growth-partner' : currentView);
     }
     window.history.replaceState(null, '', url.toString());
   }, [currentView]);
