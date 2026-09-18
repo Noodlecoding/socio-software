@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { AffiliateLeadGuide } from './AffiliateLeadGuide';
 import { ForgotPasswordModal } from './ForgotPasswordModal';
+import { LanguageSwitcher } from './Navbar';
 import { useLanguage } from '../lib/i18n';
 
 interface AffiliatePageProps {
@@ -941,6 +942,11 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut })
               exit={{ opacity: 0, x: -16 }}
               transition={{ duration: 0.2, ease: 'easeOut' }}
             >
+              {step === 0 && (
+                <div className="flex justify-end mb-2">
+                  <LanguageSwitcher />
+                </div>
+              )}
               {step !== 1 && (
                 <div className="w-11 h-11 rounded-xl bg-blue-600/10 text-blue-600 flex items-center justify-center mb-4">
                   {React.createElement(STEPS[step].icon, { className: 'w-5 h-5' })}

@@ -5,7 +5,7 @@ import type { AppView } from '../App';
 import { useLanguage } from '../lib/i18n';
 import { ArrowRight, MessageSquare, LayoutTemplate, LogOut, Menu, X } from 'lucide-react';
 
-const LanguageSwitcher: React.FC<{ className?: string }> = ({ className }) => {
+export const LanguageSwitcher: React.FC<{ className?: string }> = ({ className }) => {
   const { language, setLanguage } = useLanguage();
   return (
     <div className={`inline-flex items-center rounded-lg border border-slate-200 bg-slate-50 p-0.5 text-xs font-semibold ${className ?? ''}`}>
