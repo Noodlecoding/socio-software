@@ -91,7 +91,7 @@ const STEPS_EN = [
   {
     icon: Laptop,
     title: 'Earn money remotely',
-    body: "This is **fully remote**, no office, no set hours.\nIf you know business owners who might need custom software, send us their name or connect us.\n**You don't need any sales or tech experience.**"
+    body: "This is **fully remote**, no office, no set hours.\nYou already work with business owners — when one of them could use custom software, just connect us.\n**You don't need any sales or tech experience.**"
   },
   {
     icon: DollarSign,
@@ -124,7 +124,7 @@ const STEPS_ES = [
   {
     icon: Laptop,
     title: 'Gana dinero de forma remota',
-    body: "Esto es **totalmente remoto**, sin oficina, sin horarios fijos.\nSi conoces a dueños de negocios que podrían necesitar software a medida, envíanos su nombre o conéctanos.\n**No necesitas experiencia en ventas ni en tecnología.**"
+    body: "Esto es **totalmente remoto**, sin oficina, sin horarios fijos.\nYa trabajas con dueños de negocios — cuando alguno necesite software a medida, solo conéctanos con él.\n**No necesitas experiencia en ventas ni en tecnología.**"
   },
   {
     icon: DollarSign,
