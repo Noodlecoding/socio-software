@@ -198,7 +198,7 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut, o
   const [countryInput, setCountryInput] = useState('');
   const [becomeAffiliateError, setBecomeAffiliateError] = useState<string | null>(null);
 
-  const DEAL_SIZES = [1000, 2500, 5000, 10000, 20000];
+  const DEAL_SIZES = [1000, 10000, 20000, 35000, 50000];
   const COMMISSION_RATE = 0.23;
   const dealSize = DEAL_SIZES[dealSizeIndex];
   const projectedEarnings = dealSize * COMMISSION_RATE;
