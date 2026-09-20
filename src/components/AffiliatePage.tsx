@@ -96,7 +96,7 @@ const STEPS_EN = [
   {
     icon: DollarSign,
     title: 'Earn 23% commission',
-    body: "Contact businesses that need software built. Send them our way.\nWhen a deal you referred closes, you get **23% of what they pay in USD**.\n**No cap, no catch.**"
+    body: "**Contact businesses that need software built. Send them our way.**\nWhen a deal you referred closes, you get **23% of what they pay in USD**.\n**No cap, no catch.**"
   },
   {
     icon: Link2,
@@ -129,7 +129,7 @@ const STEPS_ES = [
   {
     icon: DollarSign,
     title: 'Gana 23% de comisión',
-    body: "Contacta negocios que necesiten software a medida. Envíalos con nosotros.\nCuando un acuerdo que referiste se cierra, obtienes el **23% de lo que paguen en USD**.\n**Sin tope, sin trampa.**"
+    body: "**Contacta negocios que necesiten software a medida. Envíalos con nosotros.**\nCuando un acuerdo que referiste se cierra, obtienes el **23% de lo que paguen en USD**.\n**Sin tope, sin trampa.**"
   },
   {
     icon: Link2,
