@@ -90,8 +90,8 @@ const MIN_AFFILIATE_AGE = 18;
 const STEPS_EN = [
   {
     icon: Laptop,
-    title: 'Earn money remotely',
-    body: "This is **fully remote**, no office, no set hours.\nYou already work with business owners — when one of them could use custom software, just connect us.\n**You don't need any sales or tech experience.**"
+    title: 'Turn client referrals into revenue for your agency',
+    body: "**No exclusivity, no added workload for your team.**\nWhen a client of yours could use custom software, just connect us.\n**You don't need any sales or tech experience.**"
   },
   {
     icon: DollarSign,
@@ -123,8 +123,8 @@ const STEPS_EN = [
 const STEPS_ES = [
   {
     icon: Laptop,
-    title: 'Gana dinero de forma remota',
-    body: "Esto es **totalmente remoto**, sin oficina, sin horarios fijos.\nYa trabajas con dueños de negocios — cuando alguno necesite software a medida, solo conéctanos con él.\n**No necesitas experiencia en ventas ni en tecnología.**"
+    title: 'Convierte tus referidos en ingresos para tu agencia',
+    body: "**Sin exclusividad, sin carga extra para tu equipo.**\nCuando un cliente tuyo necesite software a medida, solo conéctanos con él.\n**No necesitas experiencia en ventas ni en tecnología.**"
   },
   {
     icon: DollarSign,
