@@ -96,7 +96,7 @@ const STEPS_EN = [
   {
     icon: DollarSign,
     title: 'Earn 23% commission',
-    body: "**Contact businesses that need software built. Send them our way.**\nWhen a deal you referred closes, you get **23% of what they pay in USD**.\n**No cap, no catch.**"
+    body: "**Refer any business that needs software built.**\nWhen a deal you referred closes, you get **23% of what they pay in USD**.\n**No cap, no catch.**"
   },
   {
     icon: Link2,
@@ -115,8 +115,8 @@ const STEPS_EN = [
   },
   {
     icon: Compass,
-    title: 'Get help finding leads',
-    body: "Your dashboard has a full playbook of proven ways to find high-quality leads.\nOn average, growth partners land between **0 and 3 confirmed clients per month**. The playbook is there to help you push toward the higher end of that."
+    title: 'Get help spotting the right referrals',
+    body: "Your dashboard has a full playbook to help you spot which contacts in your network are worth referring.\nOn average, referrers close between **0 and 3 confirmed clients per month**. The playbook is there to help you push toward the higher end of that."
   }
 ];
 
@@ -129,7 +129,7 @@ const STEPS_ES = [
   {
     icon: DollarSign,
     title: 'Gana 23% de comisión',
-    body: "**Contacta negocios que necesiten software a medida. Envíalos con nosotros.**\nCuando un acuerdo que referiste se cierra, obtienes el **23% de lo que paguen en USD**.\n**Sin tope, sin trampa.**"
+    body: "**Refiere cualquier negocio que necesite software a medida.**\nCuando un acuerdo que referiste se cierra, obtienes el **23% de lo que paguen en USD**.\n**Sin tope, sin trampa.**"
   },
   {
     icon: Link2,
@@ -148,8 +148,8 @@ const STEPS_ES = [
   },
   {
     icon: Compass,
-    title: 'Obtén ayuda para encontrar prospectos',
-    body: "Tu panel tiene un manual completo de formas comprobadas para encontrar prospectos de alta calidad.\nEn promedio, los socios de crecimiento consiguen entre **0 y 3 clientes confirmados al mes**. El manual está ahí para ayudarte a llegar al extremo más alto de ese rango."
+    title: 'Obtén ayuda para identificar los referidos correctos',
+    body: "Tu panel tiene un manual completo para ayudarte a identificar qué contactos de tu red vale la pena referir.\nEn promedio, los referidores cierran entre **0 y 3 clientes confirmados al mes**. El manual está ahí para ayudarte a llegar al extremo más alto de ese rango."
   }
 ];
 
@@ -190,7 +190,7 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut, o
   const [stats, setStats] = useState<AffiliateStats | null>(null);
   const [isBecoming, setIsBecoming] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [leadsSlider, setLeadsSlider] = useState(3);
+  const [dealSizeIndex, setDealSizeIndex] = useState(2);
   const [showLeadGuide, setShowLeadGuide] = useState(false);
   const [showRecruitPrompt, setShowRecruitPrompt] = useState(false);
 
@@ -198,9 +198,10 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut, o
   const [countryInput, setCountryInput] = useState('');
   const [becomeAffiliateError, setBecomeAffiliateError] = useState<string | null>(null);
 
-  const AVG_DEAL_VALUE = 2500;
+  const DEAL_SIZES = [1000, 2500, 5000, 10000, 20000];
   const COMMISSION_RATE = 0.23;
-  const projectedEarnings = leadsSlider * AVG_DEAL_VALUE * COMMISSION_RATE;
+  const dealSize = DEAL_SIZES[dealSizeIndex];
+  const projectedEarnings = dealSize * COMMISSION_RATE;
 
   useEffect(() => {
     if (!user) {
@@ -996,36 +997,35 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut, o
               {step === 1 && (
                 <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 mt-5">
                   <div className="flex items-baseline justify-between">
-                    <span className="text-xs font-semibold text-slate-500">{t('affiliate.onboarding.leadsPrompt')}</span>
-                    <span className="text-xs font-semibold text-slate-500">{t('affiliate.onboarding.avgDealValue')}</span>
+                    <span className="text-xs font-semibold text-slate-500">{t('affiliate.onboarding.dealSizePrompt')}</span>
+                    <span className="text-xs font-semibold text-slate-500">{t('affiliate.onboarding.commissionRateNote')}</span>
                   </div>
                   <div className="text-center mt-2">
                     <span className="font-display text-3xl font-extrabold text-slate-900">
-                      {leadsSlider}{leadsSlider === 5 ? '+' : ''}
+                      ${dealSize.toLocaleString()}{dealSizeIndex === DEAL_SIZES.length - 1 ? '+' : ''} USD
                     </span>
-                    <span className="text-sm text-slate-500"> {leadsSlider === 1 ? t('affiliate.onboarding.confirmedLeadSingular') : t('affiliate.onboarding.confirmedLeadPlural')}</span>
                   </div>
                   <input
                     type="range"
-                    min={1}
-                    max={5}
+                    min={0}
+                    max={DEAL_SIZES.length - 1}
                     step={1}
-                    value={leadsSlider}
-                    onChange={(e) => setLeadsSlider(Number(e.target.value))}
+                    value={dealSizeIndex}
+                    onChange={(e) => setDealSizeIndex(Number(e.target.value))}
                     className="w-full mt-3 accent-blue-600 cursor-pointer"
                   />
                   <div className="flex items-center justify-between text-[11px] text-slate-400 mt-1 px-0.5">
-                    <span>1</span>
-                    <span>2</span>
-                    <span>3</span>
-                    <span>4</span>
-                    <span>5+</span>
+                    {DEAL_SIZES.map((size, i) => (
+                      <span key={size}>
+                        ${size >= 1000 ? `${size / 1000}k` : size}{i === DEAL_SIZES.length - 1 ? '+' : ''}
+                      </span>
+                    ))}
                   </div>
                   <div className="text-center mt-4 pt-4 border-t border-slate-200">
                     <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block">{t('affiliate.onboarding.youCouldEarn')}</span>
                     <span className="font-display text-3xl font-extrabold text-blue-600">
                       ${projectedEarnings.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                      {leadsSlider === 5 ? '+' : ''} USD/month
+                      {dealSizeIndex === DEAL_SIZES.length - 1 ? '+' : ''} USD
                     </span>
                   </div>
                 </div>
