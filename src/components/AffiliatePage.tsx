@@ -171,6 +171,12 @@ const renderStepBody = (text: string) =>
 export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut, onOnboardingStepChange }) => {
   const { t, language } = useLanguage();
   const STEPS = language === 'es' ? STEPS_ES : STEPS_EN;
+  // Step 6 (the "find referrals" playbook teaser) is hidden from the
+  // onboarding flow for now but kept in STEPS so it can be brought back —
+  // these skip over its index instead of renumbering everything after it.
+  const HIDDEN_STEP_INDEX = 5;
+  const advanceStep = (s: number) => (s + 1 === HIDDEN_STEP_INDEX ? s + 2 : s + 1);
+  const retreatStep = (s: number) => (s - 1 === HIDDEN_STEP_INDEX ? s - 2 : s - 1);
   const [step, setStep] = useState(0);
   const [mode, setMode] = useState<'signup' | 'signin'>('signup');
   const [fullName, setFullName] = useState('');
@@ -1033,7 +1039,7 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut, o
 
               <div className="flex items-center justify-between mt-8">
                 <button
-                  onClick={() => setStep((s) => Math.max(0, s - 1))}
+                  onClick={() => setStep((s) => Math.max(0, retreatStep(s)))}
                   disabled={step === 0}
                   className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 hover:text-slate-700 disabled:opacity-0 cursor-pointer"
                 >
@@ -1041,7 +1047,7 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut, o
                   {t('affiliate.onboarding.back')}
                 </button>
                 <button
-                  onClick={() => setStep((s) => Math.min(6, s + 1))}
+                  onClick={() => setStep((s) => Math.min(6, advanceStep(s)))}
                   className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-all cursor-pointer"
                 >
                   {t('affiliate.onboarding.continue')}
@@ -1145,7 +1151,7 @@ export const AffiliatePage: React.FC<AffiliatePageProps> = ({ user, onSignOut, o
 
               <div className="flex items-center justify-between mt-4">
                 <button
-                  onClick={() => setStep(5)}
+                  onClick={() => setStep(retreatStep(6))}
                   className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 hover:text-slate-700 cursor-pointer"
                 >
                   <ArrowLeft className="w-4 h-4" />
