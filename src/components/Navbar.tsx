@@ -109,7 +109,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, user, o
         >
           <img
             alt="Socio"
-            className="h-9 w-auto object-contain"
+            className="h-12 w-auto object-contain"
             src={SOCIO_LOGO_URL}
           />
           <span className="text-lg font-extrabold text-[#0f172a] tracking-tight font-display">Socio</span>
