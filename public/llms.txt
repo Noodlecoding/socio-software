@@ -1,0 +1,28 @@
+# Socio
+
+> Custom software built for your needs, budget, and timeframe — with fixed scopes, code ownership, and direct architect discussion.
+
+Socio is a custom software development studio. Instead of open-ended hourly billing or bloated agency overhead, Socio scopes each project up front around the client's actual budget, then builds exactly that — nothing more, nothing padded.
+
+## Why Socio
+
+- **You own everything.** 100% of the code and IP is handed over to the client. No vendor lock-in, no license fees, no dependency on Socio to keep operating.
+- **We scope around your budget, not the other way around.** The team defines what's achievable within what you're willing to spend, instead of quoting a number and hoping the project doesn't balloon.
+- **Fast, honest diagnostics.** A typical project starts with a 1-3 day diagnostic to understand the problem before any commitment is made.
+- **You talk to the person building it.** Clients get direct discussion with the architect actually writing the software, not a account manager relaying messages.
+
+## How it works
+
+1. **Understand what you need** — Socio learns about the business and the problem before proposing anything.
+2. **Get a clear plan and timeline** — a concrete scope, price, and schedule, agreed before work starts.
+3. **We build and hand it over** — the software is built to spec and delivered with full code ownership.
+
+## Who this is for
+
+Businesses and founders who want custom software (internal tools, client-facing products, automation, integrations) built to a fixed scope and budget, without the overhead of hiring a full in-house engineering team or the unpredictability of open-ended agency billing.
+
+## Links
+
+- Homepage: https://www.softwaresocio.com/
+- Privacy Policy: https://www.softwaresocio.com/privacy.html
+- Terms of Service: https://www.softwaresocio.com/terms.html
