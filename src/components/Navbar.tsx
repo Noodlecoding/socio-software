@@ -164,7 +164,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, user, o
             </button>
           ) : (
             <a
-              className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-lg text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-all shadow-sm hover:shadow-md"
+              className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-lg text-sm font-semibold text-white bg-green-600 hover:bg-green-700 transition-all shadow-sm hover:shadow-md"
               href="#get-started"
             >
               <span>{t('nav.getStarted')}</span>
@@ -244,7 +244,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, user, o
               </button>
             ) : (
               <a
-                className="w-full inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-lg text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-all shadow-sm hover:shadow-md"
+                className="w-full inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-lg text-sm font-semibold text-white bg-green-600 hover:bg-green-700 transition-all shadow-sm hover:shadow-md"
                 href="#get-started"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
