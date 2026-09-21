@@ -1,6 +1,6 @@
 {
   "name": "Socio",
-  "description": "Custom software built for your needs, budget, and timeframe — with fixed scopes, code ownership, and direct architect discussion.",
+  "description": "Custom software built for your needs, budget and timeframe — with fixed scopes, code ownership and direct architect discussion.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
