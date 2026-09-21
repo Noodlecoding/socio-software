@@ -55,7 +55,6 @@ export default function App() {
   const [currentView, setCurrentView] = useState<AppView>('landing');
   const [affiliateOnboardingStep, setAffiliateOnboardingStep] = useState<number | null>(null);
   const [user, setUser] = useState<UserProfile | null>(null);
-  const [isAuthLoading, setIsAuthLoading] = useState(true);
   // True whenever the last message in this user's chat wasn't sent by them
   // (i.e. the architect/admin replied and they haven't responded yet).
   // Drives the red-dot nav indicator — cleared only by the user actually
@@ -123,7 +122,6 @@ export default function App() {
       if (session) {
         setUser(await loadUserProfile(session));
       }
-      setIsAuthLoading(false);
     });
 
     const { data: listener } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -256,14 +254,6 @@ export default function App() {
     setCurrentView(view);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
-
-  if (isAuthLoading) {
-    return (
-      <div className="min-h-screen bg-[#f8f9fd] flex items-center justify-center text-slate-400 text-sm">
-        Loading...
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-[#f8f9fd] text-slate-800 flex flex-col selection:bg-blue-100 selection:text-blue-900 font-sans">
