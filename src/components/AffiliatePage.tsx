@@ -90,8 +90,8 @@ const MIN_AFFILIATE_AGE = 18;
 const STEPS_EN = [
   {
     icon: Laptop,
-    title: 'Turn client referrals into revenue for your agency',
-    body: "**No exclusivity, no added workload for your team.**\nWhen a client of yours could use custom software, just connect us.\n**We also refer our existing clients back to your agency.**"
+    title: 'Turn client referrals into extra income',
+    body: "**No exclusivity, no added work for you.**\nWhen a client of yours could use custom software, just connect us.\n**We also refer our existing clients back to you.**"
   },
   {
     icon: DollarSign,
@@ -123,8 +123,8 @@ const STEPS_EN = [
 const STEPS_ES = [
   {
     icon: Laptop,
-    title: 'Convierte tus referidos en ingresos para tu agencia',
-    body: "**Sin exclusividad, sin carga extra para tu equipo.**\nCuando un cliente tuyo necesite software a medida, solo conéctanos con él.\n**Nosotros también referimos a nuestros clientes actuales a tu agencia.**"
+    title: 'Convierte tus referidos en ingresos extra',
+    body: "**Sin exclusividad, sin carga extra para ti.**\nCuando un cliente tuyo necesite software a medida, solo conéctanos con él.\n**Nosotros también referimos a nuestros clientes actuales a ti.**"
   },
   {
     icon: DollarSign,
