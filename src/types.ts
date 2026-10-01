@@ -126,3 +126,27 @@ export interface NotebookSection {
   updatedBy: string | null;
   updatedAt: string | null;
 }
+
+export type LeadStatus = 'new' | 'contacted' | 'replied' | 'won' | 'not_interested';
+export type LeadCompanyType = 'ltd' | 'partnership_or_sole_trader' | 'unknown';
+
+export interface ScrapedLead {
+  id: string;
+  name: string;
+  website: string | null;
+  phone: string | null;
+  email: string | null;
+  address: string | null;
+  postcode: string | null;
+  ownerName: string | null;
+  companyType: LeadCompanyType;
+  canColdEmail: boolean;
+  teamSize: number | null;
+  sitesCount: number | null;
+  signals: string[];
+  score: number;
+  opener: string | null;
+  notes: string | null;
+  status: LeadStatus;
+  scrapedAt: string;
+}

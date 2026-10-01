@@ -5,6 +5,7 @@ import { rowToChatMessage } from '../lib/chat';
 import { downloadSpecFile } from '../lib/files';
 import { Send, Users, DollarSign, Download, ChevronDown, Search } from 'lucide-react';
 import { ProjectNotebook } from './ProjectNotebook';
+import { LeadsPanel } from './LeadsPanel';
 
 interface AdminDashboardProps {
   user: UserProfile;
@@ -96,7 +97,7 @@ function matchesAffiliateActivityFilter(
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
-  const [dashboardTab, setDashboardTab] = useState<'clients' | 'affiliates' | 'affiliate-chats'>('clients');
+  const [dashboardTab, setDashboardTab] = useState<'clients' | 'affiliates' | 'affiliate-chats' | 'leads'>('clients');
 
   const [conversations, setConversations] = useState<AdminConversation[]>([]);
   const [filter, setFilter] = useState<'all' | ClientStatus>('all');
@@ -470,6 +471,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
             </span>
           )}
         </button>
+        <button
+          onClick={() => setDashboardTab('leads')}
+          className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-colors cursor-pointer ${
+            dashboardTab === 'leads' ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-slate-100'
+          }`}
+        >
+          Leads
+        </button>
       </div>
 
       {dashboardTab === 'affiliate-chats' ? (
@@ -593,6 +602,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
             )}
           </main>
         </div>
+      ) : dashboardTab === 'leads' ? (
+        <LeadsPanel />
       ) : dashboardTab === 'affiliates' ? (
         <div className="bg-white border border-[#e5e9f5] rounded-2xl shadow-sm overflow-hidden">
           <div className="p-4 border-b border-[#e5e9f5]">

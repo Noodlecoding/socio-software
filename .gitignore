@@ -7,3 +7,6 @@ coverage/
 .env*
 !.env.example
 supabase/.temp/
+
+scraper/.venv/
+scraper/leads_preview.csv
