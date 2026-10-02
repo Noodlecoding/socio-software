@@ -92,8 +92,14 @@ async def main() -> None:
     load_dotenv()
 
     locations, owner_sites = L.extract_dental_locations(L.load_cqc_csv(args.csv))
-    locations = [l for l in locations if l["website"] and owner_sites.get(l["owner_name"] or "", 1) <= args.max_sites]
-    print(f"{len(locations)} Manchester dental practices with a website (chains removed); crawling {min(args.limit, len(locations))}.")
+    locations = [l for l in locations
+                 if owner_sites.get(l["owner_name"] or "", 1) <= args.max_sites
+                 and not L.is_chain(l["name"], l["owner_name"])]
+    with_site = [l for l in locations if l["website"]]
+    no_site = [l for l in locations if not l["website"]]
+    print(f"{len(locations)} Manchester-area dental practices after removing chains: "
+          f"{len(with_site)} with a website (crawling {min(args.limit, len(with_site))}), "
+          f"{len(no_site)} without one (phone/letter leads).")
 
     from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig  # imported late so tests don't need it
 
@@ -103,7 +109,7 @@ async def main() -> None:
     results = []
 
     async with AsyncWebCrawler(config=BrowserConfig(headless=True, user_agent=USER_AGENT)) as crawler:
-        for loc in locations[: args.limit]:
+        for loc in with_site[: args.limit]:
             print(f"- {loc['name']} ({loc['website']})")
             try:
                 text = await crawl_site(crawler, config, loc["website"], max_pages=4, delay=args.delay)
@@ -136,6 +142,18 @@ async def main() -> None:
                 "score": L.score_lead(signals, dentists, email),
                 "opener": L.build_opener(loc["name"], signals),
             })
+
+    for loc in no_site:
+        ctype = L.guess_company_type(loc["name"], loc["owner_name"])
+        sites = owner_sites.get(loc["owner_name"] or "", 1)
+        signals = L.detect_signals("", sites)
+        signals = [x for x in signals if not x.startswith("No online booking")] + ["No website listed"]
+        results.append({
+            **loc, "city": "Manchester", "email": None, "company_type": ctype,
+            "can_cold_email": False, "team_size": None, "sites_count": sites,
+            "signals": signals, "score": L.score_lead(signals, None, None),
+            "opener": L.build_opener(loc["name"], signals),
+        })
 
     results.sort(key=lambda r: r["score"], reverse=True)
     with open("leads_preview.csv", "w", newline="", encoding="utf-8") as f:

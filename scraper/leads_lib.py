@@ -74,7 +74,7 @@ def extract_dental_locations(rows: list[dict], postcode_re=POSTCODE_RE) -> tuple
             "cqc_location_id": (r.get(c_id) or "").strip() or None,
             "name": (r.get(c_name) or "").strip(),
             "website": normalise_url(r.get(c_web)),
-            "phone": (r.get(c_phone) or "").strip() or None,
+            "phone": format_phone(r.get(c_phone)),
             "address": (r.get(c_addr) or "").strip() or None,
             "postcode": postcode.upper(),
             "owner_name": (r.get(c_owner) or "").strip() or None,
@@ -89,9 +89,29 @@ def normalise_url(u: str | None) -> str | None:
     return u if u.lower().startswith("http") else "https://" + u
 
 
+CHAIN_BRANDS = ("mydentist", "bupa", "portman", "oasis dental", "rodericks", "colosseum",
+                "integrated dental", "dentex", "pearl dental", "tdl ", "dental care group")
+
+
+def is_chain(*names: str | None) -> bool:
+    """Big corporate groups have their own IT teams; local owner names can hide the brand."""
+    return any(n and any(b in n.lower() for b in CHAIN_BRANDS) for n in names)
+
+
 def guess_company_type(*names: str | None) -> str:
-    """Name-based guess only. 'ltd' means a corporate subscriber under PECR (LLPs count)."""
+    """Name-based guess only. 'ltd' means a corporate subscriber under PECR (LLPs count).
+    'Partnership' in the name is a strong sign of a partnership (not a corporate subscriber)."""
+    if any(n and re.search(r"\bpartnership\b", n, re.I) for n in names):
+        return "partnership_or_sole_trader"
     return "ltd" if any(n and CORPORATE_HINT_RE.search(n) for n in names) else "unknown"
+
+
+def format_phone(raw: str | None) -> str | None:
+    """The CQC file stores numbers as integers, so the leading 0 is lost."""
+    digits = re.sub(r"\D", "", raw or "")
+    if not digits:
+        return None
+    return digits if digits.startswith("0") else "0" + digits
 
 
 def find_emails(text: str) -> list[str]:
@@ -144,7 +164,7 @@ def detect_signals(text: str, sites_count: int | None) -> list[str]:
 
 SIGNAL_WEIGHTS = [
     ("Patient forms", 25), ("No online booking", 20), ("Hiring", 15),
-    ("Takes referrals", 10), ("In-house membership", 15), ("Mixes NHS", 5), ("Owner runs", 10),
+    ("Takes referrals", 10), ("In-house membership", 15), ("Mixes NHS", 5), ("Owner runs", 10), ("No website", 10),
 ]
 
 
